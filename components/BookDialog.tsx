@@ -15,7 +15,7 @@ export default function BookDialog() {
   const [data, setData] = useState(null);
   useEffect(() => {
     fetch(
-      `https://www.googleapis.com/books/v1/volumes?q=isbn:9780140328721&key=AIzaSyC-axIjazYJf6t2BuXXNDYC4YwKNqX4bZo`,
+      `https://www.googleapis.com/books/v1/volumes?q=isbn:9780140328721&key=${process.env.GOOGLE_BOOKS_API_KEY}`,
     )
       .then((res) => res.json())
       .then((data) => setData(data));
