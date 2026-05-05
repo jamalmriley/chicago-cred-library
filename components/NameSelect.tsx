@@ -15,7 +15,8 @@ export default function NameSelect() {
             <Button
               key={idx}
               size="icon"
-              className={`border ${selectedLetter === letter ? "border-cred-yellow-400 bg-cred-yellow-50 text-cred-yellow-400 hover:bg-cred-yellow-200" : "border-muted-foreground bg-background text-primary hover:bg-muted"}`}
+              variant={selectedLetter === letter ? "default" : "outline"}
+              className="rounded-md"
               onClick={() =>
                 setSelectedLetter((lttr) => (lttr === letter ? null : letter))
               }
@@ -29,7 +30,8 @@ export default function NameSelect() {
             <Button
               key={idx}
               size="icon"
-              className={`border ${selectedLetter === letter ? "border-cred-yellow-400 bg-cred-yellow-50 text-cred-yellow-400 hover:bg-cred-yellow-200" : "border-muted-foreground bg-background text-primary hover:bg-muted"}`}
+              variant={selectedLetter === letter ? "default" : "outline"}
+              className="rounded-md"
               onClick={() =>
                 setSelectedLetter((lttr) => (lttr === letter ? null : letter))
               }

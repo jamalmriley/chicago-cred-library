@@ -30,7 +30,7 @@ export default function RootLayout({
       className={`${primaryFont.variable} ${secondaryFont.variable}`}
     >
       <body>
-        <main className="page-content">{children}</main>
+        <main>{children}</main>
       </body>
     </html>
   );

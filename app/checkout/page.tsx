@@ -43,7 +43,7 @@ export default function CheckoutPage() {
           .map((_, i) => (
             <div
               key={i}
-              className={`${i === current - 1 ? "w-5 bg-cred-yellow-400" : "w-2 bg-muted"} h-2 rounded-full transition-all`}
+              className={`${i === current - 1 ? "w-5 bg-primary" : "w-2 bg-muted"} h-2 rounded-full transition-all`}
             />
           ))}
       </div>
