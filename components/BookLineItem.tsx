@@ -1,14 +1,24 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import { EllipsisVertical } from "lucide-react";
+import { VolumeInfo } from "@/types";
+import BookDialog from "./BookDialog";
+import Image from "next/image";
 
-export default function BookLineItem() {
+export default function BookLineItem({ book }: { book: VolumeInfo }) {
+  const isbn = book.industryIdentifiers?.[0].identifier || "";
   return (
-    <div className="w-full flex items-center gap-3 border border-border rounded-xl p-3">
-      <Skeleton className="w-20 aspect-square shrink-0" />
+    <div className="w-full flex items-center gap-3 border rounded-xl p-3">
+      <Image
+        src={book.imageLinks?.thumbnail.replace("http://", "https://") || ""}
+        alt={book.title}
+        width={80}
+        height={120}
+        className="w-20 aspect-square shrink-0"
+      />
       <div className="flex flex-col gap-1">
-        <p className="text-md font-semibold leading-none">Example Book</p>
-        <p className="text-xs text-muted-foreground">Example Author</p>
+        <p className="text-md font-semibold leading-none">{book.title}</p>
+        <p className="text-xs text-muted-foreground">
+          {book.authors?.join(", ")}
+        </p>
       </div>
 
       <div className="flex flex-col items-end ml-auto">
@@ -16,9 +26,7 @@ export default function BookLineItem() {
         <p className="text-xs text-muted-foreground">points</p>
       </div>
 
-      <Button size="icon" variant="ghost" className="rounded-full">
-        <EllipsisVertical />
-      </Button>
+      <BookDialog isbn={isbn} />
     </div>
   );
 }

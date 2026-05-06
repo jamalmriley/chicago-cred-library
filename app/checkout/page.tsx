@@ -1,6 +1,6 @@
 "use client";
 
-import BookScan from "@/components/BookScan";
+import BookCheckout from "@/components/BookCheckout";
 import NameSelect from "@/components/NameSelect";
 import {
   Carousel,
@@ -33,7 +33,7 @@ export default function CheckoutPage() {
             <NameSelect />
           </CarouselItem>
           <CarouselItem>
-            <BookScan name="Jamal" />
+            <BookCheckout name="Jamal" />
           </CarouselItem>
         </CarouselContent>
       </Carousel>
