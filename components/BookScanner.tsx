@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { BrowserMultiFormatReader } from "@zxing/browser";
 import { NotFoundException } from "@zxing/library";
 import { Button } from "./ui/button";
-import { Barcode, CameraOff, OctagonX, ScanBarcode } from "lucide-react";
+import { Barcode, OctagonX } from "lucide-react";
 
 interface BookScannerProps {
   onScan: (isbn: string) => void;
@@ -15,7 +15,7 @@ export default function BookScanner({ onScan, onClose }: BookScannerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const readerRef = useRef<BrowserMultiFormatReader | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [scanning, setScanning] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
 
   useEffect(() => {
     readerRef.current = new BrowserMultiFormatReader();
@@ -23,7 +23,7 @@ export default function BookScanner({ onScan, onClose }: BookScannerProps) {
 
     if (!videoRef.current) return;
 
-    setScanning(true);
+    setIsScanning(true);
     setError(null);
 
     codeReader
@@ -38,13 +38,13 @@ export default function BookScanner({ onScan, onClose }: BookScannerProps) {
           }
           if (err && !(err instanceof NotFoundException)) {
             setError("Camera error: " + err.message);
-            setScanning(false);
+            setIsScanning(false);
           }
         },
       )
       .catch((err) => {
         setError("Could not access camera: " + err.message);
-        setScanning(false);
+        setIsScanning(false);
       });
 
     return () => {
@@ -56,7 +56,7 @@ export default function BookScanner({ onScan, onClose }: BookScannerProps) {
     if (readerRef.current) {
       BrowserMultiFormatReader.releaseAllStreams();
     }
-    setScanning(false);
+    setIsScanning(false);
   };
 
   const handleClose = () => {
@@ -68,10 +68,13 @@ export default function BookScanner({ onScan, onClose }: BookScannerProps) {
     <div className="w-full flex flex-col items-center gap-5">
       {/* Video container */}
       <div className="w-full relative aspect-video border rounded-xl bg-muted text-muted-foreground overflow-hidden">
-        <video ref={videoRef} className="w-full h-full object-cover" />
+        <video
+          ref={videoRef}
+          className="w-full h-full object-cover scale-x-[-1]"
+        />
 
         {/* Scanning overlay */}
-        {scanning && (
+        {isScanning && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-48 h-24 flex justify-center items-center border-4 border-card/70 rounded text-card/70">
               <Barcode className="size-20 animate-pulse" />
@@ -86,11 +89,11 @@ export default function BookScanner({ onScan, onClose }: BookScannerProps) {
         )}
 
         {/* Gradient overlay */}
-        {scanning && !error && (
+        {isScanning && !error && (
           <div className="absolute inset-0 bg-linear-to-t from-black/25 to-transparent to-25% pointer-events-none" />
         )}
 
-        {scanning && !error && (
+        {isScanning && !error && (
           <p className="w-full absolute bottom-3 text-center text-sm text-white font-semibold">
             Aim the book's barcode in the white frame.
           </p>
