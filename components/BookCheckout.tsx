@@ -4,40 +4,50 @@ import KioskCard from "./KioskCard";
 import { Separator } from "@/components/ui/separator";
 import BookLineItem from "./BookLineItem";
 import { useState } from "react";
-import { GoogleBooksResponse } from "@/types";
+import { GoogleBooksErrorResponse, GoogleBooksResponse } from "@/types";
 import { Button } from "./ui/button";
 import { BookScannerWrapper } from "./BookScannerWrapper";
 import { CameraOff, LibraryBig, ScanBarcode } from "lucide-react";
 import { useSound } from "use-sound";
+import { useCheckoutContext } from "@/contexts/checkout-context";
+import { toast } from "sonner";
 
 export default function BookCheckout({ name }: { name: string }) {
+  const { cart, setCart } = useCheckoutContext();
   const [showScanner, setShowScanner] = useState(false);
-  const [data, setData] = useState<GoogleBooksResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [playBeep] = useSound("/sounds/beep.m4a", { volume: 0.5 });
 
   const handleScan = (isbn: string) => {
-    setShowScanner(false);
+    playBeep();
     fetch(
       `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}&key=${process.env.NEXT_PUBLIC_GOOGLE_BOOKS_API_KEY}`,
     )
       .then((res) => res.json())
-      .then((data) => {
+      .then((data: GoogleBooksResponse) => {
         if (!data.items) {
-          setError("No book found for that barcode. Try scanning again.");
+          toast.error("No book found for that barcode. Try scanning again.", {
+            position: "bottom-right",
+          });
           return;
         }
-        playBeep();
-        setData(data);
+        setCart((prev) => (prev ? [...prev, ...data.items] : [...data.items]));
+      })
+      .catch((err: GoogleBooksErrorResponse) => {
+        toast.error(
+          err.error.message || "An error occurred while fetching book data.",
+          {
+            position: "bottom-right",
+          },
+        );
       });
   };
 
   return (
     <KioskCard title={`Start scanning, ${name}.`}>
       <div className="w-1/2 h-full flex flex-col gap-3 overflow-y-hidden">
-        {data?.items ? (
-          data.items.map((item) => (
-            <BookLineItem key={item.id} book={item.volumeInfo} />
+        {cart.length > 0 ? (
+          cart.map((item, index) => (
+            <BookLineItem key={index} book={item.volumeInfo} />
           ))
         ) : (
           <div className="w-full h-full flex flex-col flex-1 grow justify-center items-center border rounded-xl p-10 bg-muted text-muted-foreground">

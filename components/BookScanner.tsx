@@ -14,6 +14,8 @@ interface BookScannerProps {
 export default function BookScanner({ onScan, onClose }: BookScannerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const readerRef = useRef<BrowserMultiFormatReader | null>(null);
+  const lastScannedRef = useRef<string | null>(null);
+  const cooldownRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
 
@@ -33,8 +35,19 @@ export default function BookScanner({ onScan, onClose }: BookScannerProps) {
         (result, err) => {
           if (result) {
             const isbn = result.getText();
+
+            // Ignore if same barcode or in cooldown
+            if (cooldownRef.current || isbn === lastScannedRef.current) return;
+
+            cooldownRef.current = true;
+            lastScannedRef.current = isbn;
             onScan(isbn);
-            stopScanning();
+
+            // Reset cooldown after 2 seconds
+            setTimeout(() => {
+              cooldownRef.current = false;
+              lastScannedRef.current = null;
+            }, 2000);
           }
           if (err && !(err instanceof NotFoundException)) {
             setError("Camera error: " + err.message);

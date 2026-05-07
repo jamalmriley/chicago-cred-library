@@ -6,27 +6,26 @@ import Image from "next/image";
 export default function BookLineItem({ book }: { book: VolumeInfo }) {
   const isbn = book.industryIdentifiers?.[0].identifier || "";
   return (
-    <div className="w-full flex items-center gap-3 border rounded-xl p-3">
+    <div className="w-full h-24 flex items-center gap-3 border rounded-xl p-3">
       <Image
         src={book.imageLinks?.thumbnail.replace("http://", "https://") || ""}
         alt={book.title}
-        width={80}
-        height={120}
-        className="w-20 aspect-square shrink-0"
+        width={96}
+        height={96}
+        className="h-full w-auto aspect-square object-cover rounded-sm shadow-sm" // Crops thumbnail to square
       />
       <div className="flex flex-col gap-1">
-        <p className="text-md font-semibold leading-none">{book.title}</p>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-md font-semibold leading-none line-clamp-1">
+          {book.title}
+        </p>
+        <p className="text-xs italic text-muted-foreground line-clamp-1">
           {book.authors?.join(", ")}
         </p>
       </div>
 
-      <div className="flex flex-col items-end ml-auto">
-        <p className="text-md font-semibold leading-none">0</p>
-        <p className="text-xs text-muted-foreground">points</p>
-      </div>
-
-      <BookDialog isbn={isbn} />
+      <span className="ml-auto">
+        <BookDialog isbn={isbn} />
+      </span>
     </div>
   );
 }

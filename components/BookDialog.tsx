@@ -15,6 +15,7 @@ import { GoogleBooksResponse } from "@/types";
 import Image from "next/image";
 import { Separator } from "./ui/separator";
 import { EllipsisVertical } from "lucide-react";
+import { format } from "date-fns";
 
 export default function BookDialog({ isbn }: { isbn: string }) {
   const [data, setData] = useState<GoogleBooksResponse | null>(null);
@@ -36,76 +37,60 @@ export default function BookDialog({ isbn }: { isbn: string }) {
       </DialogTrigger>
       {data && data.items.length > 0 && (
         <DialogContent className="w-1/2 min-w-137.5">
-          <DialogHeader>
-            <DialogTitle className="font-bold line-clamp-1">
-              {data.items[0].volumeInfo.title}
-            </DialogTitle>
-            <DialogDescription className="italic line-clamp-2">
-              {data.items[0].volumeInfo.authors.join(", ")}
-            </DialogDescription>
-          </DialogHeader>
           {data &&
-            data.items.map((item) => (
-              <div key={item.id} className="flex gap-5">
-                <Image
-                  src={item.volumeInfo.imageLinks.thumbnail.replace(
-                    "http://",
-                    "https://",
-                  )}
-                  alt={item.volumeInfo.title}
-                  width={200}
-                  height={300}
-                  className="w-1/3 min-w-1/3 border rounded-sm aspect-auto"
-                />
-                <div className="flex flex-col gap-2 text-xs text-muted-foreground">
-                  <span>
-                    <span className="font-bold">
-                      Genre{item.volumeInfo.categories?.length !== 1 ? "s" : ""}
-                      :{" "}
-                    </span>{" "}
-                    {item.volumeInfo.categories?.join(", ")}
-                  </span>
-                  <span>
-                    <span className="font-bold">Pages: </span>{" "}
-                    {item.volumeInfo.pageCount}
-                    {" | "}
-                    <span className="font-bold">Points: </span>{" "}
-                    {Math.round(item.volumeInfo.pageCount * 0.5)}
-                  </span>
-                  <span>
-                    <span className="font-bold">Published Date: </span>{" "}
-                    {item.volumeInfo.publishedDate}
-                  </span>
-                  <Separator />
-                  <div className="relative">
-                    <span
-                      className={`ease-in-out transition-all duration-500 block ${
-                        isExpanded
-                          ? "max-h-32 overflow-y-scroll"
-                          : "max-h-16 overflow-hidden"
-                      }`}
-                    >
-                      {item.volumeInfo.description}
+            data.items.map((item, i) => (
+              <div key={i} className="flex flex-col gap-3">
+                {/* Book Image and Details */}
+                <div className="flex gap-5">
+                  <Image
+                    src={item.volumeInfo.imageLinks.thumbnail.replace(
+                      "http://",
+                      "https://",
+                    )}
+                    alt={item.volumeInfo.title}
+                    width={200}
+                    height={200}
+                    className="w-24 h-auto aspect-auto shrink-0 rounded-sm shadow-sm" // Maintains thumbnail aspect ratio
+                  />
+                  {/* Book Details */}
+                  <div className="flex flex-col gap-2 text-xs text-muted-foreground">
+                    <span className="text-base text-primary-foreground font-bold leading-none line-clamp-1">
+                      {data.items[0].volumeInfo.title}
                     </span>
-
-                    {/* Fade overlay — only visible when collapsed */}
-                    <div
-                      className={`absolute bottom-0 left-0 right-0 h-8 bg-linear-to-t from-popover to-transparent transition-opacity duration-500 ${
-                        isExpanded
-                          ? "opacity-0 pointer-events-none"
-                          : "opacity-100"
-                      }`}
-                    />
+                    <span className="text-sm italic line-clamp-1">
+                      {data.items[0].volumeInfo.authors.join(", ")}
+                    </span>
+                    {/* Categories */}
+                    <span>
+                      <span className="font-bold">
+                        Genre
+                        {item.volumeInfo.categories?.length !== 1 ? "s" : ""}
+                        :{" "}
+                      </span>{" "}
+                      {item.volumeInfo.categories?.join(", ")}
+                    </span>
+                    {/* Page Count and Points */}
+                    <span>
+                      <span className="font-bold">Pages: </span>{" "}
+                      {item.volumeInfo.pageCount}
+                      {" | "}
+                      <span className="font-bold">Points: </span>{" "}
+                      {Math.round(item.volumeInfo.pageCount * 0.5)}
+                    </span>
+                    {/* Year Published */}
+                    <span>
+                      <span className="font-bold">Year Published: </span>{" "}
+                      {format(item.volumeInfo.publishedDate, "yyyy")}
+                    </span>
                   </div>
-                  <Button
-                    variant="link"
-                    size="sm"
-                    className="text-xs text-muted-foreground w-fit m-0 p-0"
-                    onClick={() => setIsExpanded(!isExpanded)}
-                  >
-                    {isExpanded ? "See less" : "See more"}
-                  </Button>
                 </div>
+
+                <Separator orientation="horizontal" decorative />
+
+                {/* Description */}
+                <span className="text-xs text-muted-foreground">
+                  {item.volumeInfo.description}
+                </span>
               </div>
             ))}
 

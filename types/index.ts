@@ -65,3 +65,17 @@ interface AccessInfo {
 interface SearchInfo {
   textSnippet: string;
 }
+
+export interface GoogleBooksErrorResponse {
+  error: {
+    code: number;
+    message: string;
+    errors: Error[];
+  };
+}
+
+interface Error {
+  message: string;
+  domain: string;
+  reason: string;
+}
