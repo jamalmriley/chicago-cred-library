@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import localFont from "next/font/local";
 import { Toaster } from "@/components/ui/sonner";
+import CheckoutContextProvider from "@/contexts/checkout-context";
 
 const primaryFont = Inter({
   subsets: ["latin"],
@@ -26,14 +27,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${primaryFont.variable} ${secondaryFont.variable}`}
-    >
-      <body>
-        <main>{children}</main>
-        <Toaster />
-      </body>
-    </html>
+    <CheckoutContextProvider>
+      <html
+        lang="en"
+        className={`${primaryFont.variable} ${secondaryFont.variable}`}
+      >
+        <body>
+          <main>{children}</main>
+          <Toaster />
+        </body>
+      </html>
+    </CheckoutContextProvider>
   );
 }

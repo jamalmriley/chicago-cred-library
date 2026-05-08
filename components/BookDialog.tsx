@@ -3,23 +3,27 @@
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
-  DialogHeader,
-  DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
-import { GoogleBooksResponse } from "@/types";
+import { GoogleBooksResponse } from "@/types/books";
 import Image from "next/image";
-import { Separator } from "./ui/separator";
-import { EllipsisVertical } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 import { format } from "date-fns";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { EllipsisVertical, Info, Trash2 } from "lucide-react";
+import { useCheckoutContext } from "@/contexts/checkout-context";
 
 export default function BookDialog({ isbn }: { isbn: string }) {
+  const {} = useCheckoutContext();
   const [data, setData] = useState<GoogleBooksResponse | null>(null);
-  const [isExpanded, setIsExpanded] = useState(false);
   useEffect(() => {
     fetch(
       `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}&key=${process.env.NEXT_PUBLIC_GOOGLE_BOOKS_API_KEY}`,
@@ -30,11 +34,26 @@ export default function BookDialog({ isbn }: { isbn: string }) {
 
   return (
     <Dialog>
-      <DialogTrigger asChild>
-        <Button size="icon" variant="ghost" className="rounded-full">
-          <EllipsisVertical />
-        </Button>
-      </DialogTrigger>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button size="icon" variant="ghost" className="rounded-full">
+            <EllipsisVertical />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DialogTrigger asChild>
+            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+              <Info />
+              More info
+            </DropdownMenuItem>
+          </DialogTrigger>
+          <DropdownMenuItem variant="destructive" onClick={() => {}}>
+            <Trash2 />
+            Remove
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
       {data && data.items.length > 0 && (
         <DialogContent className="w-1/2 min-w-137.5">
           {data &&

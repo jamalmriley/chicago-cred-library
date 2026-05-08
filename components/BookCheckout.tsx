@@ -4,15 +4,20 @@ import KioskCard from "./KioskCard";
 import { Separator } from "@/components/ui/separator";
 import BookLineItem from "./BookLineItem";
 import { useState } from "react";
-import { GoogleBooksErrorResponse, GoogleBooksResponse } from "@/types";
-import { Button } from "./ui/button";
+import { GoogleBooksErrorResponse, GoogleBooksResponse } from "@/types/books";
+import { Button } from "@/components/ui/button";
 import { BookScannerWrapper } from "./BookScannerWrapper";
 import { CameraOff, LibraryBig, ScanBarcode } from "lucide-react";
 import { useSound } from "use-sound";
 import { useCheckoutContext } from "@/contexts/checkout-context";
 import { toast } from "sonner";
+import { Participant } from "@/types/user";
 
-export default function BookCheckout({ name }: { name: string }) {
+export default function BookCheckout({
+  participant,
+}: {
+  participant: Participant;
+}) {
   const { cart, setCart } = useCheckoutContext();
   const [showScanner, setShowScanner] = useState(false);
   const [playBeep] = useSound("/sounds/beep.m4a", { volume: 0.5 });
@@ -43,7 +48,7 @@ export default function BookCheckout({ name }: { name: string }) {
   };
 
   return (
-    <KioskCard title={`Start scanning, ${name}.`}>
+    <KioskCard flex="row" title={`Start scanning, ${participant.first_name}.`}>
       <div className="w-1/2 h-full flex flex-col gap-3 overflow-y-hidden">
         {cart.length > 0 ? (
           cart.map((item, index) => (

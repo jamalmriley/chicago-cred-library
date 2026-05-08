@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { BrowserMultiFormatReader } from "@zxing/browser";
 import { NotFoundException } from "@zxing/library";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 import { Barcode, OctagonX } from "lucide-react";
 
 interface BookScannerProps {

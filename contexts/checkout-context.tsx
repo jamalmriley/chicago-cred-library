@@ -1,11 +1,12 @@
 "use client";
 
-import { Item, VolumeInfo } from "@/types";
+import { Item, VolumeInfo } from "@/types/books";
+import { Participant } from "@/types/user";
 import { createContext, useContext, useState } from "react";
 
 type CheckoutContext = {
-  participantId: string;
-  setParticipantId: React.Dispatch<React.SetStateAction<string>>;
+  participant: Participant | null;
+  setParticipant: React.Dispatch<React.SetStateAction<Participant | null>>;
   currBook: VolumeInfo | null;
   setCurrBook: React.Dispatch<React.SetStateAction<VolumeInfo | null>>;
   cart: Item[];
@@ -19,14 +20,14 @@ export default function CheckoutContextProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [participantId, setParticipantId] = useState("");
+  const [participant, setParticipant] = useState<Participant | null>(null);
   const [currBook, setCurrBook] = useState<VolumeInfo | null>(null);
   const [cart, setCart] = useState<Item[]>([]);
   return (
     <CheckoutContext.Provider
       value={{
-        participantId,
-        setParticipantId,
+        participant,
+        setParticipant,
         currBook,
         setCurrBook,
         cart,

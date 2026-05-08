@@ -1,5 +1,4 @@
-import { Skeleton } from "@/components/ui/skeleton";
-import { VolumeInfo } from "@/types";
+import { VolumeInfo } from "@/types/books";
 import BookDialog from "./BookDialog";
 import Image from "next/image";
 
