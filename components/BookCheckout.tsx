@@ -1,17 +1,16 @@
 "use client";
 
-import KioskCard from "./KioskCard";
 import { Separator } from "@/components/ui/separator";
-import BookLineItem from "./BookLineItem";
-import { useState } from "react";
-import { GoogleBooksErrorResponse, GoogleBooksResponse } from "@/types/books";
-import { Button } from "@/components/ui/button";
-import { BookScannerWrapper } from "./BookScannerWrapper";
-import { CameraOff, LibraryBig, ScanBarcode } from "lucide-react";
-import { useSound } from "use-sound";
 import { useCheckoutContext } from "@/contexts/checkout-context";
-import { toast } from "sonner";
+import { GoogleBooksErrorResponse, GoogleBooksResponse } from "@/types/books";
 import { Participant } from "@/types/user";
+import { LibraryBig } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { useSound } from "use-sound";
+import BookLineItem from "./BookLineItem";
+import { BookScannerWrapper } from "./BookScannerWrapper";
+import KioskCard from "./KioskCard";
 
 export default function BookCheckout({
   participant,
@@ -30,7 +29,7 @@ export default function BookCheckout({
       .then((res) => res.json())
       .then((data: GoogleBooksResponse) => {
         if (!data.items) {
-          toast.error("No book found for that barcode. Try scanning again.", {
+          toast.error("Book not found. Try scanning again.", {
             position: "bottom-right",
           });
           return;
@@ -64,24 +63,8 @@ export default function BookCheckout({
         )}
       </div>
       <Separator orientation="vertical" decorative className="mx-5" />
-      <div className="w-1/2 h-full flex flex-col gap-5">
-        {showScanner ? (
-          <BookScannerWrapper
-            onScan={handleScan}
-            onClose={() => setShowScanner(false)}
-          />
-        ) : (
-          <div className="w-full h-full flex flex-col justify-start items-center gap-5">
-            <div className="w-full flex flex-col justify-center items-center aspect-video border rounded-xl bg-muted text-muted-foreground overflow-hidden">
-              <CameraOff className="size-20" />
-            </div>
-
-            <Button onClick={() => setShowScanner(true)}>
-              <ScanBarcode />
-              Start scanning
-            </Button>
-          </div>
-        )}
+      <div className="w-1/2 h-full">
+        <BookScannerWrapper onScan={handleScan} />
       </div>
     </KioskCard>
   );

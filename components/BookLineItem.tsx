@@ -1,6 +1,6 @@
 import { VolumeInfo } from "@/types/books";
-import BookDialog from "./BookDialog";
 import Image from "next/image";
+import BookDialog from "./BookDialog";
 
 export default function BookLineItem({ book }: { book: VolumeInfo }) {
   const isbn = book.industryIdentifiers?.[0].identifier || "";

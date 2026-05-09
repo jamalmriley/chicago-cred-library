@@ -1,9 +1,9 @@
-import { useState } from "react";
-import KioskCard from "./KioskCard";
 import { Button } from "@/components/ui/button";
+import { useCheckoutContext } from "@/contexts/checkout-context";
 import { test_participants } from "@/data";
 import { Participant } from "@/types/user";
-import { useCheckoutContext } from "@/contexts/checkout-context";
+import { useState } from "react";
+import KioskCard from "./KioskCard";
 
 const filterParticipantsBySelectedLetter = (selectedLetter: string) => {
   return test_participants.filter((participant) =>

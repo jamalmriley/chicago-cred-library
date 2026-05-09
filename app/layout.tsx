@@ -1,9 +1,9 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import localFont from "next/font/local";
 import { Toaster } from "@/components/ui/sonner";
 import CheckoutContextProvider from "@/contexts/checkout-context";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import localFont from "next/font/local";
+import "./globals.css";
 
 const primaryFont = Inter({
   subsets: ["latin"],

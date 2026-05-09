@@ -1,17 +1,22 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
 import { BrowserMultiFormatReader } from "@zxing/browser";
 import { NotFoundException } from "@zxing/library";
-import { Button } from "@/components/ui/button";
-import { Barcode, OctagonX } from "lucide-react";
+import {
+  Barcode,
+  CameraOff,
+  OctagonX,
+  ScanBarcode,
+  Search,
+} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 interface BookScannerProps {
   onScan: (isbn: string) => void;
-  onClose: () => void;
 }
 
-export default function BookScanner({ onScan, onClose }: BookScannerProps) {
+export default function BookScanner({ onScan }: BookScannerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const readerRef = useRef<BrowserMultiFormatReader | null>(null);
   const lastScannedRef = useRef<string | null>(null);
@@ -20,12 +25,12 @@ export default function BookScanner({ onScan, onClose }: BookScannerProps) {
   const [isScanning, setIsScanning] = useState(false);
 
   useEffect(() => {
+    if (!isScanning) return; // ← stops the loop; effect does nothing when false
+    if (!videoRef.current) return;
+
     readerRef.current = new BrowserMultiFormatReader();
     const codeReader = readerRef.current;
 
-    if (!videoRef.current) return;
-
-    setIsScanning(true);
     setError(null);
 
     codeReader
@@ -61,9 +66,9 @@ export default function BookScanner({ onScan, onClose }: BookScannerProps) {
       });
 
     return () => {
-      stopScanning();
+      BrowserMultiFormatReader.releaseAllStreams();
     };
-  }, []);
+  }, [isScanning]);
 
   const stopScanning = () => {
     if (readerRef.current) {
@@ -72,19 +77,20 @@ export default function BookScanner({ onScan, onClose }: BookScannerProps) {
     setIsScanning(false);
   };
 
-  const handleClose = () => {
-    stopScanning();
-    onClose();
-  };
-
   return (
     <div className="w-full flex flex-col items-center gap-5">
       {/* Video container */}
       <div className="w-full relative aspect-video border rounded-xl bg-muted text-muted-foreground overflow-hidden">
-        <video
-          ref={videoRef}
-          className="w-full h-full object-cover scale-x-[-1]"
-        />
+        {isScanning ? (
+          <video
+            ref={videoRef}
+            className="size-full object-cover scale-x-[-1]"
+          />
+        ) : (
+          <div className="size-full flex flex-col justify-center items-center">
+            <CameraOff className="size-20" />
+          </div>
+        )}
 
         {/* Scanning overlay */}
         {isScanning && (
@@ -95,14 +101,8 @@ export default function BookScanner({ onScan, onClose }: BookScannerProps) {
           </div>
         )}
 
-        {error && (
-          <p className="w-full absolute bottom-3 text-center text-sm text-destructive-foreground font-semibold">
-            {error}
-          </p>
-        )}
-
         {/* Gradient overlay */}
-        {isScanning && !error && (
+        {isScanning && (
           <div className="absolute inset-0 bg-linear-to-t from-black/25 to-transparent to-25% pointer-events-none" />
         )}
 
@@ -111,12 +111,28 @@ export default function BookScanner({ onScan, onClose }: BookScannerProps) {
             Aim the book's barcode in the white frame.
           </p>
         )}
+
+        {error && (
+          <p className="w-full absolute bottom-3 text-center text-sm text-destructive-foreground font-semibold">
+            {error}
+          </p>
+        )}
       </div>
 
-      <Button variant="destructive" onClick={handleClose}>
-        <OctagonX />
-        Stop scanning
-      </Button>
+      <div className="flex gap-2">
+        <Button
+          variant={isScanning ? "destructive" : "default"}
+          onClick={() => (isScanning ? stopScanning() : setIsScanning(true))}
+        >
+          {isScanning ? <OctagonX /> : <ScanBarcode />}
+          {isScanning ? "Stop" : "Start"} scanning
+        </Button>
+
+        <Button variant="outline">
+          <Search />
+          Search for a book
+        </Button>
+      </div>
     </div>
   );
 }

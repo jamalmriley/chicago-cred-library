@@ -1,5 +1,5 @@
-import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/ui/skeleton";
+import dynamic from "next/dynamic";
 
 export const BookScannerWrapper = dynamic(
   () => import("@/components/BookScanner"),
