@@ -1,6 +1,7 @@
 "use client";
 
 import BookCheckout from "@/components/BookCheckout";
+import CheckoutConfirm from "@/components/CheckoutConfirm";
 import NameSelect from "@/components/NameSelect";
 import { Button } from "@/components/ui/button";
 import {
@@ -38,13 +39,16 @@ export default function CheckoutPage() {
 
   return (
     <div className="page-container justify-center items-center p-0">
-      <Carousel setApi={setApi} className="w-full">
+      <Carousel setApi={setApi} className="w-full overflow-hidden">
         <CarouselContent>
           <CarouselItem>
             <NameSelect />
           </CarouselItem>
           <CarouselItem>
             {participant && <BookCheckout participant={participant} />}
+          </CarouselItem>
+          <CarouselItem>
+            {participant && <CheckoutConfirm participant={participant} />}
           </CarouselItem>
         </CarouselContent>
       </Carousel>
@@ -53,7 +57,7 @@ export default function CheckoutPage() {
         <Button
           variant="outline"
           size="icon"
-          className="size-10 mr-3"
+          className="size-10 rounded-full mr-3"
           onClick={() => api?.scrollPrev()}
           disabled={current === 1}
         >
@@ -70,7 +74,7 @@ export default function CheckoutPage() {
         <Button
           variant="outline"
           size="icon"
-          className="size-10 ml-3"
+          className="size-10 rounded-full ml-3"
           onClick={() => api?.scrollNext()}
           disabled={isNextButtonDisabled}
         >

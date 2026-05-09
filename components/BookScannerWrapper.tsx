@@ -6,7 +6,7 @@ export const BookScannerWrapper = dynamic(
   {
     ssr: false,
     loading: () => (
-      <Skeleton className="w-full aspect-video border rounded-xl" />
+      <Skeleton className="w-full min-w-96 aspect-video border rounded-xl" />
     ),
   },
 );

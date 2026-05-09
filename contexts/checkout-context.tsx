@@ -7,8 +7,8 @@ import { createContext, useContext, useState } from "react";
 type CheckoutContext = {
   participant: Participant | null;
   setParticipant: React.Dispatch<React.SetStateAction<Participant | null>>;
-  currBook: VolumeInfo | null;
-  setCurrBook: React.Dispatch<React.SetStateAction<VolumeInfo | null>>;
+  currBook: Item | null;
+  setCurrBook: React.Dispatch<React.SetStateAction<Item | null>>;
   cart: Item[];
   setCart: React.Dispatch<React.SetStateAction<Item[]>>;
 };
@@ -21,7 +21,7 @@ export default function CheckoutContextProvider({
   children: React.ReactNode;
 }) {
   const [participant, setParticipant] = useState<Participant | null>(null);
-  const [currBook, setCurrBook] = useState<VolumeInfo | null>(null);
+  const [currBook, setCurrBook] = useState<Item | null>(null);
   const [cart, setCart] = useState<Item[]>([]);
   return (
     <CheckoutContext.Provider

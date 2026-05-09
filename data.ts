@@ -13,6 +13,7 @@ export const test_participants: Participant[] = [
     checkout_history: null,
     updated_at: "2024-09-01T08:00:00.000Z",
   },
+  
   {
     id: "usr_002",
     created_at: "2024-09-03T09:15:00.000Z",
@@ -114,6 +115,18 @@ export const test_participants: Participant[] = [
     created_at: "2024-09-25T11:30:00.000Z",
     first_name: "Caleb",
     last_name: "Fontaine",
+    birthday: "2015-06-03",
+    site: "2501",
+    reading_level: "Beginner",
+    notes: "",
+    checkout_history: null,
+    updated_at: "2024-09-25T11:30:00.000Z",
+  },
+  {
+    id: "usr_011",
+    created_at: "2024-09-25T11:30:00.000Z",
+    first_name: "Curtis",
+    last_name: "Fuller",
     birthday: "2015-06-03",
     site: "2501",
     reading_level: "Beginner",

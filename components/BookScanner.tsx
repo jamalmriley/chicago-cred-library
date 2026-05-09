@@ -1,6 +1,10 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Field, FieldDescription } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import { useCheckoutContext } from "@/contexts/checkout-context";
 import { BrowserMultiFormatReader } from "@zxing/browser";
 import { NotFoundException } from "@zxing/library";
 import {
@@ -11,18 +15,23 @@ import {
   Search,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import BookLineItem from "./BookLineItem";
 
 interface BookScannerProps {
+  onLookup: (isbn: string) => void;
   onScan: (isbn: string) => void;
 }
 
-export default function BookScanner({ onScan }: BookScannerProps) {
+export default function BookScanner({ onLookup, onScan }: BookScannerProps) {
+  const { currBook, setCurrBook } = useCheckoutContext();
   const videoRef = useRef<HTMLVideoElement>(null);
   const readerRef = useRef<BrowserMultiFormatReader | null>(null);
   const lastScannedRef = useRef<string | null>(null);
   const cooldownRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
+  const [isManualSearchEnabled, setIsManualSearchEnabled] = useState(false);
+  const [manualIsbn, setManualIsbn] = useState("");
 
   useEffect(() => {
     if (!isScanning) return; // ← stops the loop; effect does nothing when false
@@ -78,7 +87,7 @@ export default function BookScanner({ onScan }: BookScannerProps) {
   };
 
   return (
-    <div className="w-full flex flex-col items-center gap-5">
+    <div className="w-96 flex flex-col items-center gap-5">
       {/* Video container */}
       <div className="w-full relative aspect-video border rounded-xl bg-muted text-muted-foreground overflow-hidden">
         {isScanning ? (
@@ -92,47 +101,99 @@ export default function BookScanner({ onScan }: BookScannerProps) {
           </div>
         )}
 
-        {/* Scanning overlay */}
+        {/* Overlays */}
         {isScanning && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-48 h-24 flex justify-center items-center border-4 border-card/70 rounded text-card/70">
-              <Barcode className="size-20 animate-pulse" />
+          <>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-48 h-24 flex justify-center items-center border-4 border-card/70 rounded text-card/70">
+                <Barcode className="size-20 animate-pulse" />
+              </div>
             </div>
+            <div className="absolute inset-0 bg-linear-to-t from-black/25 to-transparent to-25% pointer-events-none" />
+            {/* <div className="absolute inset-0 bg-background/30 backdrop-blur-lg" /> */}
+          </>
+        )}
+
+        {/* Overlay Text */}
+        {isScanning && !error && (
+          <p
+            className={`w-full absolute bottom-3 text-center text-sm font-semibold ${error ? "text-destructive-foreground" : "text-white"}`}
+          >
+            {error ? error : "Aim the book's barcode in the white frame."}
+          </p>
+        )}
+      </div>
+
+      <div className="w-full flex justify-center gap-2">
+        {!isManualSearchEnabled && (
+          <Button
+            variant={isScanning ? "destructive" : "default"}
+            onClick={() => (isScanning ? stopScanning() : setIsScanning(true))}
+          >
+            {isScanning ? <OctagonX /> : <ScanBarcode />}
+            {isScanning ? "Stop" : "Start"} scanning
+          </Button>
+        )}
+
+        {isManualSearchEnabled && (
+          <div className="flex flex-col">
+            <Field>
+              <div className="w-full relative">
+                <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Type an ISBN number..."
+                  className="w-full pl-8"
+                  value={manualIsbn}
+                  onChange={(e) => setManualIsbn(e.target.value)}
+                />
+              </div>
+              <FieldDescription>
+                Enter the 10- or 13-digit ISBN code, without dashes.
+              </FieldDescription>
+            </Field>
           </div>
         )}
 
-        {/* Gradient overlay */}
-        {isScanning && (
-          <div className="absolute inset-0 bg-linear-to-t from-black/25 to-transparent to-25% pointer-events-none" />
-        )}
-
-        {isScanning && !error && (
-          <p className="w-full absolute bottom-3 text-center text-sm text-white font-semibold">
-            Aim the book's barcode in the white frame.
-          </p>
-        )}
-
-        {error && (
-          <p className="w-full absolute bottom-3 text-center text-sm text-destructive-foreground font-semibold">
-            {error}
-          </p>
-        )}
-      </div>
-
-      <div className="flex gap-2">
         <Button
-          variant={isScanning ? "destructive" : "default"}
-          onClick={() => (isScanning ? stopScanning() : setIsScanning(true))}
+          variant="outline"
+          onClick={() => {
+            if (isScanning) stopScanning();
+            setIsManualSearchEnabled(true);
+            if (manualIsbn !== "") {
+              onLookup(manualIsbn);
+              // TODO: Clear manualIsbn only on success.
+            }
+          }}
         >
-          {isScanning ? <OctagonX /> : <ScanBarcode />}
-          {isScanning ? "Stop" : "Start"} scanning
-        </Button>
-
-        <Button variant="outline">
-          <Search />
-          Search for a book
+          {!isManualSearchEnabled && <Search />}
+          {isManualSearchEnabled ? "Search" : "Search for a book"}
         </Button>
       </div>
+
+      {isManualSearchEnabled && !currBook && (
+        <Button
+          size="xs"
+          variant="link"
+          onClick={() => {
+            setIsScanning(true);
+            setIsManualSearchEnabled(false);
+            setCurrBook(null);
+          }}
+        >
+          Scan your books instead
+        </Button>
+      )}
+
+      {currBook && (
+        <Separator
+          decorative
+          className="bg-transparent border-t border-dashed"
+        />
+      )}
+
+      {/* Book Image and Details */}
+      {currBook && <BookLineItem book={currBook} location="lookup" />}
     </div>
   );
 }

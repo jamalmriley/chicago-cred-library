@@ -1,13 +1,14 @@
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 export default function KioskCard({
   title,
-  flex,
+  flex = "row",
   children,
   className,
 }: {
   title: string;
-  flex: "row" | "col";
+  flex?: "row" | "col";
   children: React.ReactNode;
   className?: string;
 }) {
@@ -15,15 +16,19 @@ export default function KioskCard({
   // Bottom navigation height: 2.5rem (h-10)
   // Bottom navigation margin: 2.5rem (mb-10)
   // Total: 10rem
-  const paddingAndNavHeight = 10;
   return (
-    <div className="p-10 flex items-center justify-center">
+    <div className="size-full p-10 flex items-center justify-center">
       <Card
-        className={`w-3/4 h-[calc(100dvh-${paddingAndNavHeight}rem)] min-h-[calc(100dvh-${paddingAndNavHeight}rem)] p-0`}
+        className={cn(
+          `h-[calc(100dvh-10rem)] min-h-[calc(100dvh-10rem)] p-0`,
+          className,
+        )}
       >
         <CardTitle className="px-10 pt-5">{title}</CardTitle>
         <CardContent
-          className={`size-full min-h-0 flex flex-${flex} flex-1 grow items-center justify-center px-10 pb-10 ${className || ""}`}
+          className={cn(
+            `size-full min-h-0 flex flex-${flex} flex-1 grow items-center justify-center px-10 pb-10`,
+          )}
         >
           {children}
         </CardContent>
