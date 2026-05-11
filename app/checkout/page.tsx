@@ -18,13 +18,8 @@ export default function CheckoutPage() {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
   const [count, setCount] = useState(0);
-  const { cart, participant } = useCheckoutContext();
-  const isNextButtonDisabled =
-    current === 1
-      ? participant === null
-      : current === 2
-        ? cart.length === 0
-        : current === count;
+  const { participant, maxCheckoutStepAllowed } = useCheckoutContext();
+  const isNextButtonDisabled = current + 1 > maxCheckoutStepAllowed;
 
   useEffect(() => {
     if (!api) {
@@ -39,7 +34,11 @@ export default function CheckoutPage() {
 
   return (
     <div className="page-container justify-center items-center p-0">
-      <Carousel setApi={setApi} className="w-full overflow-hidden">
+      <Carousel
+        setApi={setApi}
+        opts={{ watchDrag: false }}
+        className="w-full overflow-hidden"
+      >
         <CarouselContent>
           <CarouselItem>
             <NameSelect />
