@@ -11,7 +11,8 @@ export default function BookLineItem({
   book: Item;
   location?: "cart" | "lookup";
 }) {
-  const { setCart, currBook, setCurrBook } = useCheckoutContext();
+  const { cart, setCart, currBook, setCurrBook, setMaxCheckoutStepAllowed } =
+    useCheckoutContext();
   const isbn = book.volumeInfo.industryIdentifiers?.[0].identifier || "";
   return (
     <div className="w-full h-24 flex items-center gap-3 border rounded-xl p-3">
@@ -45,10 +46,11 @@ export default function BookLineItem({
               if (currBook) {
                 setCart((prev) => [...prev, currBook]);
                 setCurrBook(null);
+                setMaxCheckoutStepAllowed(3);
               }
             }}
           >
-            Add to cart
+            Add book
           </Button>
         )}
       </span>

@@ -24,7 +24,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 
 export default function BookDialog({ isbn }: { isbn: string }) {
-  const { cart, setCart } = useCheckoutContext();
+  const { cart, setCart, setMaxCheckoutStepAllowed } = useCheckoutContext();
   const [book, setBook] = useState<Item | null>(null);
   useEffect(() => {
     fetch(
@@ -39,6 +39,7 @@ export default function BookDialog({ isbn }: { isbn: string }) {
   const removeFromCart = (item: Item) => {
     const filteredCart = cart.filter((itm) => itm.id !== item.id);
     setCart(filteredCart);
+    setMaxCheckoutStepAllowed(filteredCart.length > 0 ? 3 : 2);
   };
 
   return (

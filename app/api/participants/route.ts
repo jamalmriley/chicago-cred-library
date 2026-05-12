@@ -15,3 +15,22 @@ export async function GET(request: NextRequest) {
   if (error) return NextResponse.json({ error }, { status: 500 });
   return NextResponse.json(data);
 }
+
+export async function PATCH(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get("id");
+
+  if (!id) return NextResponse.json({ error: "Missing participant ID." }, { status: 400 });
+
+  const body = await request.json();
+
+  const { data, error } = await supabase()
+    .from("participants")
+    .update(body)
+    .eq("id", id)
+    .select<"*", Participant>()
+    .single();
+
+  if (error) return NextResponse.json({ error }, { status: 500 });
+  return NextResponse.json(data);
+}

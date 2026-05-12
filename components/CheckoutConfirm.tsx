@@ -8,11 +8,12 @@ import Link from "next/link";
 
 export default function CheckoutConfirm({
   participant,
+  returnDate,
 }: {
   participant: Participant;
+  returnDate: Date;
 }) {
   const { cart } = useCheckoutContext();
-  const d = new Date();
   return (
     <KioskCard title={`You're all set, ${participant.first_name}.`}>
       <div className="flex flex-col items-center gap-5">
@@ -23,7 +24,7 @@ export default function CheckoutConfirm({
           </h2>
           <p className="text-muted-foreground">
             {cart.length === 1 ? "It's" : "They're"} due back in 2 weeks, on{" "}
-            {format(d, "eeee, MMMM d, yyyy")}.
+            {format(returnDate, "eeee, MMMM d, yyyy")}.
           </p>
         </span>
         <Button asChild>

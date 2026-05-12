@@ -20,7 +20,8 @@ export default function BookCheckout({
 }: {
   participant: Participant;
 }) {
-  const { cart, setCart, setCurrBook } = useCheckoutContext();
+  const { cart, setCart, setCurrBook, setMaxCheckoutStepAllowed } =
+    useCheckoutContext();
   const [playBeep] = useSound("/sounds/beep.m4a", { volume: 0.5 });
 
   const handleScan = async (isbn: string) => {
@@ -28,6 +29,7 @@ export default function BookCheckout({
     const book = await fetchBook(isbn);
     if (!book) return;
     setCart((prev) => (prev ? [...prev, book] : [book]));
+    setMaxCheckoutStepAllowed(3);
   };
 
   const handleLookup = async (isbn: string) => {

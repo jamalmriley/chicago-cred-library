@@ -105,11 +105,13 @@ export default function NameSelect() {
 
       if (!participant || birthday.length < 4) {
         setBirthdayDesc("");
+        setMaxCheckoutStepAllowed(1);
         return;
       }
 
       if (!isValidBirthday(birthday)) {
         setBirthdayDesc("Please enter a valid birthday.");
+        setMaxCheckoutStepAllowed(1);
         return;
       }
 
@@ -121,7 +123,7 @@ export default function NameSelect() {
         setParticipantsError(
           "There was an error verifying your birthday. Please refresh and try again.",
         );
-        console.error(await res.json());
+        // console.error(await res.json());
         return;
       }
 
@@ -248,7 +250,12 @@ export default function NameSelect() {
 }
 
 function FilteredParticipantList({ letter }: { letter: string }) {
-  const { participant, setParticipant, participants } = useCheckoutContext();
+  const {
+    participant,
+    setParticipant,
+    participants,
+    setMaxCheckoutStepAllowed,
+  } = useCheckoutContext();
   return (
     <div className="w-full flex flex-col gap-2">
       <span className="select-none text-xs font-bold">{letter}</span>
@@ -259,7 +266,12 @@ function FilteredParticipantList({ letter }: { letter: string }) {
               key={p.id}
               variant={participant === p ? "default" : "outline"}
               className={`w-full text-left line-clamp-1 ${participant === p ? "border-primary" : ""}`}
-              onClick={() => setParticipant((prev) => (prev === p ? null : p))}
+              onClick={() => {
+                if (participant) {
+                  setParticipant(null);
+                  setMaxCheckoutStepAllowed(1);
+                } else setParticipant(p);
+              }}
             >
               {p.first_name} {p.last_name}
             </Button>
