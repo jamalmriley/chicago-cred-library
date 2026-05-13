@@ -1,6 +1,7 @@
 import { Button } from "@/components//ui/button";
 import { useKioskContext } from "@/contexts/kiosk-context";
 import { Item } from "@/types/books";
+import { Plus, X } from "lucide-react";
 import Image from "next/image";
 import BookDialog from "./BookDialog";
 
@@ -41,17 +42,28 @@ export default function BookLineItem({
         {location === "cart" ? (
           <BookDialog isbn={isbn} />
         ) : (
-          <Button
-            onClick={() => {
-              if (currBook) {
-                setCart((prev) => [...prev, currBook]);
-                setCurrBook(null);
-                setMaxCheckoutStepAllowed(3);
-              }
-            }}
-          >
-            Add book
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              size="icon"
+              onClick={() => {
+                if (currBook) {
+                  setCart((prev) => [...prev, currBook]);
+                  setCurrBook(null);
+                  setMaxCheckoutStepAllowed(3);
+                }
+              }}
+            >
+              <Plus />
+            </Button>
+
+            <Button
+              variant="destructive"
+              size="icon"
+              onClick={() => setCurrBook(null)}
+            >
+              <X />
+            </Button>
+          </div>
         )}
       </span>
     </div>

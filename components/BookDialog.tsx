@@ -27,13 +27,18 @@ export default function BookDialog({ isbn }: { isbn: string }) {
   const { cart, setCart, setMaxCheckoutStepAllowed } = useKioskContext();
   const [book, setBook] = useState<Item | null>(null);
   useEffect(() => {
-    fetch(
-      `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}&key=${process.env.NEXT_PUBLIC_GOOGLE_BOOKS_API_KEY}`,
-    )
-      .then((res) => res.json())
-      .then((data: GoogleBooksResponse) =>
-        setBook(data ? data.items[0] : null),
-      );
+    const fetchBook = async () => {
+      const res = await fetch(`/api/books?isbn=${isbn}`);
+      if (!res.ok) {
+        setBook(null);
+        return;
+      }
+
+      const data: Item = await res.json();
+      setBook(data);
+    };
+
+    fetchBook();
   }, []);
 
   const removeFromCart = (item: Item) => {

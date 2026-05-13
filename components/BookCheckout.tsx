@@ -2,11 +2,7 @@
 
 import { Separator } from "@/components/ui/separator";
 import { useKioskContext } from "@/contexts/kiosk-context";
-import {
-  GoogleBooksErrorResponse,
-  GoogleBooksResponse,
-  Item,
-} from "@/types/books";
+import { GoogleBooksErrorResponse, Item } from "@/types/books";
 import { Participant } from "@/types/user";
 import { LibraryBig } from "lucide-react";
 import { toast } from "sonner";
@@ -40,23 +36,29 @@ export default function BookCheckout({
 
   const fetchBook = async (isbn: string): Promise<Item | null> => {
     try {
-      const res = await fetch(
-        `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}&key=${process.env.NEXT_PUBLIC_GOOGLE_BOOKS_API_KEY}`,
-      );
-      const data: GoogleBooksResponse = await res.json();
+      const res = await fetch(`/api/books?isbn=${isbn}`);
 
-      if (!data.items) {
+      if (res.status === 404) {
         toast.error("Book not found. Please try again.", {
           position: "bottom-right",
         });
         return null;
       }
 
-      return data.items[0];
+      if (!res.ok) {
+        toast.error(
+          "An error occurred while gathering book info. Please try again.",
+          { position: "bottom-right" },
+        );
+        return null;
+      }
+
+      return (await res.json()) as Item;
     } catch (err) {
       const error = err as GoogleBooksErrorResponse;
       toast.error(
-        error?.error?.message || "An error occurred while fetching book data.",
+        error?.error?.message ||
+          "An error occurred while gathering book info. Please try again.",
         { position: "bottom-right" },
       );
       return null;

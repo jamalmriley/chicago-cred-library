@@ -16,9 +16,10 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import BookLineItem from "./BookLineItem";
+import { Spinner } from "@/components/ui/spinner";
 
 interface BookScannerProps {
-  onLookup: (isbn: string) => void;
+  onLookup: (isbn: string) => Promise<void>;
   onScan: (isbn: string) => void;
 }
 
@@ -31,6 +32,7 @@ export default function BookScanner({ onLookup, onScan }: BookScannerProps) {
   const [error, setError] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [isManualSearchEnabled, setIsManualSearchEnabled] = useState(false);
+  const [isManualSearchLoading, setIsManualSearchLoading] = useState(false);
   const [manualIsbn, setManualIsbn] = useState("");
 
   useEffect(() => {
@@ -157,17 +159,24 @@ export default function BookScanner({ onLookup, onScan }: BookScannerProps) {
 
         <Button
           variant="outline"
-          onClick={() => {
+          disabled={isManualSearchLoading}
+          onClick={async () => {
             if (isScanning) stopScanning();
             setIsManualSearchEnabled(true);
             if (manualIsbn !== "") {
-              onLookup(manualIsbn);
-              // TODO: Clear manualIsbn only on success.
+              setIsManualSearchLoading(true);
+              await onLookup(manualIsbn);
+              setIsManualSearchLoading(false);
             }
           }}
         >
           {!isManualSearchEnabled && <Search />}
-          {isManualSearchEnabled ? "Search" : "Search for a book"}
+          {isManualSearchLoading && <Spinner />}
+          {isManualSearchLoading
+            ? "Searching..."
+            : isManualSearchEnabled
+              ? "Search"
+              : "Search for a book"}
         </Button>
       </div>
 
