@@ -8,10 +8,11 @@ import {
   Carousel,
   CarouselApi,
   CarouselContent,
-  CarouselItem,
+  CarouselItem
 } from "@/components/ui/carousel";
 import { Spinner } from "@/components/ui/spinner";
-import { useCheckoutContext } from "@/contexts/checkout-context";
+import { useKioskContext } from "@/contexts/kiosk-context";
+import { SUBTRACTED_HEIGHT } from "@/lib/ui";
 import { Item } from "@/types/books";
 import { CheckoutItem, Participant } from "@/types/user";
 import { ArrowLeft, ArrowRight } from "lucide-react";
@@ -31,7 +32,7 @@ export default function CheckoutPage() {
     maxCheckoutStepAllowed,
     setMaxCheckoutStepAllowed,
     setCurrBook,
-  } = useCheckoutContext();
+  } = useKioskContext();
   const isNextButtonDisabled = current + 1 > maxCheckoutStepAllowed;
 
   const today = new Date();
@@ -124,11 +125,11 @@ export default function CheckoutPage() {
   }, []);
 
   return (
-    <div className="page-container justify-center items-center p-0">
+    <div className="page-container p-0 flex flex-col justify-between items-center">
       <Carousel
+        className={`w-full h-[calc(100dvh-${SUBTRACTED_HEIGHT}rem)] overflow-hidden`}
         setApi={setApi}
         opts={{ watchDrag: false }}
-        className="w-full overflow-hidden"
       >
         <CarouselContent>
           <CarouselItem>
@@ -147,6 +148,7 @@ export default function CheckoutPage() {
           </CarouselItem>
         </CarouselContent>
       </Carousel>
+
       {/* Buttons and Navigation Dots */}
       <div className="flex gap-2 items-center mb-10">
         <Button
@@ -158,14 +160,12 @@ export default function CheckoutPage() {
         >
           <ArrowLeft />
         </Button>
-        {Array(count)
-          .fill(0)
-          .map((_, i) => (
-            <div
-              key={i}
-              className={`${i === current - 1 ? "w-5 bg-primary" : "w-2 bg-muted"} h-2 rounded-full transition-all`}
-            />
-          ))}
+        {Array.from({ length: count }).map((_, i) => (
+          <div
+            key={i}
+            className={`${i === current - 1 ? "w-5 bg-primary" : "w-2 bg-muted"} h-2 rounded-full transition-all`}
+          />
+        ))}
         <Button
           variant="outline"
           size="icon"

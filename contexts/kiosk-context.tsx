@@ -4,7 +4,7 @@ import { Item } from "@/types/books";
 import { Participant } from "@/types/user";
 import { createContext, useContext, useState } from "react";
 
-type CheckoutContext = {
+type KioskContext = {
   participant: Participant | null;
   setParticipant: React.Dispatch<React.SetStateAction<Participant | null>>;
   participants: Participant[] | null;
@@ -21,9 +21,9 @@ type CheckoutContext = {
   setMaxCheckoutStepAllowed: React.Dispatch<React.SetStateAction<number>>;
 };
 
-export const CheckoutContext = createContext<CheckoutContext | null>(null);
+export const KioskContext = createContext<KioskContext | null>(null);
 
-export default function CheckoutContextProvider({
+export default function KioskContextProvider({
   children,
 }: {
   children: React.ReactNode;
@@ -39,7 +39,7 @@ export default function CheckoutContextProvider({
   const [maxCheckoutStepAllowed, setMaxCheckoutStepAllowed] =
     useState<number>(1);
   return (
-    <CheckoutContext.Provider
+    <KioskContext.Provider
       value={{
         participant,
         setParticipant,
@@ -58,15 +58,15 @@ export default function CheckoutContextProvider({
       }}
     >
       {children}
-    </CheckoutContext.Provider>
+    </KioskContext.Provider>
   );
 }
 
-export function useCheckoutContext() {
-  const context = useContext(CheckoutContext);
+export function useKioskContext() {
+  const context = useContext(KioskContext);
   if (!context) {
     throw new Error(
-      "useCheckoutContext must be used within a CheckoutContextProvider.",
+      "useKioskContext must be used within a KioskContextProvider.",
     );
   }
   return context;

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldDescription } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { useCheckoutContext } from "@/contexts/checkout-context";
+import { useKioskContext } from "@/contexts/kiosk-context";
 import { BrowserMultiFormatReader } from "@zxing/browser";
 import { NotFoundException } from "@zxing/library";
 import {
@@ -23,7 +23,7 @@ interface BookScannerProps {
 }
 
 export default function BookScanner({ onLookup, onScan }: BookScannerProps) {
-  const { currBook, setCurrBook } = useCheckoutContext();
+  const { currBook, setCurrBook } = useKioskContext();
   const videoRef = useRef<HTMLVideoElement>(null);
   const readerRef = useRef<BrowserMultiFormatReader | null>(null);
   const lastScannedRef = useRef<string | null>(null);

@@ -2,7 +2,7 @@ import { Participant } from "@/types/user";
 import KioskCard from "./KioskCard";
 import { format } from "date-fns";
 import { CircleCheckBig } from "lucide-react";
-import { useCheckoutContext } from "@/contexts/checkout-context";
+import { useKioskContext } from "@/contexts/kiosk-context";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
@@ -13,7 +13,7 @@ export default function CheckoutConfirm({
   participant: Participant;
   returnDate: Date;
 }) {
-  const { cart } = useCheckoutContext();
+  const { cart } = useKioskContext();
   return (
     <KioskCard title={`You're all set, ${participant.first_name}.`}>
       <div className="flex flex-col items-center gap-5">

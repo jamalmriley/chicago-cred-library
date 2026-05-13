@@ -1,5 +1,5 @@
 import { Toaster } from "@/components/ui/sonner";
-import CheckoutContextProvider from "@/contexts/checkout-context";
+import KioskContextProvider from "@/contexts/kiosk-context";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import localFont from "next/font/local";
@@ -27,7 +27,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <CheckoutContextProvider>
+    <KioskContextProvider>
       <html
         lang="en"
         className={`${primaryFont.variable} ${secondaryFont.variable}`}
@@ -37,6 +37,6 @@ export default function RootLayout({
           <Toaster />
         </body>
       </html>
-    </CheckoutContextProvider>
+    </KioskContextProvider>
   );
 }

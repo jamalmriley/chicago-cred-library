@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/input-otp";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useCheckoutContext } from "@/contexts/checkout-context";
+import { useKioskContext } from "@/contexts/kiosk-context";
 import { Participant } from "@/types/user";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { CircleX } from "lucide-react";
@@ -33,7 +33,7 @@ export default function NameSelect() {
     participantsLoading,
     setParticipantsLoading,
     setMaxCheckoutStepAllowed,
-  } = useCheckoutContext();
+  } = useKioskContext();
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
 
   const [birthday, setBirthday] = useState<string>("");
@@ -145,11 +145,9 @@ export default function NameSelect() {
       {/* Participants List */}
       {participantsLoading ? (
         <div className="w-60 h-full min-h-0 flex flex-col gap-5 overflow-y-scroll">
-          {Array(26)
-            .fill(0)
-            .map((_, i) => (
-              <SkeletonParticipantList key={i} />
-            ))}
+          {Array.from({ length: 26 }).map((_, i) => (
+            <SkeletonParticipantList key={i} />
+          ))}
         </div>
       ) : participants ? (
         <div className="w-60 h-full min-h-0 flex flex-col gap-5 overflow-y-scroll">
@@ -176,7 +174,7 @@ export default function NameSelect() {
       <Separator orientation="vertical" decorative className="mx-5" />
 
       {/* Buttons and Birthday */}
-      <div className="h-full flex flex-col items-center gap-10">
+      <div className="w-108 h-full flex flex-col items-center gap-10">
         <div className="flex flex-col gap-2">
           {alphabet.map((line, i) => (
             <span key={i} className="flex gap-2">
@@ -255,7 +253,7 @@ function FilteredParticipantList({ letter }: { letter: string }) {
     setParticipant,
     participants,
     setMaxCheckoutStepAllowed,
-  } = useCheckoutContext();
+  } = useKioskContext();
   return (
     <div className="w-full flex flex-col gap-2">
       <span className="select-none text-xs font-bold">{letter}</span>
@@ -265,7 +263,7 @@ function FilteredParticipantList({ letter }: { letter: string }) {
             <Button
               key={p.id}
               variant={participant === p ? "default" : "outline"}
-              className={`w-full text-left line-clamp-1 ${participant === p ? "border-primary" : ""}`}
+              className={`w-full text-left line-clamp-1 border ${participant === p ? "border-primary" : ""}`}
               onClick={() => {
                 if (participant) {
                   setParticipant(null);
@@ -285,11 +283,9 @@ function SkeletonParticipantList() {
   return (
     <div className="w-full flex flex-col gap-2">
       <Skeleton className="size-4" />
-      {Array(5)
-        .fill(0)
-        .map((_, i) => (
-          <Skeleton key={i} className="w-full h-9" />
-        ))}
+      {Array.from({ length: 5 }).map((_, i) => (
+        <Skeleton key={i} className="w-full h-9" />
+      ))}
     </div>
   );
 }

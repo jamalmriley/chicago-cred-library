@@ -1,5 +1,5 @@
 import { Button } from "@/components//ui/button";
-import { useCheckoutContext } from "@/contexts/checkout-context";
+import { useKioskContext } from "@/contexts/kiosk-context";
 import { Item } from "@/types/books";
 import Image from "next/image";
 import BookDialog from "./BookDialog";
@@ -12,7 +12,7 @@ export default function BookLineItem({
   location?: "cart" | "lookup";
 }) {
   const { cart, setCart, currBook, setCurrBook, setMaxCheckoutStepAllowed } =
-    useCheckoutContext();
+    useKioskContext();
   const isbn = book.volumeInfo.industryIdentifiers?.[0].identifier || "";
   return (
     <div className="w-full h-24 flex items-center gap-3 border rounded-xl p-3">

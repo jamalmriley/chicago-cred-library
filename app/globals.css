@@ -181,7 +181,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background font-primary text-foreground flex flex-col justify-center items-center;
+    @apply bg-background font-primary text-foreground flex flex-col justify-center items-center overflow-hidden;
   }
   html {
     @apply font-sans;

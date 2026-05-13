@@ -16,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
-import { useCheckoutContext } from "@/contexts/checkout-context";
+import { useKioskContext } from "@/contexts/kiosk-context";
 import { GoogleBooksResponse, Item } from "@/types/books";
 import { format } from "date-fns";
 import { EllipsisVertical, Info, Trash2 } from "lucide-react";
@@ -24,7 +24,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 
 export default function BookDialog({ isbn }: { isbn: string }) {
-  const { cart, setCart, setMaxCheckoutStepAllowed } = useCheckoutContext();
+  const { cart, setCart, setMaxCheckoutStepAllowed } = useKioskContext();
   const [book, setBook] = useState<Item | null>(null);
   useEffect(() => {
     fetch(

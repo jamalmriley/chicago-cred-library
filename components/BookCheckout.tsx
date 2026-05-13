@@ -1,7 +1,7 @@
 "use client";
 
 import { Separator } from "@/components/ui/separator";
-import { useCheckoutContext } from "@/contexts/checkout-context";
+import { useKioskContext } from "@/contexts/kiosk-context";
 import {
   GoogleBooksErrorResponse,
   GoogleBooksResponse,
@@ -21,7 +21,7 @@ export default function BookCheckout({
   participant: Participant;
 }) {
   const { cart, setCart, setCurrBook, setMaxCheckoutStepAllowed } =
-    useCheckoutContext();
+    useKioskContext();
   const [playBeep] = useSound("/sounds/beep.m4a", { volume: 0.5 });
 
   const handleScan = async (isbn: string) => {
