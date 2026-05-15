@@ -15,7 +15,8 @@ export default function KioskCard({
 }) {
   return (
     <div
-      className={`w-full h-[calc(100dvh-${SUBTRACTED_HEIGHT}rem)] p-10 flex justify-center items-center`}
+      // className={`w-full h-[calc(100dvh-${SUBTRACTED_HEIGHT}rem)] p-10 flex justify-center items-center`}
+      className={`w-full h-[calc(100dvh-4.75rem)] p-10 flex justify-center items-center`}
     >
       <Card className={cn("w-fit h-full p-0", className)}>
         <CardTitle className="px-10 pt-5">{title}</CardTitle>

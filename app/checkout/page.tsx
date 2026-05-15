@@ -131,7 +131,8 @@ export default function CheckoutPage() {
   return (
     <div className="page-container p-0 flex flex-col justify-between items-center">
       <Carousel
-        className={`w-full h-[calc(100dvh-${SUBTRACTED_HEIGHT}rem)] overflow-hidden`}
+        // className={`w-full h-[calc(100dvh-${SUBTRACTED_HEIGHT}rem)] overflow-hidden`}
+        className={`w-full h-[calc(100dvh-4.75rem)] overflow-hidden`}
         setApi={setApi}
         opts={{ watchDrag: false }}
       >
