@@ -10,15 +10,16 @@ export interface Participant {
   site: string;
   reading_level: string;
   notes: string | null;
-  checkout_history: CheckoutItem[] | null;
+  checkout_history: KioskItem[] | null;
   updated_at: Date;
 }
 
-export interface CheckoutItem {
+export interface KioskItem {
   item: Item;
   checkout_date: Date;
   due_date: Date;
   return_date: Date | null;
   is_returned: boolean;
   extension_count: number;
+  has_completed_book_report: boolean;
 }

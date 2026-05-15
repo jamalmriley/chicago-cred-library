@@ -8,20 +8,21 @@ import {
   Carousel,
   CarouselApi,
   CarouselContent,
-  CarouselItem
+  CarouselItem,
 } from "@/components/ui/carousel";
 import { Spinner } from "@/components/ui/spinner";
 import { useKioskContext } from "@/contexts/kiosk-context";
 import { SUBTRACTED_HEIGHT } from "@/lib/ui";
 import { Item } from "@/types/books";
-import { CheckoutItem, Participant } from "@/types/user";
+import { KioskItem, Participant } from "@/types/user";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function CheckoutPage() {
   const [api, setApi] = useState<CarouselApi>();
-  const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [current, setCurrent] = useState(0);
   const [count, setCount] = useState(0);
   const {
@@ -32,6 +33,7 @@ export default function CheckoutPage() {
     maxCheckoutStepAllowed,
     setMaxCheckoutStepAllowed,
     setCurrBook,
+    setReturns,
   } = useKioskContext();
   const isNextButtonDisabled = current + 1 > maxCheckoutStepAllowed;
 
@@ -40,7 +42,7 @@ export default function CheckoutPage() {
   twoWeeksFromToday.setDate(today.getDate() + 14);
 
   const handleCheckout = async (participant: Participant) => {
-    await setIsCheckoutLoading(true);
+    await setIsLoading(true);
 
     const res = await fetch(`/api/participants?id=${participant.id}`);
 
@@ -51,7 +53,7 @@ export default function CheckoutPage() {
           position: "bottom-right",
         },
       );
-      setIsCheckoutLoading(false);
+      setIsLoading(false);
       // console.error(await res.json());
       return;
     }
@@ -59,17 +61,18 @@ export default function CheckoutPage() {
     const data: Participant = await res.json();
     const { checkout_history } = data;
 
-    const convertCartToCheckout = (cart: Item[]): CheckoutItem[] => {
-      const result: CheckoutItem[] = [];
+    const convertCartToCheckout = (cart: Item[]): KioskItem[] => {
+      const result: KioskItem[] = [];
 
       for (const item of cart) {
-        const checkoutItem: CheckoutItem = {
+        const checkoutItem: KioskItem = {
           item,
           checkout_date: today,
           due_date: twoWeeksFromToday,
           return_date: null,
           is_returned: false,
           extension_count: 0,
+          has_completed_book_report: false,
         };
 
         result.push(checkoutItem);
@@ -102,7 +105,7 @@ export default function CheckoutPage() {
           },
         );
       })
-      .finally(() => setIsCheckoutLoading(false));
+      .finally(() => setIsLoading(false));
   };
 
   useEffect(() => {
@@ -120,8 +123,9 @@ export default function CheckoutPage() {
   useEffect(() => {
     setCart([]);
     setCurrBook(null);
-    setParticipant(null);
     setMaxCheckoutStepAllowed(1);
+    setParticipant(null);
+    setReturns([]);
   }, []);
 
   return (
@@ -151,15 +155,29 @@ export default function CheckoutPage() {
 
       {/* Buttons and Navigation Dots */}
       <div className="flex gap-2 items-center mb-10">
-        <Button
-          variant="outline"
-          size="icon"
-          className="size-10 rounded-full mr-3"
-          onClick={() => api?.scrollPrev()}
-          disabled={current === 1 || current === count}
-        >
-          <ArrowLeft />
-        </Button>
+        {current === 1 ? (
+          <Button
+            asChild
+            variant="outline"
+            size="icon"
+            className="rounded-full mr-3"
+          >
+            <Link href="/">
+              <ArrowLeft />
+            </Link>
+          </Button>
+        ) : (
+          <Button
+            variant="outline"
+            size="icon"
+            className="rounded-full mr-3"
+            onClick={() => api?.scrollPrev()}
+            disabled={isLoading || current === 1 || current === count}
+          >
+            <ArrowLeft />
+          </Button>
+        )}
+
         {Array.from({ length: count }).map((_, i) => (
           <div
             key={i}
@@ -169,7 +187,7 @@ export default function CheckoutPage() {
         <Button
           variant="outline"
           size="icon"
-          className="size-10 rounded-full ml-3"
+          className="rounded-full ml-3"
           onClick={() => {
             // On the last step, handle the checkout.
             // Otherwise, go to the next step.
@@ -177,9 +195,9 @@ export default function CheckoutPage() {
               handleCheckout(participant);
             } else api?.scrollNext();
           }}
-          disabled={isNextButtonDisabled || isCheckoutLoading}
+          disabled={isNextButtonDisabled || isLoading}
         >
-          {isCheckoutLoading ? <Spinner /> : <ArrowRight />}
+          {isLoading ? <Spinner /> : <ArrowRight />}
         </Button>
       </div>
     </div>

@@ -1,44 +1,129 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Project L.I.B.R.A.R.Y.
 
-Literacy
-Initiative for
-Boosting
-Reading
-Access and
-Resources
-Year-round
+### Literacy Initiative for Boosting Reading Access and Resources Year-round
+
+A touchscreen-friendly library kiosk system built to support the literacy initiative at **[Chicago CRED](https://www.chicagocred.org)**, enabling participants to check out and return books, and track their reading history — all without staff intervention.
+
+---
+
+## Overview
+
+Project L.I.B.R.A.R.Y. was created to solve a real problem: without a system to manage users, inventory, and their interactions, it's impossible to properly track books or measure reading engagement. This kiosk provides a self-service experience for participants to:
+
+- **Select their name** from a participant directory and verify their identity via birthday
+- **Scan book barcodes** (ISBN via camera) or search by ISBN manually to check out books
+- **Return books** and indicate whether a book report was completed
+- **Track checkout history** per participant, including due dates and return dates
+
+---
+
+## Tech Stack
+
+| Category      | Technology                                    |
+| ------------- | --------------------------------------------- |
+| Framework     | [Next.js 16](https://nextjs.org) (Webpack)    |
+| Language      | TypeScript                                    |
+| Styling       | Tailwind CSS v4                               |
+| UI Components | [shadcn/ui](https://ui.shadcn.com), Radix UI  |
+| Database      | [Supabase](https://supabase.com) (PostgreSQL) |
+
+---
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 20+
+
+### Installation
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/jamalmriley/project-library.git
+cd project-library
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Environment Variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Create a `.env.local` file in the root of the project with the following variables:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+# Google
+GOOGLE_WEB_FONTS_API_KEY=        # Google Fonts API key
 
-## Learn More
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=        # Your Supabase project URL
+SUPABASE_SERVICE_ROLE_KEY=       # Your Supabase service role key (server-only)
+```
 
-To learn more about Next.js, take a look at the following resources:
+> ⚠️ `SUPABASE_SERVICE_ROLE_KEY` is a server-only variable and must **never** be prefixed with `NEXT_PUBLIC_`. It is only accessed via Next.js API routes.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Running the App
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run dev       # Start development server
+npm run build     # Build for production
+npm run start     # Start production server
+npm run lint      # Run ESLint
+```
 
-## Deploy on Vercel
+The app will be available at [http://localhost:3000](http://localhost:3000).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Database Setup
+
+This project uses Supabase as its backend. The `participants` table should have the following schema:
+
+| Column             | Type          | Notes                                     |
+| ------------------ | ------------- | ----------------------------------------- |
+| `id`               | `text`        | Primary key                               |
+| `created_at`       | `timestamptz` | Auto-generated                            |
+| `updated_at`       | `timestamptz` | Updated on each change                    |
+| `first_name`       | `text`        |                                           |
+| `last_name`        | `text`        |                                           |
+| `birthday`         | `text`        | Stored as `MMDD` (e.g. `0115` for Jan 15) |
+| `email`            | `text`        |                                           |
+| `site`             | `text`        | Site/location identifier                  |
+| `reading_level`    | `text`        | `Beginner`, `Intermediate`, or `Advanced` |
+| `notes`            | `text`        | Optional staff notes                      |
+| `checkout_history` | `jsonb`       | Array of checkout records, nullable       |
+
+---
+
+## API Routes
+
+| Method  | Route                       | Description                                   |
+| ------- | --------------------------- | --------------------------------------------- |
+| `GET`   | `/api/books?isbn={isbn}`    | Fetch a book by ISBN from Google Books API    |
+| `GET`   | `/api/participants`         | Fetch all participants                        |
+| `GET`   | `/api/participants?id={id}` | Fetch a single participant by ID              |
+| `PATCH` | `/api/participants?id={id}` | Update a participant (checkout history, etc.) |
+
+---
+
+## Features
+
+**Touchscreen-first design** — all interactions are designed for large touch targets on kiosk displays, with no keyboard required for the core checkout flow.
+
+**Barcode scanning** — uses the device camera to scan EAN-13 ISBN barcodes in real time with a 2-second cooldown between scans to support continuous multi-book checkout.
+
+**Birthday verification** — participants verify their identity by entering their birthday (MM/DD) via a large OTP-style input before proceeding to checkout.
+
+**Self-checkout & return** — participants can check books out and return them independently, with checkout history stored per participant in Supabase.
+
+**Book report tracking** — during book returns, participants can indicate whether they completed a book report for each returned book.
+
+**Server-side API key protection** — the Google Books API key and Supabase service role key are never exposed to the browser; all sensitive requests are proxied through Next.js API routes.
+
+---
+
+## About Chicago CRED
+
+[Chicago CRED](https://www.chicagocred.org) (Create Real Economic Destiny) is a nonprofit working to reduce gun violence and create economic opportunity for young adults in Chicago. Project L.I.B.R.A.R.Y. supports their literacy programming by giving staff and participants a reliable way to manage reading resources year-round.
+
+---
+
+## License
+
+This project is private and not licensed for public use.

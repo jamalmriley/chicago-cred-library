@@ -1,7 +1,7 @@
 "use client";
 
 import { Item } from "@/types/books";
-import { Participant } from "@/types/user";
+import { KioskItem, Participant } from "@/types/user";
 import { createContext, useContext, useState } from "react";
 
 type KioskContext = {
@@ -17,6 +17,8 @@ type KioskContext = {
   setCurrBook: React.Dispatch<React.SetStateAction<Item | null>>;
   cart: Item[];
   setCart: React.Dispatch<React.SetStateAction<Item[]>>;
+  returns: KioskItem[];
+  setReturns: React.Dispatch<React.SetStateAction<KioskItem[]>>;
   maxCheckoutStepAllowed: number;
   setMaxCheckoutStepAllowed: React.Dispatch<React.SetStateAction<number>>;
 };
@@ -36,6 +38,7 @@ export default function KioskContextProvider({
   const [participantsLoading, setParticipantsLoading] = useState<boolean>(true);
   const [currBook, setCurrBook] = useState<Item | null>(null);
   const [cart, setCart] = useState<Item[]>([]);
+  const [returns, setReturns] = useState<KioskItem[]>([]);
   const [maxCheckoutStepAllowed, setMaxCheckoutStepAllowed] =
     useState<number>(1);
   return (
@@ -53,6 +56,8 @@ export default function KioskContextProvider({
         setCurrBook,
         cart,
         setCart,
+        returns,
+        setReturns,
         maxCheckoutStepAllowed,
         setMaxCheckoutStepAllowed,
       }}

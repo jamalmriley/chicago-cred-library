@@ -43,6 +43,7 @@ export default function NameSelect() {
     "KLMNOPQRST".split(""),
     "UVWXYZ".split(""),
   ];
+  const [currStep, nextStep] = [1, 2];
 
   const hasNameThatStartWithSelectedLetter = (
     participants: Participant[],
@@ -105,13 +106,13 @@ export default function NameSelect() {
 
       if (!participant || birthday.length < 4) {
         setBirthdayDesc("");
-        setMaxCheckoutStepAllowed(1);
+        setMaxCheckoutStepAllowed(currStep);
         return;
       }
 
       if (!isValidBirthday(birthday)) {
         setBirthdayDesc("Please enter a valid birthday.");
-        setMaxCheckoutStepAllowed(1);
+        setMaxCheckoutStepAllowed(currStep);
         return;
       }
 
@@ -119,7 +120,7 @@ export default function NameSelect() {
       const res = await fetch(`/api/participants?id=${participant.id}`);
 
       if (!res.ok) {
-        setMaxCheckoutStepAllowed(1);
+        setMaxCheckoutStepAllowed(currStep);
         setParticipantsError(
           "There was an error verifying your birthday. Please refresh and try again.",
         );
@@ -129,7 +130,7 @@ export default function NameSelect() {
 
       const data: Participant = await res.json();
       const isBirthdayCorrect: boolean = data.birthday === birthday;
-      setMaxCheckoutStepAllowed(isBirthdayCorrect ? 2 : 1);
+      setMaxCheckoutStepAllowed(isBirthdayCorrect ? nextStep : currStep);
       setBirthdayDesc(
         isBirthdayCorrect
           ? "Birthday verified!"
@@ -167,7 +168,9 @@ export default function NameSelect() {
       ) : (
         <div className="w-60 h-full min-h-0 flex flex-col justify-center items-center gap-5">
           <CircleX className="text-destructive size-20" />
-          <span className="text-muted-foreground">{participantsError}</span>
+          <span className="text-muted-foreground text-center">
+            {participantsError}
+          </span>
         </div>
       )}
 
