@@ -31,6 +31,7 @@
   --sidebar-foreground: oklch(0.205 0 0);
   --sidebar-primary: oklch(0.8585 0.1659 87.0648);
   --sidebar-primary-foreground: oklch(0.2 0 0);
+  /* sidebar-accent is what buttons look like by default */
   --sidebar-accent: oklch(0.937 0 0);
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.9 0 0);
@@ -199,5 +200,9 @@
 
   .h2 {
     @apply text-2xl text-muted-foreground font-medium mb-3;
+  }
+
+  .kiosk {
+    @apply h-[calc(100dvh-4.75rem)];
   }
 }

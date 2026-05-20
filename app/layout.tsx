@@ -1,9 +1,11 @@
 import { Toaster } from "@/components/ui/sonner";
 import KioskContextProvider from "@/contexts/kiosk-context";
+import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
+import { ThemeProvider } from "@/components/ui/theme-provider";
 
 const primaryFont = Inter({
   subsets: ["latin"],
@@ -30,10 +32,20 @@ export default function RootLayout({
     <KioskContextProvider>
       <html
         lang="en"
+        suppressHydrationWarning
         className={`${primaryFont.variable} ${secondaryFont.variable}`}
       >
         <body>
-          <main>{children}</main>
+          <ClerkProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <main>{children}</main>
+            </ThemeProvider>
+          </ClerkProvider>
           <Toaster />
         </body>
       </html>

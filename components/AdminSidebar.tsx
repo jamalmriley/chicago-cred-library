@@ -1,6 +1,17 @@
 "use client";
 
-import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar";
+import { UserButton, useUser } from "@clerk/nextjs";
 import {
   CircleGauge,
   LibraryBig,
@@ -10,7 +21,9 @@ import {
 } from "lucide-react";
 import { motion } from "motion/react";
 import Image from "next/image";
-import { useState } from "react";
+import Link from "next/link";
+import { AppearanceToggle } from "./AppearanceToggle";
+import { Separator } from "./ui/separator";
 
 export default function AdminSidebar() {
   const links = [
@@ -50,37 +63,37 @@ export default function AdminSidebar() {
       ),
     },
   ];
-  const [open, setOpen] = useState(false);
+
+  const { isLoaded, isSignedIn, user } = useUser();
+
+  if (!isLoaded || !isSignedIn) return null; // TODO: Return a skeleton sidebar.
   return (
-    <Sidebar open={open} setOpen={setOpen}>
-      <SidebarBody className="justify-between gap-10">
-        <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
-          {open ? <Logo /> : <LogoIcon />}
-          <div className="mt-8 flex flex-col gap-2">
-            {links.map((link, idx) => (
-              <SidebarLink key={idx} link={link} />
+    <Sidebar>
+      <SidebarHeader>
+        <Logo />
+      </SidebarHeader>
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarMenu>
+            {links.map((link, i) => (
+              <SidebarMenuItem key={i}>
+                <SidebarMenuButton asChild>
+                  <Link href={link.href}>
+                    {link.icon}
+                    {link.label}
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             ))}
-          </div>
-        </div>
-        <div>
-          {/* TODO: Link to Clerk */}
-          <SidebarLink
-            link={{
-              label: "Jamal Riley",
-              href: "#",
-              icon: (
-                <img
-                  src="/example_profile_picture.png"
-                  className="h-7 w-7 shrink-0 rounded-full"
-                  width={50}
-                  height={50}
-                  alt="Jamal Riley"
-                />
-              ),
-            }}
-          />
-        </div>
-      </SidebarBody>
+          </SidebarMenu>
+        </SidebarGroup>
+        <SidebarGroup />
+      </SidebarContent>
+      <SidebarFooter className="flex">
+        <AppearanceToggle />
+        <UserButton />
+        {user.fullName || "User Full Name"}
+      </SidebarFooter>
     </Sidebar>
   );
 }
@@ -92,17 +105,18 @@ export const Logo = () => {
     >
       <Image
         src="/logo.svg"
-        alt="ChicagoCRED"
+        alt="Chicago CRED"
         width={100}
         height={100}
         className="size-10 invert dark:invert-0"
       />
+      <Separator orientation="vertical" decorative />
       <motion.span
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="font-medium whitespace-pre text-black dark:text-white"
+        className="font-secondary text-2xl uppercase whitespace-pre text-foreground"
       >
-        CRED Library
+        The Library
       </motion.span>
     </a>
   );

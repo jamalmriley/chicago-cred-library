@@ -40,6 +40,7 @@ export default function CheckoutPage() {
   const today = new Date();
   const twoWeeksFromToday = today;
   twoWeeksFromToday.setDate(today.getDate() + 14);
+  twoWeeksFromToday.setHours(23, 59, 0, 0);
 
   const handleCheckout = async (participant: Participant) => {
     await setIsLoading(true);
@@ -132,7 +133,7 @@ export default function CheckoutPage() {
     <div className="page-container p-0 flex flex-col justify-between items-center">
       <Carousel
         // className={`w-full h-[calc(100dvh-${SUBTRACTED_HEIGHT}rem)] overflow-hidden`}
-        className={`w-full h-[calc(100dvh-4.75rem)] overflow-hidden`}
+        className={`kiosk w-full overflow-hidden`}
         setApi={setApi}
         opts={{ watchDrag: false }}
       >
