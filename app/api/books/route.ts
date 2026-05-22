@@ -1,4 +1,4 @@
-import { GoogleBooksResponse } from "@/types/books";
+import { GoogleBooks } from "@/types/library";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
   const res = await fetch(
     `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}&key=${process.env.GOOGLE_BOOKS_API_KEY}`,
   );
-  const data: GoogleBooksResponse = await res.json();
+  const data: GoogleBooks.SuccessResponse = await res.json();
 
   if (!data.items)
     return NextResponse.json({ error: "Book not found" }, { status: 404 });

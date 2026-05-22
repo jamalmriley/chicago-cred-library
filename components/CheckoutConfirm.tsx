@@ -1,10 +1,10 @@
-import { Participant } from "@/types/user";
-import KioskCard from "./KioskCard";
+import { Button } from "@/components/ui/button";
+import { useKioskContext } from "@/contexts/kiosk-context";
+import { Participant } from "@/types/cred";
 import { format } from "date-fns";
 import { CircleCheckBig } from "lucide-react";
-import { useKioskContext } from "@/contexts/kiosk-context";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import KioskCard from "./KioskCard";
 
 export default function CheckoutConfirm({
   participant,
@@ -28,7 +28,7 @@ export default function CheckoutConfirm({
           </p>
         </span>
         <Button asChild>
-          <Link href="/">Done</Link>
+          <Link href="/kiosk">Done</Link>
         </Button>
       </div>
     </KioskCard>

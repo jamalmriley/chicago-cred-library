@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { useKioskContext } from "@/contexts/kiosk-context";
-import { GoogleBooksResponse, Item } from "@/types/books";
+import { GoogleBooks } from "@/types/library";
 import { format } from "date-fns";
 import { EllipsisVertical, Info, Trash2 } from "lucide-react";
 import Image from "next/image";
@@ -25,7 +25,7 @@ import { useEffect, useState } from "react";
 
 export default function BookDialog({ isbn }: { isbn: string }) {
   const { cart, setCart, setMaxCheckoutStepAllowed } = useKioskContext();
-  const [book, setBook] = useState<Item | null>(null);
+  const [book, setBook] = useState<GoogleBooks.Book | null>(null);
   useEffect(() => {
     const fetchBook = async () => {
       const res = await fetch(`/api/books?isbn=${isbn}`);
@@ -34,14 +34,14 @@ export default function BookDialog({ isbn }: { isbn: string }) {
         return;
       }
 
-      const data: Item = await res.json();
+      const data: GoogleBooks.Book = await res.json();
       setBook(data);
     };
 
     fetchBook();
   }, []);
 
-  const removeFromCart = (item: Item) => {
+  const removeFromCart = (item: GoogleBooks.Book) => {
     const filteredCart = cart.filter((itm) => itm.id !== item.id);
     setCart(filteredCart);
     setMaxCheckoutStepAllowed(filteredCart.length > 0 ? 3 : 2);

@@ -2,20 +2,19 @@ import { Button } from "@/components//ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useKioskContext } from "@/contexts/kiosk-context";
-import { Item } from "@/types/books";
+import { GoogleBooks, KioskItem } from "@/types/library";
 import { formatRelative } from "date-fns";
 import { Plus, X } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import BookDialog from "./BookDialog";
-import { KioskItem } from "@/types/user";
 
 export default function BookLineItem({
   book,
   kioskItem,
   location = "cart",
 }: {
-  book: Item;
+  book: GoogleBooks.Book;
   kioskItem?: KioskItem;
   location?: "cart" | "lookup" | "return";
 }) {
@@ -23,7 +22,6 @@ export default function BookLineItem({
     setCart,
     currBook,
     setCurrBook,
-    maxCheckoutStepAllowed,
     setMaxCheckoutStepAllowed,
     returns,
     setReturns,
@@ -59,7 +57,7 @@ export default function BookLineItem({
           alt={book.volumeInfo.title}
           width={96}
           height={96}
-          className={`h-full w-auto aspect-square object-cover rounded-sm shadow-sm transition-all ease-in-out duration-200 ${!checked ? "grayscale" : ""}`} // Crops thumbnail to square
+          className={`h-full min-h-16 w-auto aspect-square object-cover rounded-sm shadow-sm transition-all ease-in-out duration-200 ${!checked && location === "return" ? "grayscale" : ""}`} // Crops thumbnail to square
         />
         <div className="flex flex-col gap-1">
           <p

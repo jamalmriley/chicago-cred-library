@@ -8,7 +8,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useKioskContext } from "@/contexts/kiosk-context";
-import { Participant } from "@/types/user";
+import { Participant } from "@/types/cred";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { CircleX } from "lucide-react";
 import { useEffect, useState } from "react";

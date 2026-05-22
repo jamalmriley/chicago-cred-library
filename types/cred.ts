@@ -1,4 +1,5 @@
-import { Item } from "./books";
+import { Role } from "@/lib/auth";
+import { KioskItem } from "./library";
 
 const sites = [
   {
@@ -47,8 +48,6 @@ const sites = [
 export type Site = (typeof sites)[number];
 export type AllSites = typeof sites;
 
-type Role = "Super Admin" | "Admin" | "Staff";
-
 export interface Participant {
   id: string;
   created_at: Date;
@@ -64,16 +63,7 @@ export interface Participant {
 }
 
 export interface CredMetadata {
+  defaultSite: Site | null;
   role: Role;
   sites: Site[];
-}
-
-export interface KioskItem {
-  item: Item;
-  checkout_date: Date;
-  due_date: Date;
-  return_date: Date | null;
-  is_returned: boolean;
-  extension_count: number;
-  has_completed_book_report: boolean;
 }

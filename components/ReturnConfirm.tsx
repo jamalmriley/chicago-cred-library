@@ -1,9 +1,9 @@
-import { Participant } from "@/types/user";
-import KioskCard from "./KioskCard";
-import { CircleCheckBig } from "lucide-react";
-import { Button } from "./ui/button";
-import Link from "next/link";
 import { useKioskContext } from "@/contexts/kiosk-context";
+import { Participant } from "@/types/cred";
+import { CircleCheckBig } from "lucide-react";
+import Link from "next/link";
+import KioskCard from "./KioskCard";
+import { Button } from "./ui/button";
 
 export default function ReturnConfirm({
   participant,
@@ -36,7 +36,7 @@ export default function ReturnConfirm({
           </p>
         </span>
         <Button asChild>
-          <Link href="/">Done</Link>
+          <Link href="/kiosk">Done</Link>
         </Button>
       </div>
     </KioskCard>

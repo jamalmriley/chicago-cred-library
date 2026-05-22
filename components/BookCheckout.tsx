@@ -2,14 +2,14 @@
 
 import { Separator } from "@/components/ui/separator";
 import { useKioskContext } from "@/contexts/kiosk-context";
-import { GoogleBooksErrorResponse, Item } from "@/types/books";
-import { Participant } from "@/types/user";
 import { LibraryBig } from "lucide-react";
 import { toast } from "sonner";
 import { useSound } from "use-sound";
 import BookLineItem from "./BookLineItem";
 import { BookScannerWrapper } from "./BookScannerWrapper";
 import KioskCard from "./KioskCard";
+import { Participant } from "@/types/cred";
+import { GoogleBooks } from "@/types/library";
 
 export default function BookCheckout({
   participant,
@@ -34,7 +34,7 @@ export default function BookCheckout({
     setCurrBook(book);
   };
 
-  const fetchBook = async (isbn: string): Promise<Item | null> => {
+  const fetchBook = async (isbn: string): Promise<GoogleBooks.Book | null> => {
     try {
       const res = await fetch(`/api/books?isbn=${isbn}`);
 
@@ -53,9 +53,9 @@ export default function BookCheckout({
         return null;
       }
 
-      return (await res.json()) as Item;
+      return (await res.json()) as GoogleBooks.Book;
     } catch (err) {
-      const error = err as GoogleBooksErrorResponse;
+      const error = err as GoogleBooks.ErrorResponse;
       toast.error(
         error?.error?.message ||
           "An error occurred while gathering book info. Please try again.",

@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import { Participant } from "@/types/user";
+import { Participant } from "@/types/cred";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -20,7 +20,11 @@ export async function PATCH(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
 
-  if (!id) return NextResponse.json({ error: "Missing participant ID." }, { status: 400 });
+  if (!id)
+    return NextResponse.json(
+      { error: "Missing participant ID." },
+      { status: 400 },
+    );
 
   const body = await request.json();
 

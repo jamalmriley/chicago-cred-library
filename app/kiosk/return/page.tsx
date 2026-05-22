@@ -12,8 +12,8 @@ import {
 } from "@/components/ui/carousel";
 import { Spinner } from "@/components/ui/spinner";
 import { useKioskContext } from "@/contexts/kiosk-context";
-import { SUBTRACTED_HEIGHT } from "@/lib/ui";
-import { KioskItem, Participant } from "@/types/user";
+import { Participant } from "@/types/cred";
+import { KioskItem } from "@/types/library";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -152,7 +152,7 @@ export default function ReturnPage() {
             size="icon"
             className="rounded-full mr-3"
           >
-            <Link href="/">
+            <Link href="/kiosk">
               <ArrowLeft />
             </Link>
           </Button>

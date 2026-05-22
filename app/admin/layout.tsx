@@ -9,7 +9,7 @@ export default function AdminLayout({
   return (
     <SidebarProvider>
       <AdminSidebar />
-      <div className="w-[calc(100dvw-16rem)] px-10 pt-5 pb-10 border-l rounded-tl-4xl">
+      <div className="px-10 pt-5 pb-10">
         <SidebarTrigger />
         {children}
       </div>

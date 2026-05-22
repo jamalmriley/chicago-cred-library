@@ -19,13 +19,14 @@ Project L.I.B.R.A.R.Y. was created to solve a real problem: without a system to 
 
 ## Tech Stack
 
-| Category      | Technology                                    |
-| ------------- | --------------------------------------------- |
-| Framework     | [Next.js 16](https://nextjs.org) (Webpack)    |
-| Language      | TypeScript                                    |
-| Styling       | Tailwind CSS v4                               |
-| UI Components | [shadcn/ui](https://ui.shadcn.com), Radix UI  |
-| Database      | [Supabase](https://supabase.com) (PostgreSQL) |
+| Category          | Technology                                    |
+| ----------------- | --------------------------------------------- |
+| Framework         | [Next.js 16](https://nextjs.org) (Webpack)    |
+| Language          | TypeScript                                    |
+| Styling           | Tailwind CSS v4                               |
+| UI Components     | [shadcn/ui](https://ui.shadcn.com), Radix UI  |
+| Database          | [Supabase](https://supabase.com) (PostgreSQL) |
+| Authentication    | [Clerk](https://clerk.com)                    |
 
 ---
 

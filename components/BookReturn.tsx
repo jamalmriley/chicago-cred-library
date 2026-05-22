@@ -1,4 +1,4 @@
-import { Participant } from "@/types/user";
+import { Participant } from "@/types/cred";
 import { LibraryBig } from "lucide-react";
 import Link from "next/link";
 import BookLineItem from "./BookLineItem";

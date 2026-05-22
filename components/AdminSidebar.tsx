@@ -5,7 +5,6 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -50,7 +49,7 @@ export default function AdminSidebar() {
     },
     {
       label: "Go to kiosk",
-      href: "/",
+      href: "/kiosk",
       icon: (
         <ScanBarcode className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
       ),
