@@ -3,7 +3,7 @@ import { LibraryBig } from "lucide-react";
 import Link from "next/link";
 import BookLineItem from "./BookLineItem";
 import KioskCard from "./KioskCard";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 
 export default function BookReturn({
   participant,

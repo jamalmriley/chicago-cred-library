@@ -1,52 +1,52 @@
 import { Role } from "@/lib/auth";
 import { KioskItem } from "./library";
 
-const sites = [
+export const SITES = [
   {
     name: "Youth Peace Center",
-    nickname: "YPC",
+    value: "YPC",
     region: "South",
     neighborhood: "Roseland",
   },
   {
     name: "SS Hub 2",
-    nickname: "95th St",
+    value: "95th St",
     region: "South",
     neighborhood: "Pullman",
   },
   {
     name: "Women's Center",
-    nickname: "Women's Center",
+    value: "Women's Center",
     region: "South",
     neighborhood: "Roseland",
   },
   {
     name: "WS Hub 1",
-    nickname: "Iron St",
+    value: "Iron St",
     region: "West",
     neighborhood: "North Lawndale",
   },
   {
     name: "WS Hub 2",
-    nickname: "2501",
+    value: "2501",
     region: "West",
     neighborhood: "North Lawndale",
   },
   {
     name: "WS Hub 3",
-    nickname: "424",
+    value: "424",
     region: "West",
     neighborhood: "North Lawndale",
   },
   {
     name: "Employment & Training",
-    nickname: "E&T",
+    value: "E&T",
     region: "Chicago",
     neighborhood: "Chicago",
   },
 ] as const;
-export type Site = (typeof sites)[number];
-export type AllSites = typeof sites;
+export type Site = (typeof SITES)[number];
+export type AllSites = typeof SITES;
 
 export interface Participant {
   id: string;

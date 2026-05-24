@@ -19,14 +19,14 @@ Project L.I.B.R.A.R.Y. was created to solve a real problem: without a system to 
 
 ## Tech Stack
 
-| Category          | Technology                                    |
-| ----------------- | --------------------------------------------- |
-| Framework         | [Next.js 16](https://nextjs.org) (Webpack)    |
-| Language          | TypeScript                                    |
-| Styling           | Tailwind CSS v4                               |
-| UI Components     | [shadcn/ui](https://ui.shadcn.com), Radix UI  |
-| Database          | [Supabase](https://supabase.com) (PostgreSQL) |
-| Authentication    | [Clerk](https://clerk.com)                    |
+| Category       | Technology                                    |
+| -------------- | --------------------------------------------- |
+| Framework      | [Next.js 16](https://nextjs.org) (Webpack)    |
+| Language       | TypeScript                                    |
+| Styling        | Tailwind CSS v4                               |
+| UI Components  | [shadcn/ui](https://ui.shadcn.com), Radix UI  |
+| Database       | [Supabase](https://supabase.com) (PostgreSQL) |
+| Authentication | [Clerk](https://clerk.com)                    |
 
 ---
 
@@ -49,15 +49,19 @@ npm install
 Create a `.env.local` file in the root of the project with the following variables:
 
 ```bash
+# Clerk
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=  # Your Clerk publishable key
+CLERK_SECRET_KEY=                   # Your Clerk secret key (server-only)
+
 # Google
-GOOGLE_WEB_FONTS_API_KEY=        # Google Fonts API key
+GOOGLE_WEB_FONTS_API_KEY=           # Google Fonts API key
 
 # Supabase
-NEXT_PUBLIC_SUPABASE_URL=        # Your Supabase project URL
-SUPABASE_SERVICE_ROLE_KEY=       # Your Supabase service role key (server-only)
+NEXT_PUBLIC_SUPABASE_URL=           # Your Supabase project URL
+SUPABASE_SERVICE_ROLE_KEY=          # Your Supabase service role key (server-only)
 ```
 
-> ⚠️ `SUPABASE_SERVICE_ROLE_KEY` is a server-only variable and must **never** be prefixed with `NEXT_PUBLIC_`. It is only accessed via Next.js API routes.
+> ⚠️ `CLERK_SECRET_KEY` and `SUPABASE_SERVICE_ROLE_KEY` are server-only variables and must **never** be prefixed with `NEXT_PUBLIC_`. They are only accessed via Next.js API routes.
 
 ### Running the App
 
@@ -86,7 +90,6 @@ This project uses Supabase as its backend. The `participants` table should have 
 | `birthday`         | `text`        | Stored as `MMDD` (e.g. `0115` for Jan 15) |
 | `email`            | `text`        |                                           |
 | `site`             | `text`        | Site/location identifier                  |
-| `reading_level`    | `text`        | `Beginner`, `Intermediate`, or `Advanced` |
 | `notes`            | `text`        | Optional staff notes                      |
 | `checkout_history` | `jsonb`       | Array of checkout records, nullable       |
 
