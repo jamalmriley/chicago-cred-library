@@ -38,3 +38,15 @@ export async function PATCH(request: NextRequest) {
   if (error) return NextResponse.json({ error }, { status: 500 });
   return NextResponse.json(data);
 }
+
+export async function POST(request: NextRequest) {
+  const body = await request.json();
+
+  const { data, error } = await supabase()
+    .from("participants")
+    .insert([body])
+    .select<"*", Participant>();
+
+  if (error) return NextResponse.json({ error }, { status: 500 });
+  return NextResponse.json(data);
+}

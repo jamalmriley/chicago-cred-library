@@ -1,6 +1,10 @@
 "use client";
 
-import { AbacButton, AbacDropdownMenuCheckboxItem } from "@/components/ui/abac";
+import {
+  AbacButton,
+  AbacDropdownMenuCheckboxItem,
+  AbacField,
+} from "@/components/ui/abac";
 import {
   Dialog,
   DialogContent,
@@ -11,13 +15,21 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { hasPermission, PermissionUser, Role, ROLE_OPTIONS } from "@/lib/auth";
-import { Site, SITES } from "@/types/cred";
+import {
+  canCreateUsers,
+  hasPermission,
+  PermissionUser,
+  Role,
+  ROLE_OPTIONS,
+} from "@/lib/auth";
+import { Participant, Site, SITES } from "@/types/cred";
 import { useUser } from "@clerk/nextjs";
 import { ChevronDown, UserPlus } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
+import { Checkbox } from "./ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -28,28 +40,21 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { Item, ItemContent, ItemDescription, ItemTitle } from "./ui/item";
+import { Spinner } from "./ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Textarea } from "./ui/textarea";
 
+type ClerkUser = { firstName: string; lastName: string; email: string };
 type UserType = "Participant" | "Staff";
 
 export default function AddUserDialog() {
   const { user } = useUser();
+  const [isOpen, setIsOpen] = useState(false);
   const tabs: UserType[] = ["Participant", "Staff"];
 
   if (!user) return;
-
-  const canCreateUsers = (user: PermissionUser): boolean =>
-    ROLE_OPTIONS.some((roleOption) =>
-      hasPermission({
-        user,
-        action: "create",
-        resource: "users",
-        data: { user, targetRole: roleOption.value as Role },
-      }),
-    );
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <AbacButton
           user={user}
@@ -93,7 +98,7 @@ export default function AddUserDialog() {
 
           {tabs.map((tab) => (
             <TabsContent key={tab} value={tab}>
-              <AddUserForm userType={tab} />
+              <AddUserForm userType={tab} setIsDrawerOpen={setIsOpen} />
             </TabsContent>
           ))}
         </Tabs>
@@ -106,9 +111,17 @@ function Required() {
   return <span className="text-destructive">*</span>;
 }
 
-function AddUserForm({ userType }: { userType: UserType }) {
+function AddUserForm({
+  userType,
+  setIsDrawerOpen,
+}: {
+  userType: UserType;
+  setIsDrawerOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}) {
   const { isLoaded, user } = useUser();
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -117,6 +130,15 @@ function AddUserForm({ userType }: { userType: UserType }) {
   const [selectedSite, setSelectedSite] = useState<Site | null>(null);
   const [selectedSites, setSelectedSites] = useState<Site[]>([]);
   const [notes, setNotes] = useState("");
+
+  const [isTestData, setIsTestData] = useState(false);
+
+  const isButtonDisabled: boolean =
+    firstName === "" || lastName === "" || email === "";
+  const isParticipantButtonDisabled: boolean =
+    isButtonDisabled || birthday === "" || !selectedSite || notes === "";
+  const isStaffButtonDisabled: boolean =
+    isButtonDisabled || !selectedRole || selectedSites.length === 0;
 
   const formatBirthday = (input: string): string => {
     const findNthOccurrence = (
@@ -185,7 +207,11 @@ function AddUserForm({ userType }: { userType: UserType }) {
     }
 
     // Don't allow double zeroes in the day
-    if (digits.length === 4 && parseInt(digits[2]) === 0) {
+    if (
+      digits.length === 4 &&
+      parseInt(digits[2]) === 0 &&
+      parseInt(digits[3]) === 0
+    ) {
       return `${digits[0]}${digits[1]}/${digits[2]}`;
     }
 
@@ -223,6 +249,20 @@ function AddUserForm({ userType }: { userType: UserType }) {
   };
   const regions = groupSitesByRegion();
 
+  const clearAllFields = () => {
+    setFirstName("");
+    setLastName("");
+    setEmail("");
+    setBirthday("");
+    setSelectedRole(null);
+    setSelectedSite(null);
+    setSelectedSites([]);
+    setNotes("");
+    setIsTestData(false);
+    setIsOpen(false);
+    setIsDrawerOpen(false);
+  };
+
   const handleBirthdayChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatBirthday(e.target.value);
     setBirthday(formatted);
@@ -232,9 +272,62 @@ function AddUserForm({ userType }: { userType: UserType }) {
     setSelectedSites(
       (prev) =>
         isChecked
-          ? prev.filter((s) => s.value !== site.value) // Remove site from list
+          ? prev.filter((s) => s.nickname !== site.nickname) // Remove site from list
           : [...prev, site], // Add site to list
     );
+  };
+
+  const handleAddParticipant = async (user: Participant) => {
+    await setIsLoading(true);
+
+    await fetch(`/api/participants`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(user),
+    })
+      .then(() => {
+        toast.success(`${user.first_name} was added successfully!`, {
+          position: "bottom-right",
+        });
+        clearAllFields();
+      })
+      .catch(() => {
+        toast.error(
+          `There was an issue adding ${user.first_name}. Please try again.`,
+          {
+            position: "bottom-right",
+          },
+        );
+      })
+      .finally(() => setIsLoading(false));
+  };
+
+  const handleAddUser = async (user: ClerkUser) => {
+    await setIsLoading(true);
+
+    await fetch(`/api/users`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(user),
+    })
+      .then(() => {
+        toast.success(
+          `${user.firstName} was added successfully! An email has been sent to ${user.email} with login information.`,
+          {
+            position: "bottom-right",
+          },
+        );
+        clearAllFields();
+      })
+      .catch(() => {
+        toast.error(
+          `There was an issue adding ${user.firstName}. Please try again.`,
+          {
+            position: "bottom-right",
+          },
+        );
+      })
+      .finally(() => setIsLoading(false));
   };
 
   if (!isLoaded || !user) return;
@@ -293,10 +386,7 @@ function AddUserForm({ userType }: { userType: UserType }) {
         </Field>
 
         {/* Birthday, Role, and Site */}
-        <span
-          className="flex gap-5"
-          // className={`flex gap-5 ${userType === "Staff" ? "flex-col" : "flex-row"}`}
-        >
+        <span className="flex gap-5">
           {/* Birthday */}
           {userType === "Participant" && (
             <Field>
@@ -385,11 +475,11 @@ function AddUserForm({ userType }: { userType: UserType }) {
                           (site) =>
                             JSON.stringify(site) ===
                             JSON.stringify(selectedSite),
-                        )[0].value
+                        )[0].nickname
                       : "Select a site"
                     : selectedSites && selectedSites.length > 0
                       ? selectedSites.length === 1
-                        ? selectedSites[0].value
+                        ? selectedSites[0].nickname
                         : `${selectedSites.length} sites`
                       : "Select site(s)"}
                   <ChevronDown />
@@ -409,19 +499,23 @@ function AddUserForm({ userType }: { userType: UserType }) {
                           userType === "Participant"
                             ? JSON.stringify(site) ===
                               JSON.stringify(selectedSite)
-                            : selectedSites.some((s) => s.value === site.value)
+                            : selectedSites.some(
+                                (s) => s.nickname === site.nickname,
+                              )
                         }
                         onCheckedChange={() => {
                           if (userType === "Participant") {
                             setSelectedSite(site);
                           } else {
                             const isChecked = selectedSites.some(
-                              (s) => s.value === site.value,
+                              (s) => s.nickname === site.nickname,
                             );
                             handleCheckedChange(site, isChecked);
                           }
                         }}
-                        onSelect={(e) => e.preventDefault()}
+                        onSelect={(e) => {
+                          if (userType === "Staff") e.preventDefault();
+                        }}
                       >
                         <Item size="xs" className="p-0">
                           <ItemContent>
@@ -430,7 +524,9 @@ function AddUserForm({ userType }: { userType: UserType }) {
                             </ItemTitle>
                             <ItemDescription>
                               {[
-                                site.name === site.value ? "" : `${site.value}`,
+                                site.name === site.nickname
+                                  ? ""
+                                  : `${site.nickname}`,
                                 site.neighborhood === "Chicago"
                                   ? ""
                                   : site.neighborhood,
@@ -473,12 +569,68 @@ function AddUserForm({ userType }: { userType: UserType }) {
             />
           </Field>
         )}
+
+        {/* Test Data */}
+        <AbacField
+          orientation="horizontal"
+          user={user}
+          action="create"
+          resource="test_data"
+        >
+          <Checkbox
+            id="test-data"
+            name="test-data"
+            checked={isTestData}
+            onCheckedChange={() => setIsTestData((prev) => !prev)}
+          />
+          <FieldLabel htmlFor="test-data">This is test data.</FieldLabel>
+        </AbacField>
       </FieldGroup>
 
-      {/* Buttons */}
+      {/* Submit Button */}
       <Field orientation="horizontal">
-        <Button type="submit" className="w-full">
-          Add {firstName || userType.toLowerCase()}
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={
+            isLoading ||
+            (userType === "Participant"
+              ? isParticipantButtonDisabled
+              : isStaffButtonDisabled)
+          }
+          onClick={() => {
+            if (userType === "Participant") {
+              if (!selectedSite) return;
+
+              const created_at = new Date();
+              const id = `${isTestData ? "test_" : ""}${crypto.randomUUID()}`;
+              const formattedBirthday = birthday.replace("/", "");
+
+              const participant: Participant = {
+                // TODO: Though unlikely, make sure ID and email aren't already in use.
+                id,
+                created_at,
+                first_name: firstName,
+                last_name: lastName,
+                birthday: formattedBirthday,
+                email,
+                site: selectedSite,
+                notes,
+                checkout_history: null,
+                updated_at: created_at,
+              };
+
+              handleAddParticipant(participant);
+            } else if (userType === "Staff") {
+              const user: ClerkUser = { firstName, lastName, email };
+              handleAddUser(user);
+            }
+          }}
+        >
+          {isLoading
+            ? `Adding ${firstName || userType.toLowerCase()}...`
+            : `Add ${firstName || userType.toLowerCase()}`}
+          {isLoading && <Spinner data-icon="inline-start" />}
         </Button>
       </Field>
     </Card>

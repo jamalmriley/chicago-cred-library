@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { AbacProps, hasPermission, Permissions } from "@/lib/auth";
 import { ComponentProps } from "react";
-import { ComboboxItem } from "./combobox";
 import { DropdownMenuCheckboxItem } from "./dropdown-menu";
+import { Field } from "./field";
 
 type AbacButtonProps<Resource extends keyof Permissions> = AbacProps<Resource> &
   ComponentProps<typeof Button>;
@@ -16,20 +16,6 @@ export function AbacButton<Resource extends keyof Permissions>({
 }: AbacButtonProps<Resource>) {
   if (!hasPermission({ user, action, resource, data })) return null;
   return <Button {...buttonProps} />;
-}
-
-type AbacComboboxItemProps<Resource extends keyof Permissions> =
-  AbacProps<Resource> & ComponentProps<typeof ComboboxItem>;
-
-export function AbacComboboxItem<Resource extends keyof Permissions>({
-  user,
-  action,
-  resource,
-  data,
-  ...buttonProps
-}: AbacComboboxItemProps<Resource>) {
-  if (!hasPermission({ user, action, resource, data })) return null;
-  return <ComboboxItem {...buttonProps} />;
 }
 
 type AbacDropdownMenuCheckboxItemProps<Resource extends keyof Permissions> =
@@ -46,4 +32,18 @@ export function AbacDropdownMenuCheckboxItem<
 }: AbacDropdownMenuCheckboxItemProps<Resource>) {
   if (!hasPermission({ user, action, resource, data })) return null;
   return <DropdownMenuCheckboxItem {...buttonProps} />;
+}
+
+type AbacFieldProps<Resource extends keyof Permissions> = AbacProps<Resource> &
+  ComponentProps<typeof Field>;
+
+export function AbacField<Resource extends keyof Permissions>({
+  user,
+  action,
+  resource,
+  data,
+  ...buttonProps
+}: AbacFieldProps<Resource>) {
+  if (!hasPermission({ user, action, resource, data })) return null;
+  return <Field {...buttonProps} />;
 }

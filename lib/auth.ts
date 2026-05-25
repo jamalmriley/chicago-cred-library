@@ -58,6 +58,14 @@ export type Permissions = {
     dataType: { user: PermissionUser; targetRole?: Role };
     action: "create" | "read" | "update" | "delete";
   };
+  test_data: {
+    dataType: any; // TODO: Specify later
+    action: "create" | "read" | "update" | "delete";
+  };
+  audit_logs: {
+    dataType: any; // TODO: Specify later
+    action: "create" | "read" | "update" | "delete";
+  };
 };
 
 // Checks if the target role (i.e. the user) has access to the listed (i.e. accessible) roles.
@@ -70,11 +78,13 @@ const handleUpdate = (user: PermissionUser, target: PermissionUser): boolean =>
   user.id === target.id;
 
 const ROLE_PERMISSIONS = {
-  // Super admins have unrestricted access.
+  // Super admins have unrestricted access, apart from the ability to delete audit logs.
   super_admin: {
     library: { create: true, read: true, update: true, delete: true },
     participants: { create: true, read: true, update: true, delete: true },
     users: { create: true, read: true, update: true, delete: true },
+    test_data: { create: true, read: true, update: true, delete: true },
+    audit_logs: { create: true, read: true, update: true, delete: false },
   },
   // Admins can create and update staff/viewers, but they can also update their own profile.
   admin: {
@@ -89,6 +99,8 @@ const ROLE_PERMISSIONS = {
         handleUpdate(user, target),
       delete: false,
     },
+    test_data: { create: false, read: true, update: true, delete: false },
+    audit_logs: { create: true, read: true, update: false, delete: false },
   },
   // Staff can update their own profile.
   staff: {
@@ -100,11 +112,15 @@ const ROLE_PERMISSIONS = {
       update: (user, { user: target }) => handleUpdate(user, target),
       delete: false,
     },
+    test_data: { create: false, read: true, update: true, delete: false },
+    audit_logs: { create: true, read: true, update: false, delete: false },
   },
   viewer: {
     library: { create: false, read: true, update: false, delete: false },
     participants: { create: false, read: true, update: false, delete: false },
     users: { create: false, read: true, update: false, delete: false },
+    test_data: { create: false, read: true, update: false, delete: false },
+    audit_logs: { create: false, read: true, update: false, delete: false },
   },
 } as const satisfies RolesWithPermissions;
 
@@ -128,4 +144,15 @@ export function hasPermission<Resource extends keyof Permissions>({
   if (permission == null) return false;
   if (typeof permission === "boolean") return permission;
   return data != null && permission(user, data);
+}
+
+export function canCreateUsers(user: PermissionUser): boolean {
+  return ROLE_OPTIONS.some((roleOption) =>
+    hasPermission({
+      user,
+      action: "create",
+      resource: "users",
+      data: { user, targetRole: roleOption.value as Role },
+    }),
+  );
 }
