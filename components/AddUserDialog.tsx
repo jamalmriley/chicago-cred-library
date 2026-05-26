@@ -15,13 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import {
-  canCreateUsers,
-  hasPermission,
-  PermissionUser,
-  Role,
-  ROLE_OPTIONS,
-} from "@/lib/auth";
+import { canCreateUsers, hasPermission, Role, ROLE_OPTIONS } from "@/lib/auth";
 import { Participant, Site, SITES } from "@/types/cred";
 import { useUser } from "@clerk/nextjs";
 import { ChevronDown, UserPlus } from "lucide-react";
@@ -43,6 +37,7 @@ import { Item, ItemContent, ItemDescription, ItemTitle } from "./ui/item";
 import { Spinner } from "./ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Textarea } from "./ui/textarea";
+import { useAdminContext } from "@/contexts/admin-context";
 
 type ClerkUser = { firstName: string; lastName: string; email: string };
 type UserType = "Participant" | "Staff";
@@ -60,7 +55,6 @@ export default function AddUserDialog() {
           user={user}
           action="create"
           resource="participants"
-          variant="secondary"
           // This button intentionally requires a lower level
           // of access than "users" so that users who can
           // only add participants can still do so.
@@ -118,6 +112,7 @@ function AddUserForm({
   userType: UserType;
   setIsDrawerOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
+  const { setLastUpdated } = useAdminContext();
   const { isLoaded, user } = useUser();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -290,6 +285,7 @@ function AddUserForm({
           position: "bottom-right",
         });
         clearAllFields();
+        setLastUpdated(new Date().toString());
       })
       .catch(() => {
         toast.error(
@@ -318,6 +314,7 @@ function AddUserForm({
           },
         );
         clearAllFields();
+        setLastUpdated(new Date().toString());
       })
       .catch(() => {
         toast.error(

@@ -142,7 +142,7 @@
   }
 
   .h2 {
-    @apply text-2xl text-muted-foreground font-medium mb-3;
+    @apply text-2xl text-muted-foreground font-bold my-5;
   }
 
   .kiosk {
