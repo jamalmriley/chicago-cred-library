@@ -66,3 +66,5 @@ export interface CredMetadata {
   role: Role;
   sites: Site[];
 }
+
+export type UserType = "Participant" | "Staff";

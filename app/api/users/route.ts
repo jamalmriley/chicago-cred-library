@@ -2,12 +2,34 @@ import { clerkClient } from "@clerk/nextjs/server";
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 
-// Helper function to generate a secure random password
-function generateTemporaryPassword(length = 16): string {
-  return crypto.randomBytes(length).toString("base64").slice(0, length);
+export async function GET() {
+  // const { searchParams } = new URL(request.url);
+  // const id = searchParams.get("id");
+
+  try {
+    // Create the user in Clerk
+    const client = await clerkClient();
+    const users = await client.users.getUserList({
+      // limit: 10,
+      orderBy: "-created_at",
+    });
+
+    return NextResponse.json(users.data);
+  } catch (error: any) {
+    // Captures Clerk API errors (e.g., email already exists)
+    return NextResponse.json(
+      { error: error.message || "An error occurred while fetching users." },
+      { status: error.status || 500 },
+    );
+  }
 }
 
 export async function POST(request: NextRequest) {
+  // Helper function to generate a secure random password
+  function generateTemporaryPassword(length = 16): string {
+    return crypto.randomBytes(length).toString("base64").slice(0, length);
+  }
+
   try {
     const { firstName, lastName, email } = await request.json();
 

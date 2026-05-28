@@ -15,8 +15,9 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { useAdminContext } from "@/contexts/admin-context";
 import { canCreateUsers, hasPermission, Role, ROLE_OPTIONS } from "@/lib/auth";
-import { Participant, Site, SITES } from "@/types/cred";
+import { Participant, Site, SITES, UserType } from "@/types/cred";
 import { useUser } from "@clerk/nextjs";
 import { ChevronDown, UserPlus } from "lucide-react";
 import { useState } from "react";
@@ -37,10 +38,8 @@ import { Item, ItemContent, ItemDescription, ItemTitle } from "./ui/item";
 import { Spinner } from "./ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Textarea } from "./ui/textarea";
-import { useAdminContext } from "@/contexts/admin-context";
 
 type ClerkUser = { firstName: string; lastName: string; email: string };
-type UserType = "Participant" | "Staff";
 
 export default function AddUserDialog() {
   const { user } = useUser();
