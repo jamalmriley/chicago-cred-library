@@ -5,7 +5,8 @@ export {};
 
 declare global {
   interface UserPublicMetadata {
+    defaultSite?: Site;
+    isTestUser?: boolean;
     role?: Role;
-    sites?: Site[];
   }
 }

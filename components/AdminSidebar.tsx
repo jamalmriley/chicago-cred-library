@@ -16,6 +16,7 @@ import {
   LibraryBig,
   ScanBarcode,
   ScrollText,
+  Settings,
   Users,
 } from "lucide-react";
 import { motion } from "motion/react";
@@ -29,37 +30,32 @@ export default function AdminSidebar() {
     {
       label: "Dashboard",
       href: "/admin",
-      icon: (
-        <CircleGauge className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-      ),
+      icon: <CircleGauge className="sidebar-icon" />,
     },
     {
       label: "Users",
       href: "/admin/users",
-      icon: (
-        <Users className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-      ),
+      icon: <Users className="sidebar-icon" />,
     },
     {
       label: "Library",
       href: "/admin/library",
-      icon: (
-        <LibraryBig className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-      ),
+      icon: <LibraryBig className="sidebar-icon" />,
     },
     {
       label: "Go to kiosk",
       href: "/kiosk",
-      icon: (
-        <ScanBarcode className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-      ),
+      icon: <ScanBarcode className="sidebar-icon" />,
     },
     {
       label: "Audit log",
       href: "/admin/audit",
-      icon: (
-        <ScrollText className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-      ),
+      icon: <ScrollText className="sidebar-icon" />,
+    },
+    {
+      label: "Settings",
+      href: "/admin/settings",
+      icon: <Settings className="sidebar-icon" />,
     },
   ];
 

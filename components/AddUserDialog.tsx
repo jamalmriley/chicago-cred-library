@@ -17,7 +17,7 @@ import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useAdminContext } from "@/contexts/admin-context";
 import { canCreateUsers, hasPermission, Role, ROLE_OPTIONS } from "@/lib/auth";
-import { Participant, Site, SITES, UserType } from "@/types/cred";
+import { ClerkUser, Participant, Site, SITES, UserType } from "@/types/cred";
 import { useUser } from "@clerk/nextjs";
 import { ChevronDown, UserPlus } from "lucide-react";
 import { useState } from "react";
@@ -38,8 +38,6 @@ import { Item, ItemContent, ItemDescription, ItemTitle } from "./ui/item";
 import { Spinner } from "./ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Textarea } from "./ui/textarea";
-
-type ClerkUser = { firstName: string; lastName: string; email: string };
 
 export default function AddUserDialog() {
   const { user } = useUser();
@@ -122,7 +120,6 @@ function AddUserForm({
   const [birthday, setBirthday] = useState("");
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const [selectedSite, setSelectedSite] = useState<Site | null>(null);
-  const [selectedSites, setSelectedSites] = useState<Site[]>([]);
   const [notes, setNotes] = useState("");
 
   const [isTestData, setIsTestData] = useState(false);
@@ -131,8 +128,7 @@ function AddUserForm({
     firstName === "" || lastName === "" || email === "";
   const isParticipantButtonDisabled: boolean =
     isButtonDisabled || birthday === "" || !selectedSite || notes === "";
-  const isStaffButtonDisabled: boolean =
-    isButtonDisabled || !selectedRole || selectedSites.length === 0;
+  const isStaffButtonDisabled: boolean = isButtonDisabled || !selectedRole;
 
   const formatBirthday = (input: string): string => {
     const findNthOccurrence = (
@@ -250,7 +246,6 @@ function AddUserForm({
     setBirthday("");
     setSelectedRole(null);
     setSelectedSite(null);
-    setSelectedSites([]);
     setNotes("");
     setIsTestData(false);
     setIsOpen(false);
@@ -260,15 +255,6 @@ function AddUserForm({
   const handleBirthdayChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatBirthday(e.target.value);
     setBirthday(formatted);
-  };
-
-  const handleCheckedChange = (site: Site, isChecked: boolean) => {
-    setSelectedSites(
-      (prev) =>
-        isChecked
-          ? prev.filter((s) => s.nickname !== site.nickname) // Remove site from list
-          : [...prev, site], // Add site to list
-    );
   };
 
   const handleAddParticipant = async (user: Participant) => {
@@ -307,7 +293,7 @@ function AddUserForm({
     })
       .then(() => {
         toast.success(
-          `${user.firstName} was added successfully! An email has been sent to ${user.email} with login information.`,
+          `An invitation has been sent to ${user.firstName} at ${user.email} to create an account.`,
           {
             position: "bottom-right",
           },
@@ -456,28 +442,27 @@ function AddUserForm({
           {/* Site */}
           <Field>
             <FieldLabel htmlFor="site">
-              {`Site${userType === "Participant" ? "" : "(s)"}`}
-              <Required />
+              {userType === "Participant" ? "Site" : "Default Site"}
+              {userType === "Participant" ? (
+                <Required />
+              ) : (
+                <span className="text-xs text-muted-foreground">
+                  (optional)
+                </span>
+              )}
             </FieldLabel>
             <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
               <DropdownMenuTrigger asChild id="site">
                 <Button
                   variant="outline"
-                  className={`flex justify-between ${selectedSite || selectedSites.length > 0 ? "text-foreground" : "text-muted-foreground"}`}
+                  className={`flex justify-between ${selectedSite ? "text-foreground" : "text-muted-foreground"}`}
                 >
-                  {userType === "Participant"
-                    ? selectedSite
-                      ? SITES.filter(
-                          (site) =>
-                            JSON.stringify(site) ===
-                            JSON.stringify(selectedSite),
-                        )[0].nickname
-                      : "Select a site"
-                    : selectedSites && selectedSites.length > 0
-                      ? selectedSites.length === 1
-                        ? selectedSites[0].nickname
-                        : `${selectedSites.length} sites`
-                      : "Select site(s)"}
+                  {selectedSite
+                    ? SITES.filter(
+                        (site) =>
+                          JSON.stringify(site) === JSON.stringify(selectedSite),
+                      )[0].nickname
+                    : "Select a site"}
                   <ChevronDown />
                 </Button>
               </DropdownMenuTrigger>
@@ -492,26 +477,9 @@ function AddUserForm({
                         key={j}
                         className="flex flex-col justify-center items-start gap-0"
                         checked={
-                          userType === "Participant"
-                            ? JSON.stringify(site) ===
-                              JSON.stringify(selectedSite)
-                            : selectedSites.some(
-                                (s) => s.nickname === site.nickname,
-                              )
+                          JSON.stringify(site) === JSON.stringify(selectedSite)
                         }
-                        onCheckedChange={() => {
-                          if (userType === "Participant") {
-                            setSelectedSite(site);
-                          } else {
-                            const isChecked = selectedSites.some(
-                              (s) => s.nickname === site.nickname,
-                            );
-                            handleCheckedChange(site, isChecked);
-                          }
-                        }}
-                        onSelect={(e) => {
-                          if (userType === "Staff") e.preventDefault();
-                        }}
+                        onCheckedChange={() => setSelectedSite(site)}
                       >
                         <Item size="xs" className="p-0">
                           <ItemContent>
@@ -537,14 +505,6 @@ function AddUserForm({
                     {i < regions.length - 1 && <DropdownMenuSeparator />}
                   </DropdownMenuGroup>
                 ))}
-                {userType === "Staff" && (
-                  <>
-                    <DropdownMenuSeparator />
-                    <Button className="w-full" onClick={() => setIsOpen(false)}>
-                      Done
-                    </Button>
-                  </>
-                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </Field>
@@ -555,7 +515,7 @@ function AddUserForm({
           <Field>
             <FieldLabel htmlFor="notes">
               Participant Notes{" "}
-              <span className="text-muted-foreground">(optional)</span>
+              <span className="text-xs text-muted-foreground">(optional)</span>
             </FieldLabel>
             <Textarea
               id="notes"
@@ -618,14 +578,25 @@ function AddUserForm({
 
               handleAddParticipant(participant);
             } else if (userType === "Staff") {
-              const user: ClerkUser = { firstName, lastName, email };
+              if (!selectedRole) return;
+              const publicMetadata: UserPublicMetadata = {
+                defaultSite: selectedSite as Site,
+                role: selectedRole,
+                isTestUser: isTestData,
+              };
+              const user: ClerkUser = {
+                firstName,
+                lastName,
+                email,
+                publicMetadata,
+              };
               handleAddUser(user);
             }
           }}
         >
           {isLoading
-            ? `Adding ${firstName || userType.toLowerCase()}...`
-            : `Add ${firstName || userType.toLowerCase()}`}
+            ? `${userType === "Staff" ? "Inviting" : "Adding"} ${firstName || userType.toLowerCase()}...`
+            : `${userType === "Staff" ? "Invite" : "Add"} ${firstName || userType.toLowerCase()}`}
           {isLoading && <Spinner data-icon="inline-start" />}
         </Button>
       </Field>

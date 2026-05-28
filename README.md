@@ -1,6 +1,6 @@
 # Project L.I.B.R.A.R.Y.
 
-### Literacy Initiative for Boosting Reading Access and Resources Year-round
+### Library Interface for Boosting Reading Access and Resources Year-round
 
 A touchscreen-friendly library kiosk system built to support the literacy initiative at **[Chicago CRED](https://www.chicagocred.org)**, enabling participants to check out and return books, and track their reading history — all without staff intervention.
 

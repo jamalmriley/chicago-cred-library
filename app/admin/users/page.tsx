@@ -192,17 +192,17 @@ function ParticipantTable() {
                 <TableCell className="font-medium">
                   <Skeleton className="w-30 h-5" />
                 </TableCell>
-                <TableCell className="text-center">
+                <TableCell className="flex justify-center">
                   <Skeleton key={i} className="w-15 h-5 rounded-full" />
                 </TableCell>
                 <TableCell>
                   <Skeleton className="w-30 h-5" />
                 </TableCell>
                 <TableCell>
-                  <Skeleton className="w-30 h-4" />
+                  <Skeleton className="w-30 h-5" />
                 </TableCell>
                 <TableCell>
-                  <Skeleton className="w-30 h-4" />
+                  <Skeleton className="w-30 h-5" />
                 </TableCell>
                 <AbacTableCell
                   user={user}
@@ -314,7 +314,7 @@ function UserTable() {
               <TableHead>Name</TableHead>
               <TableHead className="w-27 text-center">Role</TableHead>
               <TableHead>Email</TableHead>
-              <TableHead>Site(s)</TableHead>
+              <TableHead>Default Site</TableHead>
               <TableHead>Created at</TableHead>
               <AbacTableHead
                 user={user}
@@ -341,7 +341,7 @@ function UserTable() {
                 <TableCell>
                   <Skeleton className="w-40 h-5" />
                 </TableCell>
-                {/* Site(s) */}
+                {/* Default Site */}
                 <TableCell>
                   <Skeleton className="w-20 h-4" />
                 </TableCell>
@@ -371,7 +371,7 @@ function UserTable() {
               <TableHead>Name</TableHead>
               <TableHead className="w-27 text-center">Role</TableHead>
               <TableHead>Email</TableHead>
-              <TableHead>Site(s)</TableHead>
+              <TableHead>Default Site</TableHead>
               <TableHead>Created at</TableHead>
               <AbacTableHead
                 user={user}
@@ -395,11 +395,9 @@ function UserTable() {
                 </TableCell>
                 <TableCell>{user.emailAddresses[0].emailAddress}</TableCell>
                 <TableCell className="text-xs text-muted-foreground">
-                  {user.publicMetadata.sites
-                    ? user.publicMetadata.sites.length === 1
-                      ? user.publicMetadata.sites[0].nickname
-                      : `${user.publicMetadata.sites.length} sites`
-                    : "No site added"}
+                  {user.publicMetadata.defaultSite
+                    ? user.publicMetadata.defaultSite.nickname
+                    : "None"}
                 </TableCell>
                 <TableCell className="text-xs text-muted-foreground">
                   {formatRelative(user.createdAt, new Date())}

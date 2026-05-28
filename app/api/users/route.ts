@@ -1,16 +1,12 @@
+import { ClerkUser } from "@/types/cred";
 import { clerkClient } from "@clerk/nextjs/server";
-import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET() {
-  // const { searchParams } = new URL(request.url);
-  // const id = searchParams.get("id");
-
   try {
     // Create the user in Clerk
     const client = await clerkClient();
     const users = await client.users.getUserList({
-      // limit: 10,
       orderBy: "-created_at",
     });
 
@@ -25,38 +21,29 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  // Helper function to generate a secure random password
-  function generateTemporaryPassword(length = 16): string {
-    return crypto.randomBytes(length).toString("base64").slice(0, length);
-  }
-
   try {
-    const { firstName, lastName, email } = await request.json();
+    const user: ClerkUser = await request.json();
+    const { firstName, lastName, email, publicMetadata } = user;
 
-    if (!firstName || !lastName || !email)
+    if (!email)
       return NextResponse.json(
-        { error: "Missing user credentials." },
+        { error: "Missing email to create invitation." },
         { status: 400 },
       );
 
-    const password = generateTemporaryPassword(8);
     // Create the user in Clerk
     const client = await clerkClient();
-    const user = await client.users
-      .createUser({
+    const invitation = await client.invitations.createInvitation({
+      emailAddress: email,
+      redirectUrl: "https://cred-library.vercel.app/sign-up",
+      publicMetadata: {
         firstName,
         lastName,
-        emailAddress: [email],
-        password,
-        skipPasswordChecks: true,
-        // Marks email as verified immediately
-        // Required when bypassing password strength rules
-      })
-      .then(() => {
-        // TODO: Send an email to the user with login information.
-      });
+        ...publicMetadata,
+      },
+    });
 
-    return NextResponse.json({ user });
+    return NextResponse.json({ invitation });
   } catch (error: any) {
     // Captures Clerk API errors (e.g., email already exists)
     return NextResponse.json(

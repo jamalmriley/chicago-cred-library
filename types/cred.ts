@@ -1,4 +1,3 @@
-import { Role } from "@/lib/auth";
 import { KioskItem } from "./library";
 
 export const SITES = [
@@ -48,6 +47,13 @@ export const SITES = [
 export type Site = (typeof SITES)[number];
 export type AllSites = typeof SITES;
 
+export interface ClerkUser {
+  firstName: string;
+  lastName: string;
+  email: string;
+  publicMetadata: UserPublicMetadata;
+}
+
 export interface Participant {
   id: string;
   created_at: Date;
@@ -59,12 +65,6 @@ export interface Participant {
   notes: string | null;
   checkout_history: KioskItem[] | null;
   updated_at: Date;
-}
-
-export interface CredMetadata {
-  defaultSite: Site | null;
-  role: Role;
-  sites: Site[];
 }
 
 export type UserType = "Participant" | "Staff";
