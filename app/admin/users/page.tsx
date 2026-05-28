@@ -104,7 +104,7 @@ export default function UsersPage() {
         <TabsList variant="line" className="mb-5">
           {tabs.map((tab) => (
             <TabsTrigger key={tab} value={tab}>
-              {tab}
+              {tab + (tab === "Staff" ? "" : "s")}
             </TabsTrigger>
           ))}
         </TabsList>
