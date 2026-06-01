@@ -66,7 +66,7 @@ export default function CheckoutPage() {
 
       for (const item of cart) {
         const checkoutItem: KioskItem = {
-          item,
+          book_info: item,
           checkout_date: today,
           due_date: twoWeeksFromToday,
           return_date: null,

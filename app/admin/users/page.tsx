@@ -81,14 +81,12 @@ export default function UsersPage() {
     fetchUsers();
   }, [lastUpdated]);
 
-  if (!isLoaded || !user) return;
+  if (!isLoaded || !user) return; // TODO: Return a loading state.
   return (
     <div>
       <div className="w-full flex justify-between items-baseline">
         <h1 className="h1">Users</h1>
-        <div className="flex gap-5">
-          <AddUserDialog />
-        </div>
+        <AddUserDialog />
       </div>
 
       {/* Manage and/or view staff and/or participants. */}
@@ -297,8 +295,10 @@ function UserTable() {
     let result = "None";
     if (!value) return result;
     for (const role of ROLE_OPTIONS) {
-      if (role.value === value) result = role.name;
-      break;
+      if (role.value === value) {
+        result = role.name;
+        break;
+      }
     }
     return result;
   };
@@ -314,8 +314,8 @@ function UserTable() {
               <TableHead>Name</TableHead>
               <TableHead className="w-27 text-center">Role</TableHead>
               <TableHead>Email</TableHead>
-              <TableHead>Default Site</TableHead>
-              <TableHead>Created at</TableHead>
+              <TableHead className="text-center">Default Site</TableHead>
+              <TableHead className="text-center">Created at</TableHead>
               <AbacTableHead
                 user={user}
                 action="update"
@@ -342,10 +342,10 @@ function UserTable() {
                   <Skeleton className="w-40 h-5" />
                 </TableCell>
                 {/* Default Site */}
-                <TableCell>
+                <TableCell className="text-center">
                   <Skeleton className="w-20 h-4" />
                 </TableCell>
-                <TableCell>
+                <TableCell className="text-center">
                   <Skeleton className="w-30 h-4" />
                 </TableCell>
                 <AbacTableCell
@@ -371,8 +371,8 @@ function UserTable() {
               <TableHead>Name</TableHead>
               <TableHead className="w-27 text-center">Role</TableHead>
               <TableHead>Email</TableHead>
-              <TableHead>Default Site</TableHead>
-              <TableHead>Created at</TableHead>
+              <TableHead className="text-center">Default Site</TableHead>
+              <TableHead className="text-center">Created at</TableHead>
               <AbacTableHead
                 user={user}
                 action="update"
@@ -384,29 +384,29 @@ function UserTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {users.map((user, i) => (
+            {users.map((userAccount, i) => (
               <TableRow key={i}>
                 <TableCell className="font-medium">
-                  {user.firstName} {user.lastName}
+                  {userAccount.firstName} {userAccount.lastName}
                 </TableCell>
                 <TableCell className="w-27 text-center">
-                  {/* bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300 */}
-                  <Badge>{getRoleName(user.publicMetadata.role)}</Badge>
+                  <Badge>{getRoleName(userAccount.publicMetadata.role)}</Badge>
                 </TableCell>
-                <TableCell>{user.emailAddresses[0].emailAddress}</TableCell>
-                <TableCell className="text-xs text-muted-foreground">
-                  {user.publicMetadata.defaultSite
-                    ? user.publicMetadata.defaultSite.nickname
+                <TableCell>
+                  {userAccount.emailAddresses[0].emailAddress}
+                </TableCell>
+                <TableCell className="text-center text-xs text-muted-foreground">
+                  {userAccount.publicMetadata.defaultSite
+                    ? userAccount.publicMetadata.defaultSite.nickname
                     : "None"}
                 </TableCell>
-                <TableCell className="text-xs text-muted-foreground">
-                  {formatRelative(user.createdAt, new Date())}
+                <TableCell className="text-center text-xs text-muted-foreground">
+                  {formatRelative(userAccount.createdAt, new Date())}
                 </TableCell>
-                <TableCell
-                  // TODO: Fix this
-                  // user={user}
-                  // action="update"
-                  // resource="users"
+                <AbacTableCell
+                  user={user}
+                  action="update"
+                  resource="users"
                   className="flex justify-center items-center gap-1.5"
                 >
                   <Button size="icon-xs" variant="secondary" disabled>
@@ -423,7 +423,7 @@ function UserTable() {
                     <Trash />
                     <span className="sr-only">Inactivate participant</span>
                   </Button>
-                </TableCell>
+                </AbacTableCell>
               </TableRow>
             ))}
           </TableBody>

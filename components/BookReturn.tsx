@@ -30,7 +30,7 @@ export default function BookReturn({
           activeCheckoutHistory.map((checkoutItem, index) => (
             <BookLineItem
               key={index}
-              book={checkoutItem.item}
+              book={checkoutItem.book_info}
               kioskItem={checkoutItem}
               location="return"
             />
@@ -42,7 +42,7 @@ export default function BookReturn({
               No books checked out yet.
             </p>
             <Button asChild>
-              <Link href="/">Go back</Link>
+              <Link href="/kiosk">Go back</Link>
             </Button>
           </div>
         )}

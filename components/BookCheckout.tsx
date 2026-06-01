@@ -36,7 +36,7 @@ export default function BookCheckout({
 
   const fetchBook = async (isbn: string): Promise<GoogleBooks.Book | null> => {
     try {
-      const res = await fetch(`/api/books?isbn=${isbn}`);
+      const res = await fetch(`/api/google-books?isbn=${isbn}`);
 
       if (res.status === 404) {
         toast.error("Book not found. Please try again.", {

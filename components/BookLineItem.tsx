@@ -2,7 +2,7 @@ import { Button } from "@/components//ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useKioskContext } from "@/contexts/kiosk-context";
-import { GoogleBooks, KioskItem } from "@/types/library";
+import { BookInfo, KioskItem } from "@/types/library";
 import { formatRelative } from "date-fns";
 import { Plus, X } from "lucide-react";
 import Image from "next/image";
@@ -14,7 +14,7 @@ export default function BookLineItem({
   kioskItem,
   location = "cart",
 }: {
-  book: GoogleBooks.Book;
+  book: BookInfo;
   kioskItem?: KioskItem;
   location?: "cart" | "lookup" | "return";
 }) {
@@ -111,7 +111,7 @@ export default function BookLineItem({
                   // Remove it from the list of book returns.
                   setChecked(false);
                   const filteredReturns = returns.filter(
-                    (kioskItem) => kioskItem.item.id !== book.id,
+                    (kioskItem) => kioskItem.book_info.id !== book.id,
                   );
                   setReturns(filteredReturns);
                   setMaxCheckoutStepAllowed(

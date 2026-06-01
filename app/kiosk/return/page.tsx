@@ -66,7 +66,7 @@ export default function ReturnPage() {
 
       for (const checkoutItem of checkoutHistory) {
         for (const r of returns) {
-          if (checkoutItem.item.id === r.item.id) result.push(r);
+          if (checkoutItem.book_info.id === r.book_info.id) result.push(r);
           else result.push(checkoutItem);
         }
       }

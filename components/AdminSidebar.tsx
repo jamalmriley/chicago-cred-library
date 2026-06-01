@@ -86,8 +86,16 @@ export default function AdminSidebar() {
       </SidebarContent>
       <SidebarFooter className="flex">
         <AppearanceToggle />
-        <UserButton />
-        {user.fullName || "User Full Name"}
+        <UserButton
+          appearance={{
+            elements: {
+              // userButtonAvatarBox: "size-full rounded-none",
+              // userButtonAvatarImage: "rounded-none",
+            },
+            options: { shimmer: false },
+          }}
+          showName
+        />
       </SidebarFooter>
     </Sidebar>
   );

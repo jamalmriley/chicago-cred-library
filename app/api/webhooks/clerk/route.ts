@@ -52,9 +52,20 @@ export async function POST(request: NextRequest) {
     const firstName = (public_metadata?.firstName as string) || undefined;
     const lastName = (public_metadata?.lastName as string) || undefined;
 
-    // If name properties exist inside the metadata, patch them onto the top-level user fields
+    const keysToRemove = ["firstName", "lastName"];
+    const filteredMetadata = Object.fromEntries(
+      Object.entries(public_metadata).filter(
+        ([key]) => !keysToRemove.includes(key),
+      ),
+    );
+
+    // Patch name fields onto the top-level user fields, and remove them from the public metadata.
     if (firstName || lastName) {
-      await clerkClient.users.updateUser(id, { firstName, lastName });
+      await clerkClient.users.updateUser(id, {
+        firstName,
+        lastName,
+        publicMetadata: filteredMetadata,
+      });
     }
   }
 

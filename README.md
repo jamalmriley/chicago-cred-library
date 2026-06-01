@@ -1,6 +1,6 @@
 # Project L.I.B.R.A.R.Y.
 
-### Library Interface for Boosting Reading Access and Resources Year-round
+### Literacy Interface for Boosting Reading Access and Resources Year-round
 
 A touchscreen-friendly library kiosk system built to support the literacy initiative at **[Chicago CRED](https://www.chicagocred.org)**, enabling participants to check out and return books, and track their reading history — all without staff intervention.
 
@@ -99,7 +99,7 @@ This project uses Supabase as its backend. The `participants` table should have 
 
 | Method  | Route                       | Description                                   |
 | ------- | --------------------------- | --------------------------------------------- |
-| `GET`   | `/api/books?isbn={isbn}`    | Fetch a book by ISBN from Google Books API    |
+| `GET`   | `/api/google-books?isbn={isbn}`    | Fetch a book by ISBN from Google Books API    |
 | `GET`   | `/api/participants`         | Fetch all participants                        |
 | `GET`   | `/api/participants?id={id}` | Fetch a single participant by ID              |
 | `PATCH` | `/api/participants?id={id}` | Update a participant (checkout history, etc.) |

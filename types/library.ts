@@ -11,29 +11,22 @@ export namespace GoogleBooks {
     id: string;
     etag: string;
     selfLink: string;
-    volumeInfo: VolumeInfo;
+    volumeInfo: VolumeInfo; // Required
     saleInfo: SalesInfo;
     accessInfo: AccessInfo;
     searchInfo: SearchInfo;
   }
-  export interface LibraryBook extends GoogleBooks.Book {
-    site: Site;
-    available_count: number;
-    total_count: number;
-    added_by: string;
-    checkout_history: KioskItem[] | null;
-  }
   export interface VolumeInfo {
-    title: string;
-    authors: string[];
+    title: string; // Required
+    authors: string[]; // Required
     publisher: string;
-    publishedDate: string;
-    description: string;
-    industryIdentifiers: { type: "ISBN_10" | "ISBN_13"; identifier: string }[];
+    publishedDate: string; // Required
+    description: string; // Required
+    industryIdentifiers: { type: "ISBN_10" | "ISBN_13"; identifier: string }[]; // Required
     readingModes: { text: boolean; image: boolean };
-    pageCount: number;
+    pageCount: number; // Required
     printType: string;
-    categories: string[];
+    categories: string[]; // Required
     maturityRating: string;
     allowAnonLogging: boolean;
     contentVersion: string;
@@ -43,7 +36,7 @@ export namespace GoogleBooks {
     };
     imageLinks: {
       smallThumbnail: string;
-      thumbnail: string;
+      thumbnail: string; // Required
     };
     language: string;
     previewLink: string;
@@ -83,8 +76,37 @@ export namespace GoogleBooks {
   }
 }
 
+type RequiredVolumeInfoKeys =
+  | "title"
+  | "authors"
+  | "publishedDate"
+  | "description"
+  | "industryIdentifiers"
+  | "pageCount"
+  | "categories";
+// | "imageLinks";
+
+type PartialExcept<T, K extends keyof T> = Partial<T> & Pick<T, K>;
+
+export type ManualBook = Omit<Partial<GoogleBooks.Book>, "volumeInfo"> & {
+  volumeInfo: PartialExcept<GoogleBooks.VolumeInfo, RequiredVolumeInfoKeys>;
+};
+
+export type BookInfo = GoogleBooks.Book | ManualBook;
+
+export interface LibraryBook {
+  id: string;
+  book_info: BookInfo;
+  site: Site;
+  available_count: number;
+  total_count: number;
+  created_at: Date;
+  updated_at: Date;
+  checkout_history: KioskItem[] | null;
+}
+
 export interface KioskItem {
-  item: GoogleBooks.Book;
+  book_info: BookInfo;
   checkout_date: Date;
   due_date: Date;
   return_date: Date | null;

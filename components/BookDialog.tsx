@@ -28,7 +28,7 @@ export default function BookDialog({ isbn }: { isbn: string }) {
   const [book, setBook] = useState<GoogleBooks.Book | null>(null);
   useEffect(() => {
     const fetchBook = async () => {
-      const res = await fetch(`/api/books?isbn=${isbn}`);
+      const res = await fetch(`/api/google-books?isbn=${isbn}`);
       if (!res.ok) {
         setBook(null);
         return;

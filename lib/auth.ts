@@ -1,5 +1,5 @@
 import { Participant } from "@/types/cred";
-import { GoogleBooks } from "@/types/library";
+import { BookInfo } from "@/types/library";
 
 export const ROLE_OPTIONS = [
   {
@@ -46,8 +46,8 @@ type RolesWithPermissions = {
 };
 
 export type Permissions = {
-  library: {
-    dataType: GoogleBooks.LibraryBook;
+  books: {
+    dataType: BookInfo;
     action: "create" | "read" | "update" | "delete";
   };
   participants: {
@@ -80,7 +80,7 @@ const handleUpdate = (user: PermissionUser, target: PermissionUser): boolean =>
 const ROLE_PERMISSIONS = {
   // Super admins have unrestricted access, apart from the ability to delete audit logs.
   super_admin: {
-    library: { create: true, read: true, update: true, delete: true },
+    books: { create: true, read: true, update: true, delete: true },
     participants: { create: true, read: true, update: true, delete: true },
     users: { create: true, read: true, update: true, delete: true },
     test_data: { create: true, read: true, update: true, delete: true },
@@ -88,7 +88,7 @@ const ROLE_PERMISSIONS = {
   },
   // Admins can create and update staff/viewers, but they can also update their own profile.
   admin: {
-    library: { create: true, read: true, update: true, delete: false },
+    books: { create: true, read: true, update: true, delete: false },
     participants: { create: true, read: true, update: true, delete: false },
     users: {
       create: (_, { targetRole }) =>
@@ -104,7 +104,7 @@ const ROLE_PERMISSIONS = {
   },
   // Staff can update their own profile.
   staff: {
-    library: { create: true, read: true, update: true, delete: false },
+    books: { create: true, read: true, update: true, delete: false },
     participants: { create: true, read: true, update: true, delete: false },
     users: {
       create: false,
@@ -116,7 +116,7 @@ const ROLE_PERMISSIONS = {
     audit_logs: { create: true, read: true, update: false, delete: false },
   },
   viewer: {
-    library: { create: false, read: true, update: false, delete: false },
+    books: { create: false, read: true, update: false, delete: false },
     participants: { create: false, read: true, update: false, delete: false },
     users: { create: false, read: true, update: false, delete: false },
     test_data: { create: false, read: true, update: false, delete: false },

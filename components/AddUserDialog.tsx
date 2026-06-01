@@ -22,16 +22,14 @@ import { useUser } from "@clerk/nextjs";
 import { ChevronDown, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import Required from "./Required";
+import SiteDropdownMenuContent from "./SiteDropdownMenuContent";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { Checkbox } from "./ui/checkbox";
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { Item, ItemContent, ItemDescription, ItemTitle } from "./ui/item";
@@ -96,10 +94,6 @@ export default function AddUserDialog() {
       </DialogContent>
     </Dialog>
   );
-}
-
-function Required() {
-  return <span className="text-destructive">*</span>;
 }
 
 function AddUserForm({
@@ -230,14 +224,6 @@ function AddUserForm({
 
     return digits;
   };
-  const groupSitesByRegion = () => {
-    const regions = [...new Set(SITES.map((site) => site.region))];
-    return regions.map((region) => ({
-      name: region,
-      sites: SITES.filter((site: Site) => site.region === region),
-    }));
-  };
-  const regions = groupSitesByRegion();
 
   const clearAllFields = () => {
     setFirstName("");
@@ -466,46 +452,10 @@ function AddUserForm({
                   <ChevronDown />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-fit">
-                {regions.map((region, i) => (
-                  <DropdownMenuGroup key={i}>
-                    {region.name !== "Chicago" && (
-                      <DropdownMenuLabel>{region.name}</DropdownMenuLabel>
-                    )}
-                    {region.sites.map((site, j) => (
-                      <DropdownMenuCheckboxItem
-                        key={j}
-                        className="flex flex-col justify-center items-start gap-0"
-                        checked={
-                          JSON.stringify(site) === JSON.stringify(selectedSite)
-                        }
-                        onCheckedChange={() => setSelectedSite(site)}
-                      >
-                        <Item size="xs" className="p-0">
-                          <ItemContent>
-                            <ItemTitle className="whitespace-nowrap">
-                              {site.name}
-                            </ItemTitle>
-                            <ItemDescription>
-                              {[
-                                site.name === site.nickname
-                                  ? ""
-                                  : `${site.nickname}`,
-                                site.neighborhood === "Chicago"
-                                  ? ""
-                                  : site.neighborhood,
-                              ]
-                                .filter((el) => el !== "")
-                                .join(" | ")}
-                            </ItemDescription>
-                          </ItemContent>
-                        </Item>
-                      </DropdownMenuCheckboxItem>
-                    ))}
-                    {i < regions.length - 1 && <DropdownMenuSeparator />}
-                  </DropdownMenuGroup>
-                ))}
-              </DropdownMenuContent>
+              <SiteDropdownMenuContent
+                selectedSite={selectedSite}
+                setSelectedSite={setSelectedSite}
+              />
             </DropdownMenu>
           </Field>
         </span>
