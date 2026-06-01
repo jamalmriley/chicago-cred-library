@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
+import { Providers } from "@/components/ui/providers";
 
 const primaryFont = Inter({
   subsets: ["latin"],
@@ -36,18 +37,8 @@ export default function RootLayout({
         secondaryFont.variable,
       )}
     >
-      <body className="min-h-full flex flex-col">
-        <ClerkProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <main>{children}</main>
-            <Toaster />
-          </ThemeProvider>
-        </ClerkProvider>
+      <body>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
