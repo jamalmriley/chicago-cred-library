@@ -1,5 +1,6 @@
 "use client";
 
+import { Separator } from "@/components/ui/separator";
 import {
   Sidebar,
   SidebarContent,
@@ -9,9 +10,13 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
+import { SITES } from "@/types/cred";
 import { UserButton, useUser } from "@clerk/nextjs";
 import {
+  ChevronRight,
   CircleGauge,
   LibraryBig,
   ScanBarcode,
@@ -22,44 +27,56 @@ import {
 import { motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import { AppearanceToggle } from "./AppearanceToggle";
-import { Separator } from "@/components/ui/separator";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "./ui/collapsible";
 
 export default function AdminSidebar() {
-  const links = [
+  const menuItems = [
     {
+      id: "dashboard",
       label: "Dashboard",
       href: "/admin",
       icon: <CircleGauge className="sidebar-icon" />,
     },
     {
+      id: "users",
       label: "Users",
       href: "/admin/users",
       icon: <Users className="sidebar-icon" />,
     },
     {
+      id: "library",
       label: "Library",
       href: "/admin/library",
       icon: <LibraryBig className="sidebar-icon" />,
     },
     {
+      id: "kiosk",
       label: "Go to kiosk",
       href: "/kiosk",
       icon: <ScanBarcode className="sidebar-icon" />,
     },
     {
+      id: "audit-log",
       label: "Audit log",
       href: "/admin/audit",
       icon: <ScrollText className="sidebar-icon" />,
     },
     {
+      id: "settings",
       label: "Settings",
       href: "/admin/settings",
       icon: <Settings className="sidebar-icon" />,
     },
   ];
 
-  const { isLoaded, isSignedIn, user } = useUser();
+  const { isLoaded, isSignedIn } = useUser();
+  const [open, setOpen] = useState(false);
 
   if (!isLoaded || !isSignedIn) return null; // TODO: Return a skeleton sidebar.
   return (
@@ -70,14 +87,57 @@ export default function AdminSidebar() {
       <SidebarContent>
         <SidebarGroup>
           <SidebarMenu>
-            {links.map((link, i) => (
+            {menuItems.map((item, i) => (
               <SidebarMenuItem key={i}>
-                <SidebarMenuButton asChild>
-                  <Link href={link.href}>
-                    {link.icon}
-                    {link.label}
-                  </Link>
-                </SidebarMenuButton>
+                {item.id === "kiosk" ? (
+                  <Collapsible open={open} onOpenChange={setOpen}>
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuButton className="w-full">
+                        {item.icon}
+                        {item.label}
+                        <ChevronRight
+                          className={`ml-auto transition-all ease-in-out duration-200 ${open ? "rotate-90" : "rotate-0"}`}
+                        />
+                      </SidebarMenuButton>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <SidebarMenuSub>
+                        {SITES.map((site) => (
+                          <SidebarMenuSubItem key={site.id}>
+                            <SidebarMenuButton asChild>
+                              <Link
+                                href={`${item.href}?site=${site.id}`}
+                                className="h-fit flex flex-col items-start leading-none"
+                              >
+                                {site.name}
+
+                                <span className="text-xs text-muted-foreground">
+                                  {[
+                                    site.name === site.nickname
+                                      ? ""
+                                      : site.nickname,
+                                    site.neighborhood === "Chicago"
+                                      ? ""
+                                      : site.neighborhood,
+                                  ]
+                                    .filter((el) => el !== "")
+                                    .join(" | ")}
+                                </span>
+                              </Link>
+                            </SidebarMenuButton>
+                          </SidebarMenuSubItem>
+                        ))}
+                      </SidebarMenuSub>
+                    </CollapsibleContent>
+                  </Collapsible>
+                ) : (
+                  <SidebarMenuButton asChild>
+                    <Link href={item.href}>
+                      {item.icon}
+                      {item.label}
+                    </Link>
+                  </SidebarMenuButton>
+                )}
               </SidebarMenuItem>
             ))}
           </SidebarMenu>
