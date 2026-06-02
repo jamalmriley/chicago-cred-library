@@ -2,67 +2,35 @@
 
 import { Separator } from "@/components/ui/separator";
 import { useKioskContext } from "@/contexts/kiosk-context";
+import { fetchGoogleBook } from "@/lib/utils";
+import { Participant } from "@/types/cred";
 import { LibraryBig } from "lucide-react";
-import { toast } from "sonner";
 import { useSound } from "use-sound";
 import BookLineItem from "./BookLineItem";
 import { BookScannerWrapper } from "./BookScannerWrapper";
 import KioskCard from "./KioskCard";
-import { Participant } from "@/types/cred";
-import { GoogleBooks } from "@/types/library";
 
 export default function BookCheckout({
   participant,
 }: {
   participant: Participant;
 }) {
-  const { cart, setCart, setCurrBook, setMaxCheckoutStepAllowed } =
+  const { cart, setCart, currBook, setCurrBook, setMaxCheckoutStepAllowed } =
     useKioskContext();
   const [playBeep] = useSound("/sounds/beep.m4a", { volume: 0.5 });
 
   const handleScan = async (isbn: string) => {
     playBeep();
-    const book = await fetchBook(isbn);
+    const book = await fetchGoogleBook(isbn);
     if (!book) return;
     setCart((prev) => (prev ? [...prev, book] : [book]));
     setMaxCheckoutStepAllowed(3);
   };
 
   const handleLookup = async (isbn: string) => {
-    const book = await fetchBook(isbn);
+    const book = await fetchGoogleBook(isbn);
     if (!book) return;
     setCurrBook(book);
-  };
-
-  const fetchBook = async (isbn: string): Promise<GoogleBooks.Book | null> => {
-    try {
-      const res = await fetch(`/api/google-books?isbn=${isbn}`);
-
-      if (res.status === 404) {
-        toast.error("Book not found. Please try again.", {
-          position: "bottom-right",
-        });
-        return null;
-      }
-
-      if (!res.ok) {
-        toast.error(
-          "An error occurred while gathering book info. Please try again.",
-          { position: "bottom-right" },
-        );
-        return null;
-      }
-
-      return (await res.json()) as GoogleBooks.Book;
-    } catch (err) {
-      const error = err as GoogleBooks.ErrorResponse;
-      toast.error(
-        error?.error?.message ||
-          "An error occurred while gathering book info. Please try again.",
-        { position: "bottom-right" },
-      );
-      return null;
-    }
   };
 
   return (
@@ -81,7 +49,12 @@ export default function BookCheckout({
       </div>
       <Separator orientation="vertical" decorative className="mx-5" />
       <div className="w-1/2 h-full">
-        <BookScannerWrapper onLookup={handleLookup} onScan={handleScan} />
+        <BookScannerWrapper
+          book={currBook}
+          setBook={setCurrBook}
+          onLookup={handleLookup}
+          onScan={handleScan}
+        />
       </div>
     </KioskCard>
   );

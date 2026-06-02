@@ -27,11 +27,13 @@ import { Field, FieldGroup, FieldLabel } from "./ui/field";
 import { Input } from "./ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Spinner } from "./ui/spinner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Textarea } from "./ui/textarea";
 
 export default function AddBookDialog() {
   const { user } = useUser();
   const [isOpen, setIsOpen] = useState(false);
+  const tabs = ["Scan", "Manual"];
 
   if (!user) return;
   return (
@@ -47,6 +49,23 @@ export default function AddBookDialog() {
           <DialogTitle>Add a book</DialogTitle>
           <DialogDescription>Fill out the information below.</DialogDescription>
         </DialogHeader>
+
+        <Tabs defaultValue={tabs[0]}>
+          <TabsList variant="line" className="mb-5">
+            {tabs.map((tab) => (
+              <TabsTrigger key={tab} value={tab}>
+                {tab}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+
+          {tabs.map((tab) => (
+            <TabsContent key={tab} value={tab}>
+              {tab}
+            </TabsContent>
+          ))}
+        </Tabs>
+
         <AddBookForm setIsDrawerOpen={setIsOpen} />
       </DialogContent>
     </Dialog>

@@ -5,7 +5,7 @@ import { Field, FieldDescription } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
-import { useKioskContext } from "@/contexts/kiosk-context";
+import { GoogleBooks } from "@/types/library";
 import { BrowserMultiFormatReader } from "@zxing/browser";
 import { NotFoundException } from "@zxing/library";
 import {
@@ -19,12 +19,18 @@ import { useEffect, useRef, useState } from "react";
 import BookLineItem from "./BookLineItem";
 
 interface BookScannerProps {
+  book: GoogleBooks.Book | null;
+  setBook: (book: GoogleBooks.Book | null) => void;
   onLookup: (isbn: string) => Promise<void>;
   onScan: (isbn: string) => void;
 }
 
-export default function BookScanner({ onLookup, onScan }: BookScannerProps) {
-  const { currBook, setCurrBook } = useKioskContext();
+export default function BookScanner({
+  onLookup,
+  onScan,
+  book,
+  setBook,
+}: BookScannerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const readerRef = useRef<BrowserMultiFormatReader | null>(null);
   const lastScannedRef = useRef<string | null>(null);
@@ -180,21 +186,21 @@ export default function BookScanner({ onLookup, onScan }: BookScannerProps) {
         </Button>
       </div>
 
-      {isManualSearchEnabled && !currBook && (
+      {isManualSearchEnabled && !book && (
         <Button
           size="xs"
           variant="link"
           onClick={() => {
             setIsScanning(true);
             setIsManualSearchEnabled(false);
-            setCurrBook(null);
+            setBook(null);
           }}
         >
           Scan your books instead
         </Button>
       )}
 
-      {currBook && (
+      {book && (
         <Separator
           decorative
           className="bg-transparent border-t border-dashed"
@@ -202,7 +208,7 @@ export default function BookScanner({ onLookup, onScan }: BookScannerProps) {
       )}
 
       {/* Book Image and Details */}
-      {currBook && <BookLineItem book={currBook} location="lookup" />}
+      {book && <BookLineItem book={book} location="lookup" />}
     </div>
   );
 }

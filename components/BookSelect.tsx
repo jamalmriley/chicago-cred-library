@@ -151,7 +151,7 @@ function FilteredBookList({ letter }: { letter: string }) {
   return (
     <div className="w-full flex flex-col gap-2">
       <span className="select-none text-xs font-bold">{letter}</span>
-      <div className="flex gap-5 overflow-x-scroll">
+      <div className="flex gap-5 overflow-x-scroll scrollbar-none">
         {books &&
           filterBooksBySelectedLetter(books, letter).map(
             (book: LibraryBook) => <BookItem key={book.id} book={book} />,
@@ -174,11 +174,11 @@ function BookItem({ book }: { book: LibraryBook }) {
           className="w-full h-auto aspect-auto shrink-0 rounded-lg border" // Maintains thumbnail aspect ratio
         />
       ) : (
-        <div className="w-full aspect-[3/4] flex justify-center items-center rounded-lg border bg-muted text-muted-foreground font-bold text-3xl">
+        <div className="w-full aspect-3/4 flex justify-center items-center rounded-lg border bg-muted text-muted-foreground font-bold text-3xl">
           <ImageOff className="size-16" />
         </div>
       )}
-      <span className="mb-5">
+      <span>
         <p className="font-bold line-clamp-1">{volumeInfo.title}</p>
         <p className="text-sm line-clamp-1">{volumeInfo.authors.join(", ")}</p>
         <p className="text-xs text-muted-foreground">
@@ -194,11 +194,11 @@ function SkeletonBookList() {
   return (
     <div className="w-full flex flex-col gap-2">
       <Skeleton className="size-4" />
-      <div className="flex gap-5 overflow-x-scroll">
+      <div className="flex gap-5 overflow-x-scroll scrollbar-none">
         {Array.from({ length: 10 }).map((_, i) => (
           <span key={i} className="w-40 min-w-40 flex flex-col gap-5">
-            <Skeleton className="w-full aspect-[3/4] rounded-lg border" />
-            <span className="flex flex-col mb-5">
+            <Skeleton className="w-full aspect-3/4 rounded-lg border" />
+            <span className="flex flex-col">
               <Skeleton className="w-full h-5 mb-1" />
               <Skeleton className="w-full h-4 mb-1" />
               <Skeleton className="w-full h-3 mb-1" />
