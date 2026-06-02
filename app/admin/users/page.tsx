@@ -128,7 +128,7 @@ function Fallback({
   const refresh = () => setLastUpdated(new Date().toString());
   return (
     <div
-      className={`w-full h-fit flex flex-col flex-1 grow justify-center items-center p-10 border rounded-xl ${fallback === "error" ? "border-destructive bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"}`}
+      className={`w-full h-fit flex flex-col flex-1 grow justify-center items-center p-10 border rounded-xl ${fallback === "error" ? "border-destructive bg-destructive/5 text-destructive" : "bg-muted text-muted-foreground"}`}
     >
       <UserX className="size-20" />
       <p className="text-lg font-medium mb-5 select-none">

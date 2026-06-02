@@ -5,7 +5,7 @@ import Link from "next/link";
 
 export default function KioskPage() {
   return (
-    <div className="page-container justify-center items-center gap-5">
+    <div className="min-h-dvh flex flex-col justify-center items-center gap-5">
       <Badge>
         <MapPin />
         WS Hub 2 – North Lawndale

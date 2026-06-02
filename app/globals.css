@@ -133,13 +133,17 @@
 }
 
 @layer components {
+  /* .page-container {
+    @apply flex flex-col flex-1 min-h-screen min-w-screen p-10;
+  }
+
   .page-wrapper {
     @apply flex flex-col grow px-10 pb-10 pt-5;
   }
 
   .page-container {
     @apply pt-5 grow flex flex-col;
-  }
+  } */
 
   .h1 {
     @apply text-6xl uppercase font-secondary mb-4;
@@ -150,7 +154,7 @@
   }
 
   .kiosk {
-    @apply h-[calc(100dvh-9.75rem)];
+    @apply h-[calc(100dvh-4.75rem)];
   }
 
   .sidebar-icon {

@@ -129,7 +129,7 @@ export default function CheckoutPage() {
   }, []);
 
   return (
-    <div className="page-container flex flex-col justify-between items-center">
+    <div className="p-0 flex flex-col justify-between items-center">
       <Carousel
         className={`kiosk w-full overflow-hidden`}
         setApi={setApi}

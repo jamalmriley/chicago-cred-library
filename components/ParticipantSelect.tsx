@@ -19,7 +19,7 @@ const filterParticipantsBySelectedLetter = (
   selectedLetter: string,
 ) => {
   return participants.filter((participant) =>
-    participant.first_name.startsWith(selectedLetter),
+    participant.first_name.toUpperCase().startsWith(selectedLetter),
   );
 };
 
@@ -50,7 +50,7 @@ export default function ParticipantSelect() {
     selectedLetter: string,
   ) => {
     return participants.some((participant) =>
-      participant.first_name.startsWith(selectedLetter),
+      participant.first_name.toUpperCase().startsWith(selectedLetter),
     );
   };
 

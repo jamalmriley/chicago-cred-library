@@ -73,7 +73,7 @@ function AddBookForm({
   const [isbn, setIsbn] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
-  const [pageCount, setPageCount] = useState<number | undefined>(undefined);
+  const [pageCount, setPageCount] = useState("");
 
   const [isTestData, setIsTestData] = useState(false);
 
@@ -86,7 +86,7 @@ function AddBookForm({
     (isbn.length !== 10 && isbn.length !== 13) ||
     description === "" ||
     category === "" ||
-    !pageCount;
+    pageCount === "";
 
   const clearAllFields = () => {
     setSelectedSite(null);
@@ -97,7 +97,7 @@ function AddBookForm({
     setIsbn("");
     setDescription("");
     setCategory("");
-    setPageCount(undefined);
+    setPageCount("");
     setIsDrawerOpen(false);
   };
 
@@ -344,9 +344,10 @@ function AddBookForm({
               id="page-count"
               placeholder="300"
               required
-              type="text"
+              type="number"
+              min={1}
               value={pageCount}
-              onChange={(e) => setPageCount(parseInt(e.target.value))}
+              onChange={(e) => setPageCount(e.target.value)}
             />
           </Field>
         </span>
@@ -375,7 +376,7 @@ function AddBookForm({
           className="w-full"
           disabled={isLoading || isButtonDisabled}
           onClick={() => {
-            if (!selectedSite || !publishedDate || !pageCount) return;
+            if (!selectedSite || !publishedDate) return;
 
             const book_info: ManualBook = {
               volumeInfo: {
@@ -389,7 +390,7 @@ function AddBookForm({
                     identifier: isbn,
                   },
                 ],
-                pageCount,
+                pageCount: parseInt(pageCount),
                 categories: [...category.split(",").map((el) => el.trim())],
               },
             };

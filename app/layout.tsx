@@ -37,7 +37,7 @@ export default function RootLayout({
         secondaryFont.variable,
       )}
     >
-      <body>
+      <body className="min-h-full flex flex-col">
         <Providers>{children}</Providers>
       </body>
     </html>

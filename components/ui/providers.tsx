@@ -14,9 +14,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         enableSystem
         disableTransitionOnChange
       >
-        <div className="flex flex-col min-h-dvh">
-          <main className="page-wrapper">{children}</main>
-        </div>
+        <main>{children}</main>
         <Toaster />
       </ThemeProvider>
     </ClerkProvider>
@@ -28,7 +26,7 @@ export function AdminProviders({ children }: { children: React.ReactNode }) {
     <AdminContextProvider>
       <SidebarProvider>
         <AdminSidebar />
-        <div className="w-full">
+        <div className="w-full px-10 pt-5 pb-10 overflow-x-hidden">
           <SidebarTrigger />
           {children}
         </div>
