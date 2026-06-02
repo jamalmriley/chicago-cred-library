@@ -23,7 +23,7 @@ const filterParticipantsBySelectedLetter = (
   );
 };
 
-export default function NameSelect() {
+export default function ParticipantSelect() {
   const {
     participant,
     participants,
@@ -49,12 +49,9 @@ export default function NameSelect() {
     participants: Participant[],
     selectedLetter: string,
   ) => {
-    for (const participant of participants) {
-      if (participant.first_name.startsWith(selectedLetter)) {
-        return true;
-      }
-    }
-    return false;
+    return participants.some((participant) =>
+      participant.first_name.startsWith(selectedLetter),
+    );
   };
 
   useEffect(() => {

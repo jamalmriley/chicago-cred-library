@@ -1,7 +1,7 @@
 "use client";
 
 import BookReturn from "@/components/BookReturn";
-import NameSelect from "@/components/NameSelect";
+import ParticipantSelect from "@/components/ParticipantSelect";
 import ReturnConfirm from "@/components/ReturnConfirm";
 import { Button } from "@/components/ui/button";
 import {
@@ -131,7 +131,7 @@ export default function ReturnPage() {
       >
         <CarouselContent>
           <CarouselItem>
-            <NameSelect />
+            <ParticipantSelect />
           </CarouselItem>
           <CarouselItem>
             {participant && <BookReturn participant={participant} />}

@@ -1,13 +1,21 @@
 "use client";
 
 import { Participant } from "@/types/cred";
+import { LibraryBook } from "@/types/library";
 import { User } from "@clerk/nextjs/server";
 import { createContext, useContext, useState } from "react";
 
 type AdminContext = {
   lastUpdated: string;
-  // Participants
   setLastUpdated: React.Dispatch<React.SetStateAction<string>>;
+  // Books
+  books: LibraryBook[] | null;
+  setBooks: React.Dispatch<React.SetStateAction<LibraryBook[] | null>>;
+  booksError: string | null;
+  setBooksError: React.Dispatch<React.SetStateAction<string | null>>;
+  booksLoading: boolean;
+  setBooksLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  // Participants
   participants: Participant[] | null;
   setParticipants: React.Dispatch<React.SetStateAction<Participant[] | null>>;
   participantsError: string | null;
@@ -31,6 +39,10 @@ export default function AdminContextProvider({
   children: React.ReactNode;
 }) {
   const [lastUpdated, setLastUpdated] = useState<string>("");
+  // Books
+  const [books, setBooks] = useState<LibraryBook[] | null>(null);
+  const [booksError, setBooksError] = useState<string | null>(null);
+  const [booksLoading, setBooksLoading] = useState<boolean>(true);
   // Participants
   const [participants, setParticipants] = useState<Participant[] | null>(null);
   const [participantsError, setParticipantsError] = useState<string | null>(
@@ -47,6 +59,12 @@ export default function AdminContextProvider({
       value={{
         lastUpdated,
         setLastUpdated,
+        books,
+        setBooks,
+        booksError,
+        setBooksError,
+        booksLoading,
+        setBooksLoading,
         participants,
         setParticipants,
         participantsError,

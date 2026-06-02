@@ -2,7 +2,7 @@
 
 import BookCheckout from "@/components/BookCheckout";
 import CheckoutConfirm from "@/components/CheckoutConfirm";
-import NameSelect from "@/components/NameSelect";
+import ParticipantSelect from "@/components/ParticipantSelect";
 import { Button } from "@/components/ui/button";
 import {
   Carousel,
@@ -12,8 +12,8 @@ import {
 } from "@/components/ui/carousel";
 import { Spinner } from "@/components/ui/spinner";
 import { useKioskContext } from "@/contexts/kiosk-context";
-import { GoogleBooks, KioskItem } from "@/types/library";
 import { Participant } from "@/types/cred";
+import { GoogleBooks, KioskItem } from "@/types/library";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -137,7 +137,7 @@ export default function CheckoutPage() {
       >
         <CarouselContent>
           <CarouselItem>
-            <NameSelect />
+            <ParticipantSelect />
           </CarouselItem>
           <CarouselItem>
             {participant && <BookCheckout participant={participant} />}
