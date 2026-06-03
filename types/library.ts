@@ -106,7 +106,7 @@ export interface LibraryBook {
 }
 
 export interface KioskItem {
-  book_info: BookInfo;
+  book: LibraryBook;
   checkout_date: Date;
   due_date: Date;
   return_date: Date | null;

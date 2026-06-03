@@ -1,35 +1,10 @@
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { LibraryBig, MapPin, ScanBarcode } from "lucide-react";
-import Link from "next/link";
+import KioskPage from "@/components/client-pages/KioskPage";
+import { Suspense } from "react";
 
-export default function KioskPage() {
+export default function Page() {
   return (
-    <div className="min-h-dvh flex flex-col justify-center items-center gap-5">
-      <Badge>
-        <MapPin />
-        WS Hub 2 – North Lawndale
-      </Badge>
-      <h1 className="h1 text-center">
-        Welcome to the <br />
-        CRED Library.
-      </h1>
-      <h2 className="h2">What would you like to do today?</h2>
-
-      <div className="flex gap-10">
-        <Button asChild>
-          <Link href="/kiosk/checkout">
-            <ScanBarcode />
-            Check out a book
-          </Link>
-        </Button>
-        <Button asChild variant="outline">
-          <Link href="/kiosk/return">
-            <LibraryBig />
-            Return a book
-          </Link>
-        </Button>
-      </div>
-    </div>
+    <Suspense>
+      <KioskPage />
+    </Suspense>
   );
 }

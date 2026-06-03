@@ -1,9 +1,9 @@
+import { Button } from "@/components/ui/button";
 import { Participant } from "@/types/cred";
 import { LibraryBig } from "lucide-react";
 import Link from "next/link";
-import BookLineItem from "./BookLineItem";
+import { ReturnBookLineItem } from "./BookLineItem";
 import KioskCard from "./KioskCard";
-import { Button } from "@/components/ui/button";
 
 export default function BookReturn({
   participant,
@@ -28,9 +28,9 @@ export default function BookReturn({
         )}
         {activeCheckoutHistory && activeCheckoutHistory.length > 0 ? (
           activeCheckoutHistory.map((checkoutItem, index) => (
-            <BookLineItem
+            <ReturnBookLineItem
               key={index}
-              book={checkoutItem.book_info}
+              book={checkoutItem.book}
               kioskItem={checkoutItem}
               location="return"
             />

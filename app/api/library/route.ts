@@ -12,7 +12,13 @@ export async function GET(request: NextRequest) {
   // Otherwise, return all books.
   const { data, error } = id ? await query.eq("id", id).single() : await query;
 
-  if (error) return NextResponse.json({ error }, { status: 500 });
+  if (error) {
+    // Supabase returns a PGRST116 error when .single() finds no rows
+    if (error.code === "PGRST116") {
+      return NextResponse.json({ error: "Book not found." }, { status: 404 });
+    }
+    return NextResponse.json({ error }, { status: 500 });
+  }
   return NextResponse.json(data);
 }
 

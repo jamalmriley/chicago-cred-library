@@ -1,18 +1,20 @@
 "use client";
 
 import { useAdminContext } from "@/contexts/admin-context";
+import { fetchGoogleBook } from "@/lib/books";
 import { Site, SITES } from "@/types/cred";
-import { LibraryBook, ManualBook } from "@/types/library";
+import { GoogleBooks, LibraryBook, ManualBook } from "@/types/library";
 import { useUser } from "@clerk/nextjs";
 import { BookPlus, ChevronDown, Plus, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import useSound from "use-sound";
+import { BookScannerWrapper } from "./BookScannerWrapper";
 import Required from "./Required";
 import SiteDropdownMenuContent from "./SiteDropdownMenuContent";
 import { AbacButton, AbacField } from "./ui/abac";
 import { Button } from "./ui/button";
 import { Calendar } from "./ui/calendar";
-import { Card } from "./ui/card";
 import { Checkbox } from "./ui/checkbox";
 import {
   Dialog,
@@ -47,11 +49,13 @@ export default function AddBookDialog() {
       <DialogContent className="max-h-[75vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>Add a book</DialogTitle>
-          <DialogDescription>Fill out the information below.</DialogDescription>
+          <DialogDescription>
+            Scan or fill out the book's information below.
+          </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue={tabs[0]}>
-          <TabsList variant="line" className="mb-5">
+        <Tabs defaultValue={tabs[0]} className="h-full overflow-y-hidden">
+          <TabsList variant="line" className="mb-3">
             {tabs.map((tab) => (
               <TabsTrigger key={tab} value={tab}>
                 {tab}
@@ -60,26 +64,45 @@ export default function AddBookDialog() {
           </TabsList>
 
           {tabs.map((tab) => (
-            <TabsContent key={tab} value={tab}>
-              {tab}
+            <TabsContent
+              key={tab}
+              value={tab}
+              className="flex-1 min-h-0 overflow-y-auto p-5 border rounded-xl scrollbar-none"
+            >
+              <AddBookForm tab={tab} setIsDrawerOpen={setIsOpen} />
             </TabsContent>
           ))}
         </Tabs>
-
-        <AddBookForm setIsDrawerOpen={setIsOpen} />
       </DialogContent>
     </Dialog>
   );
 }
 
 function AddBookForm({
+  tab,
   setIsDrawerOpen,
 }: {
+  tab: string;
   setIsDrawerOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const { setLastUpdated } = useAdminContext();
   const { isLoaded, user } = useUser();
   const [isLoading, setIsLoading] = useState(false);
+  const [book, setBook] = useState<GoogleBooks.Book | null>(null);
+  const [playBeep] = useSound("/sounds/beep.m4a", { volume: 0.5 });
+
+  const handleScan = async (isbn: string) => {
+    playBeep();
+    const book = await fetchGoogleBook(isbn);
+    if (!book) return;
+    setBook(book);
+  };
+
+  const handleLookup = async (isbn: string) => {
+    const book = await fetchGoogleBook(isbn);
+    if (!book) return;
+    setBook(book);
+  };
 
   const [selectedSite, setSelectedSite] = useState<Site | null>(null);
   const [title, setTitle] = useState("");
@@ -178,261 +201,270 @@ function AddBookForm({
 
   if (!isLoaded || !user) return;
   return (
-    <Card className="flex-1 min-h-0 overflow-y-auto p-5">
-      <FieldGroup>
-        {/* Title */}
-        <span className="flex gap-5">
-          <Field>
-            <FieldLabel htmlFor="site">
-              Site
-              <Required />
-            </FieldLabel>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild id="site">
-                <Button
-                  variant="outline"
-                  className={`flex justify-between ${selectedSite ? "text-foreground" : "text-muted-foreground"}`}
-                >
-                  {selectedSite
-                    ? SITES.filter(
-                        (site) =>
-                          JSON.stringify(site) === JSON.stringify(selectedSite),
-                      )[0].nickname
-                    : "Select a site"}
-                  <ChevronDown />
-                </Button>
-              </DropdownMenuTrigger>
-              <SiteDropdownMenuContent
-                selectedSite={selectedSite}
-                setSelectedSite={setSelectedSite}
-              />
-            </DropdownMenu>
-          </Field>
+    <div className="flex flex-col gap-5">
+      {tab === "Scan" ? (
+        <BookScannerWrapper<GoogleBooks.Book>
+          book={book}
+          setBook={setBook}
+          onLookup={handleLookup}
+          onScan={handleScan}
+        />
+      ) : tab === "Manual" ? (
+        <FieldGroup>
+          {/* Title */}
+          <span className="flex gap-5">
+            <Field>
+              <FieldLabel htmlFor="site">
+                Site
+                <Required />
+              </FieldLabel>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild id="site">
+                  <Button
+                    variant="outline"
+                    className={`flex justify-between ${selectedSite ? "text-foreground" : "text-muted-foreground"}`}
+                  >
+                    {selectedSite
+                      ? SITES.filter(
+                          (site) =>
+                            JSON.stringify(site) ===
+                            JSON.stringify(selectedSite),
+                        )[0].nickname
+                      : "Select a site"}
+                    <ChevronDown />
+                  </Button>
+                </DropdownMenuTrigger>
+                <SiteDropdownMenuContent
+                  selectedSite={selectedSite}
+                  setSelectedSite={setSelectedSite}
+                />
+              </DropdownMenu>
+            </Field>
 
-          <Field>
-            <FieldLabel htmlFor="title">
-              Title
-              <Required />
-            </FieldLabel>
-            <Input
-              id="title"
-              placeholder="The Hobbit"
-              required
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
-          </Field>
-        </span>
-
-        {/* Author */}
-        <Field>
-          <FieldLabel htmlFor="author">
-            Author{authorCount === 1 ? "" : "s"}
-            <Required />
-          </FieldLabel>
-
-          {Array.from({ length: authorCount }).map((_, i) => (
-            <span key={i} className="flex gap-2">
+            <Field>
+              <FieldLabel htmlFor="title">
+                Title
+                <Required />
+              </FieldLabel>
               <Input
-                id="author"
-                placeholder={
-                  i === 0 && authorCount === 1
-                    ? "J.R.R. Tolkien"
-                    : `Author ${i + 1}`
-                }
+                id="title"
+                placeholder="The Hobbit"
                 required
                 type="text"
-                value={authors[i]}
-                onChange={(e) => updateAuthor(i, e.target.value)}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
               />
-              <Button
-                size="icon"
-                onClick={() => {
-                  setAuthorCount((prev) => prev + 1);
-                  insertAuthor(i + 1);
-                }}
-              >
-                <Plus />
-              </Button>
-              <Button
-                size="icon"
-                variant="destructive"
-                onClick={() => {
-                  setAuthorCount((prev) => Math.max(1, prev - 1));
-                  removeAuthor(i);
-                }}
-                disabled={authorCount === 1}
-              >
-                <X />
-              </Button>
-            </span>
-          ))}
-        </Field>
+            </Field>
+          </span>
 
-        {/* Date Published & ISBN */}
-        <span className="flex gap-5">
+          {/* Author */}
           <Field>
-            <FieldLabel htmlFor="date">
-              Date Published
+            <FieldLabel htmlFor="author">
+              Author{authorCount === 1 ? "" : "s"}
               <Required />
             </FieldLabel>
-            <Popover open={open} onOpenChange={setOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  id="date"
-                  className={`justify-start font-normal ${publishedDate ? "" : "text-muted-foreground"}`}
-                >
-                  {publishedDate
-                    ? publishedDate.toLocaleDateString()
-                    : "Select date"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent
-                className="w-auto overflow-hidden p-0"
-                align="start"
-              >
-                <Calendar
-                  mode="single"
-                  selected={publishedDate}
-                  defaultMonth={publishedDate}
-                  captionLayout="dropdown"
-                  onSelect={(date) => {
-                    setPublishedDate(date);
-                    setOpen(false);
-                  }}
+
+            {Array.from({ length: authorCount }).map((_, i) => (
+              <span key={i} className="flex gap-2">
+                <Input
+                  id="author"
+                  placeholder={
+                    i === 0 && authorCount === 1
+                      ? "J.R.R. Tolkien"
+                      : `Author ${i + 1}`
+                  }
+                  required
+                  type="text"
+                  value={authors[i]}
+                  onChange={(e) => updateAuthor(i, e.target.value)}
                 />
-              </PopoverContent>
-            </Popover>
+                <Button
+                  size="icon"
+                  onClick={() => {
+                    setAuthorCount((prev) => prev + 1);
+                    insertAuthor(i + 1);
+                  }}
+                >
+                  <Plus />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="destructive"
+                  onClick={() => {
+                    setAuthorCount((prev) => Math.max(1, prev - 1));
+                    removeAuthor(i);
+                  }}
+                  disabled={authorCount === 1}
+                >
+                  <X />
+                </Button>
+              </span>
+            ))}
           </Field>
 
+          {/* Date Published & ISBN */}
+          <span className="flex gap-5">
+            <Field>
+              <FieldLabel htmlFor="date">
+                Date Published
+                <Required />
+              </FieldLabel>
+              <Popover open={open} onOpenChange={setOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    id="date"
+                    className={`justify-start font-normal ${publishedDate ? "" : "text-muted-foreground"}`}
+                  >
+                    {publishedDate
+                      ? publishedDate.toLocaleDateString()
+                      : "Select date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent
+                  className="w-auto overflow-hidden p-0"
+                  align="start"
+                >
+                  <Calendar
+                    mode="single"
+                    selected={publishedDate}
+                    defaultMonth={publishedDate}
+                    captionLayout="dropdown"
+                    onSelect={(date) => {
+                      setPublishedDate(date);
+                      setOpen(false);
+                    }}
+                  />
+                </PopoverContent>
+              </Popover>
+            </Field>
+
+            <Field>
+              <FieldLabel htmlFor="isbn">
+                ISBN
+                <Required />
+              </FieldLabel>
+              <Input
+                id="isbn"
+                placeholder="9780547928227"
+                required
+                type="text"
+                value={isbn}
+                onChange={(e) => setIsbn(e.target.value)}
+              />
+            </Field>
+          </span>
+
+          {/* Description */}
           <Field>
-            <FieldLabel htmlFor="isbn">
-              ISBN
+            <FieldLabel htmlFor="description">
+              Description
               <Required />
             </FieldLabel>
-            <Input
-              id="isbn"
-              placeholder="9780547928227"
-              required
-              type="text"
-              value={isbn}
-              onChange={(e) => setIsbn(e.target.value)}
-            />
-          </Field>
-        </span>
-
-        {/* Description */}
-        <Field>
-          <FieldLabel htmlFor="description">
-            Description
-            <Required />
-          </FieldLabel>
-          <Textarea
-            id="description"
-            placeholder="Lorem ipsum dolor sit amet..."
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-        </Field>
-
-        {/* Category & Page Count */}
-        <span className="flex gap-5">
-          <Field>
-            <FieldLabel htmlFor="category">
-              Category
-              <Required />
-            </FieldLabel>
-            <Input
-              id="category"
-              placeholder="Fantasy"
-              required
-              type="text"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
+            <Textarea
+              id="description"
+              placeholder="Lorem ipsum dolor sit amet..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
             />
           </Field>
 
-          <Field>
-            <FieldLabel htmlFor="page-count">
-              Page Count
-              <Required />
-            </FieldLabel>
-            <Input
-              id="page-count"
-              placeholder="300"
-              required
-              type="number"
-              min={1}
-              value={pageCount}
-              onChange={(e) => setPageCount(e.target.value)}
+          {/* Category & Page Count */}
+          <span className="flex gap-5">
+            <Field>
+              <FieldLabel htmlFor="category">
+                Category
+                <Required />
+              </FieldLabel>
+              <Input
+                id="category"
+                placeholder="Fantasy"
+                required
+                type="text"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+              />
+            </Field>
+
+            <Field>
+              <FieldLabel htmlFor="page-count">
+                Page Count
+                <Required />
+              </FieldLabel>
+              <Input
+                id="page-count"
+                placeholder="300"
+                required
+                type="number"
+                min={1}
+                value={pageCount}
+                onChange={(e) => setPageCount(e.target.value)}
+              />
+            </Field>
+          </span>
+
+          {/* Test Data */}
+          <AbacField
+            orientation="horizontal"
+            user={user}
+            action="create"
+            resource="test_data"
+          >
+            <Checkbox
+              id="test-data"
+              name="test-data"
+              checked={isTestData}
+              onCheckedChange={() => setIsTestData((prev) => !prev)}
             />
-          </Field>
-        </span>
-
-        {/* Test Data */}
-        <AbacField
-          orientation="horizontal"
-          user={user}
-          action="create"
-          resource="test_data"
-        >
-          <Checkbox
-            id="test-data"
-            name="test-data"
-            checked={isTestData}
-            onCheckedChange={() => setIsTestData((prev) => !prev)}
-          />
-          <FieldLabel htmlFor="test-data">This is test data.</FieldLabel>
-        </AbacField>
-      </FieldGroup>
-
+            <FieldLabel htmlFor="test-data">This is test data.</FieldLabel>
+          </AbacField>
+        </FieldGroup>
+      ) : (
+        <></>
+      )}
       {/* Submit Button */}
-      <Field orientation="horizontal">
-        <Button
-          type="submit"
-          className="w-full"
-          disabled={isLoading || isButtonDisabled}
-          onClick={() => {
-            if (!selectedSite || !publishedDate) return;
+      <Button
+        type="submit"
+        className="w-full"
+        disabled={isLoading || isButtonDisabled}
+        onClick={() => {
+          if (!selectedSite || !publishedDate) return;
 
-            const book_info: ManualBook = {
-              volumeInfo: {
-                title,
-                authors,
-                publishedDate: publishedDate.toDateString(),
-                description,
-                industryIdentifiers: [
-                  {
-                    type: isbn.length === 10 ? "ISBN_10" : "ISBN_13",
-                    identifier: isbn,
-                  },
-                ],
-                pageCount: parseInt(pageCount),
-                categories: [...category.split(",").map((el) => el.trim())],
-              },
-            };
+          const book_info: ManualBook = {
+            volumeInfo: {
+              title,
+              authors,
+              publishedDate: publishedDate.toDateString(),
+              description,
+              industryIdentifiers: [
+                {
+                  type: isbn.length === 10 ? "ISBN_10" : "ISBN_13",
+                  identifier: isbn,
+                },
+              ],
+              pageCount: parseInt(pageCount),
+              categories: [...category.split(",").map((el) => el.trim())],
+            },
+          };
 
-            const id = `${isTestData ? "test_" : selectedSite.id + "_"}${isbn}`;
-            const created_at = new Date();
-            const book: LibraryBook = {
-              id,
-              book_info,
-              site: selectedSite,
-              available_count: 1,
-              total_count: 1,
-              created_at,
-              updated_at: created_at,
-              checkout_history: null,
-            };
-            handleAddBook(book);
-          }}
-        >
-          {isLoading ? "Adding book..." : "Add book"}
-          {isLoading && <Spinner data-icon="inline-start" />}
-        </Button>
-      </Field>
-    </Card>
+          const id = `${isTestData ? "test_" : selectedSite.id + "_"}${isbn}`;
+          const created_at = new Date();
+          const book: LibraryBook = {
+            id,
+            book_info,
+            site: selectedSite,
+            available_count: 1,
+            total_count: 1,
+            created_at,
+            updated_at: created_at,
+            checkout_history: null,
+          };
+          handleAddBook(book);
+        }}
+      >
+        {isLoading ? "Adding book..." : "Add book"}
+        {isLoading && <Spinner data-icon="inline-start" />}
+      </Button>
+    </div>
   );
 }

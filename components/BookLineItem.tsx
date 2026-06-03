@@ -2,35 +2,37 @@ import { Button } from "@/components//ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useKioskContext } from "@/contexts/kiosk-context";
-import { BookInfo, KioskItem } from "@/types/library";
+import { KioskItem, LibraryBook } from "@/types/library";
 import { formatRelative } from "date-fns";
 import { Plus, X } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import BookDialog from "./BookDialog";
 
-export default function BookLineItem({
+interface BookLineItemProps {
+  book: LibraryBook;
+  kioskItem?: KioskItem;
+  location?: "cart" | "lookup" | "return" | "inventory";
+  onAdd?: () => void;
+  onRemove?: () => void;
+  onReturn?: (item: KioskItem, didReport: boolean) => void;
+  onUndoReturn?: (bookId: string) => void;
+}
+
+export function BookLineItem({
   book,
   kioskItem,
   location = "cart",
-}: {
-  book: BookInfo;
-  kioskItem?: KioskItem;
-  location?: "cart" | "lookup" | "return";
-}) {
-  const {
-    setCart,
-    currBook,
-    setCurrBook,
-    setMaxCheckoutStepAllowed,
-    returns,
-    setReturns,
-  } = useKioskContext();
+  onAdd,
+  onRemove,
+  onReturn,
+  onUndoReturn,
+}: BookLineItemProps) {
   const [checked, setChecked] = useState(false);
   const [didReport, setDidReport] = useState(false);
-  const isbn = book.volumeInfo.industryIdentifiers?.[0].identifier || "";
+  const isbn =
+    book.book_info.volumeInfo.industryIdentifiers?.[0].identifier || "";
   const today = new Date();
-  const [currStep, nextStep] = [2, 3];
 
   const distanceBetweenDays = (
     date1: Date | string,
@@ -38,7 +40,7 @@ export default function BookLineItem({
   ) => {
     if (!date2) return Infinity;
     const [d1, d2] = [new Date(date1), new Date(date2)];
-    return (d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24);
+    return (d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24); // ms * sec * min * hr
   };
 
   return (
@@ -49,12 +51,12 @@ export default function BookLineItem({
       <div className="w-full flex items-center gap-3">
         <Image
           src={
-            book.volumeInfo.imageLinks?.thumbnail.replace(
+            book.book_info.volumeInfo.imageLinks?.thumbnail.replace(
               "http://",
               "https://",
             ) || ""
           }
-          alt={book.volumeInfo.title}
+          alt={book.book_info.volumeInfo.title}
           width={96}
           height={96}
           className={`h-full min-h-16 w-auto aspect-square object-cover rounded-sm shadow-sm transition-all ease-in-out duration-200 ${!checked && location === "return" ? "grayscale" : ""}`} // Crops thumbnail to square
@@ -63,10 +65,10 @@ export default function BookLineItem({
           <p
             className={`text-md font-semibold line-clamp-1 transition-all ease-in-out duration-200 ${!checked ? "text-muted-foreground" : ""}`}
           >
-            {book.volumeInfo.title}
+            {book.book_info.volumeInfo.title}
           </p>
           <p className="text-xs italic text-muted-foreground line-clamp-1">
-            {book.volumeInfo.authors?.join(", ")}
+            {book.book_info.volumeInfo.authors?.join(", ")}
           </p>
           {kioskItem && (
             <p
@@ -81,44 +83,28 @@ export default function BookLineItem({
           {location === "lookup" ? (
             // Add & cancel buttons
             <div className="flex gap-2">
-              <Button
-                size="icon"
-                onClick={() => {
-                  if (currBook) {
-                    setCart((prev) => [...prev, currBook]);
-                    setCurrBook(null);
-                    setMaxCheckoutStepAllowed(nextStep);
-                  }
-                }}
-              >
+              <Button size="icon" onClick={() => onAdd?.()}>
                 <Plus />
               </Button>
 
               <Button
                 variant="destructive"
                 size="icon"
-                onClick={() => setCurrBook(null)}
+                onClick={() => onRemove?.()}
               >
                 <X />
               </Button>
             </div>
           ) : location === "return" && kioskItem ? (
+            // Return checkbox
             <Checkbox
               className="size-7"
               checked={checked}
               onCheckedChange={() => {
                 if (checked) {
-                  // Remove it from the list of book returns.
                   setChecked(false);
-                  const filteredReturns = returns.filter(
-                    (kioskItem) => kioskItem.book_info.id !== book.id,
-                  );
-                  setReturns(filteredReturns);
-                  setMaxCheckoutStepAllowed(
-                    filteredReturns.length > 0 ? nextStep : currStep,
-                  );
+                  onUndoReturn?.(book.id);
                 } else {
-                  // Add it to the list of book returns.
                   const newKioskItem: KioskItem = {
                     ...kioskItem,
                     return_date: today,
@@ -126,8 +112,7 @@ export default function BookLineItem({
                     has_completed_book_report: didReport,
                   };
                   setChecked(true);
-                  setReturns((prev) => [...prev, newKioskItem]);
-                  setMaxCheckoutStepAllowed(nextStep);
+                  onReturn?.(newKioskItem, didReport);
                 }
               }}
             />
@@ -167,5 +152,53 @@ export default function BookLineItem({
         </div>
       </div>
     </div>
+  );
+}
+
+const [currStep, nextStep] = [2, 3];
+
+export function CheckoutBookLineItem({ book, kioskItem }: BookLineItemProps) {
+  const { currBook, setCurrBook, setCart, setMaxCheckoutStepAllowed } =
+    useKioskContext();
+  return (
+    <BookLineItem
+      book={book}
+      kioskItem={kioskItem}
+      location="cart"
+      onAdd={() => {
+        if (currBook) {
+          setCart((prev) => [...prev, currBook]);
+          setCurrBook(null);
+          setMaxCheckoutStepAllowed(nextStep);
+        }
+      }}
+      onRemove={() => setCurrBook(null)}
+    />
+  );
+}
+
+export function LookupBookLineItem({ book, kioskItem }: BookLineItemProps) {
+  return <BookLineItem book={book} kioskItem={kioskItem} location="lookup" />;
+}
+
+export function ReturnBookLineItem({ book, kioskItem }: BookLineItemProps) {
+  const { returns, setReturns, setMaxCheckoutStepAllowed } = useKioskContext();
+  return (
+    <BookLineItem
+      book={book}
+      kioskItem={kioskItem}
+      location="return"
+      onReturn={(newKioskItem) => {
+        setReturns((prev) => [...prev, newKioskItem]);
+        setMaxCheckoutStepAllowed(nextStep);
+      }}
+      onUndoReturn={(bookId) => {
+        const filteredReturns = returns.filter((r) => r.book.id !== bookId);
+        setReturns(filteredReturns);
+        setMaxCheckoutStepAllowed(
+          filteredReturns.length > 0 ? nextStep : currStep,
+        );
+      }}
+    />
   );
 }

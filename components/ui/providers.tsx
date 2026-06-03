@@ -1,5 +1,6 @@
 import AdminContextProvider from "@/contexts/admin-context";
 import { ClerkProvider } from "@clerk/nextjs";
+import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import AdminSidebar from "../AdminSidebar";
 import { SidebarProvider, SidebarTrigger } from "./sidebar";
 import { Toaster } from "./sonner";
@@ -14,7 +15,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
         enableSystem
         disableTransitionOnChange
       >
-        <main>{children}</main>
+        <NuqsAdapter>
+          <main>{children}</main>
+        </NuqsAdapter>
         <Toaster />
       </ThemeProvider>
     </ClerkProvider>

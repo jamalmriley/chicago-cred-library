@@ -5,7 +5,6 @@ import { Field, FieldDescription } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
-import { GoogleBooks } from "@/types/library";
 import { BrowserMultiFormatReader } from "@zxing/browser";
 import { NotFoundException } from "@zxing/library";
 import {
@@ -16,21 +15,22 @@ import {
   Search,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import BookLineItem from "./BookLineItem";
 
-interface BookScannerProps {
-  book: GoogleBooks.Book | null;
-  setBook: (book: GoogleBooks.Book | null) => void;
+export interface BookScannerProps<T> {
+  book: T | null;
+  setBook: (book: T | null) => void;
   onLookup: (isbn: string) => Promise<void>;
   onScan: (isbn: string) => void;
+  renderBook?: (book: T) => React.ReactNode; // ← add this
 }
 
-export default function BookScanner({
+export default function BookScanner<T>({
   onLookup,
   onScan,
   book,
   setBook,
-}: BookScannerProps) {
+  renderBook,
+}: BookScannerProps<T>) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const readerRef = useRef<BrowserMultiFormatReader | null>(null);
   const lastScannedRef = useRef<string | null>(null);
@@ -95,7 +95,7 @@ export default function BookScanner({
   };
 
   return (
-    <div className="w-96 flex flex-col items-center gap-5">
+    <div className="w-96 max-w-full flex flex-col items-center gap-5">
       {/* Video container */}
       <div className="w-full relative aspect-video border rounded-xl bg-muted text-muted-foreground overflow-hidden">
         {isScanning ? (
@@ -200,15 +200,16 @@ export default function BookScanner({
         </Button>
       )}
 
-      {book && (
-        <Separator
-          decorative
-          className="bg-transparent border-t border-dashed"
-        />
-      )}
-
       {/* Book Image and Details */}
-      {book && <BookLineItem book={book} location="lookup" />}
+      {book && renderBook && (
+        <>
+          <Separator
+            decorative
+            className="bg-transparent border-t border-dashed"
+          />
+          {renderBook(book)}
+        </>
+      )}
     </div>
   );
 }

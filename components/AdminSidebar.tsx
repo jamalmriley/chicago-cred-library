@@ -1,6 +1,5 @@
 "use client";
 
-import { Separator } from "@/components/ui/separator";
 import {
   Sidebar,
   SidebarContent,
@@ -24,7 +23,6 @@ import {
   Settings,
   Users,
 } from "lucide-react";
-import { motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -162,25 +160,14 @@ export default function AdminSidebar() {
 }
 export const Logo = () => {
   return (
-    <a
-      href="/admin"
-      className="relative z-20 flex items-center space-x-2 py-1 text-sm font-normal text-black"
-    >
+    <a href="/admin" className="py-3 pl-3">
       <Image
-        src="/logo.svg"
+        src="/logo.png"
         alt="Chicago CRED"
         width={100}
         height={100}
-        className="size-10 invert dark:invert-0"
+        className="h-14 w-auto aspect-auto shrink-0 dark:invert select-none"
       />
-      <Separator orientation="vertical" decorative />
-      <motion.span
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="font-secondary text-2xl uppercase whitespace-pre text-foreground"
-      >
-        The Library
-      </motion.span>
     </a>
   );
 };

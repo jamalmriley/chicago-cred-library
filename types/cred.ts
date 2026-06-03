@@ -63,6 +63,14 @@ const groupSitesByRegion = () => {
 };
 export const REGIONS = groupSitesByRegion();
 
+export const getSiteById = (id: string | null) => {
+  if (!id) return undefined;
+  for (const site of SITES) {
+    if (site.id === id) return site;
+  }
+  return undefined;
+};
+
 export interface ClerkUser {
   firstName: string;
   lastName: string;
