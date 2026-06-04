@@ -8,7 +8,7 @@ import { LibraryBook } from "@/types/library";
 import { LibraryBig } from "lucide-react";
 import { useQueryState } from "nuqs";
 import { useSound } from "use-sound";
-import { CheckoutBookLineItem } from "./BookLineItem";
+import { CheckoutBookLineItem, LookupBookLineItem } from "./BookLineItem";
 import { BookScannerWrapper } from "./BookScannerWrapper";
 import KioskCard from "./KioskCard";
 
@@ -59,6 +59,9 @@ export default function BookCheckout({
           setBook={setCurrBook}
           onLookup={handleLookup}
           onScan={handleScan}
+          renderBook={(book) => (
+            <LookupBookLineItem book={book} location="lookup" />
+          )}
         />
       </div>
     </KioskCard>

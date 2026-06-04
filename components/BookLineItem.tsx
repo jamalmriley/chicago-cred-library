@@ -2,21 +2,48 @@ import { Button } from "@/components//ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useKioskContext } from "@/contexts/kiosk-context";
-import { KioskItem, LibraryBook } from "@/types/library";
+import { GoogleBooks, KioskItem, LibraryBook } from "@/types/library";
 import { formatRelative } from "date-fns";
-import { Plus, X } from "lucide-react";
+import { BookMarked, Plus, X } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import BookDialog from "./BookDialog";
+import { useAdminContext } from "@/contexts/admin-context";
+import { getSiteById } from "@/types/cred";
+import { useQueryState } from "nuqs";
+
+export interface BookDisplayInfo {
+  id: string;
+  title: string;
+  authors?: string[];
+  thumbnail?: string;
+  isbn?: string;
+}
 
 interface BookLineItemProps {
-  book: LibraryBook;
+  book: LibraryBook | GoogleBooks.Book;
   kioskItem?: KioskItem;
-  location?: "cart" | "lookup" | "return" | "inventory";
+  location?: "cart" | "lookup" | "return";
   onAdd?: () => void;
   onRemove?: () => void;
   onReturn?: (item: KioskItem, didReport: boolean) => void;
   onUndoReturn?: (bookId: string) => void;
+}
+
+function toBookDisplayInfo(
+  book: LibraryBook | GoogleBooks.Book,
+): BookDisplayInfo {
+  // LibraryBook has book_info, GoogleBooks.Book has volumeInfo directly
+  const volumeInfo =
+    "book_info" in book ? book.book_info.volumeInfo : book.volumeInfo;
+
+  return {
+    id: book.id,
+    title: volumeInfo.title,
+    authors: volumeInfo.authors,
+    thumbnail: volumeInfo.imageLinks?.thumbnail.replace("http://", "https://"),
+    isbn: volumeInfo.industryIdentifiers?.[0]?.identifier,
+  };
 }
 
 export function BookLineItem({
@@ -28,10 +55,11 @@ export function BookLineItem({
   onReturn,
   onUndoReturn,
 }: BookLineItemProps) {
+  const displayInfo = toBookDisplayInfo(book);
+
   const [checked, setChecked] = useState(false);
   const [didReport, setDidReport] = useState(false);
-  const isbn =
-    book.book_info.volumeInfo.industryIdentifiers?.[0].identifier || "";
+  const isbn = displayInfo.isbn || "";
   const today = new Date();
 
   const distanceBetweenDays = (
@@ -49,26 +77,29 @@ export function BookLineItem({
     >
       {/* Image, Details, and Buttons */}
       <div className="w-full flex items-center gap-3">
-        <Image
-          src={
-            book.book_info.volumeInfo.imageLinks?.thumbnail.replace(
-              "http://",
-              "https://",
-            ) || ""
-          }
-          alt={book.book_info.volumeInfo.title}
-          width={96}
-          height={96}
-          className={`h-full min-h-16 w-auto aspect-square object-cover rounded-sm shadow-sm transition-all ease-in-out duration-200 ${!checked && location === "return" ? "grayscale" : ""}`} // Crops thumbnail to square
-        />
+        {displayInfo.thumbnail ? (
+          <Image
+            src={displayInfo.thumbnail}
+            alt={displayInfo.title}
+            width={96}
+            height={96}
+            className={`h-full min-h-16 w-auto aspect-square object-cover rounded-sm shadow-sm transition-all ease-in-out duration-200 ${!checked && location === "return" ? "grayscale" : ""}`} // Crops thumbnail to square
+          />
+        ) : (
+          <span
+            className={`h-full min-h-16 w-auto aspect-square bg-secondary/25 flex justify-center items-center rounded-sm shadow-sm transition-all ease-in-out duration-200 ${!checked && location === "return" ? "grayscale" : ""}`}
+          >
+            <BookMarked className="size-full p-3 text-muted-foreground" />
+          </span>
+        )}
         <div className="flex flex-col gap-1">
           <p
             className={`text-md font-semibold line-clamp-1 transition-all ease-in-out duration-200 ${!checked ? "text-muted-foreground" : ""}`}
           >
-            {book.book_info.volumeInfo.title}
+            {displayInfo.title}
           </p>
           <p className="text-xs italic text-muted-foreground line-clamp-1">
-            {book.book_info.volumeInfo.authors?.join(", ")}
+            {displayInfo.authors?.join(", ")}
           </p>
           {kioskItem && (
             <p
@@ -158,13 +189,52 @@ export function BookLineItem({
 const [currStep, nextStep] = [2, 3];
 
 export function CheckoutBookLineItem({ book, kioskItem }: BookLineItemProps) {
+  return <BookLineItem book={book} kioskItem={kioskItem} location="cart" />;
+}
+
+export function AdminBookLineItem({ book, kioskItem }: BookLineItemProps) {
+  const [site] = useQueryState("site");
+  return (
+    <Suspense>
+      <BookLineItem
+        book={book}
+        kioskItem={kioskItem}
+        location="lookup"
+        onAdd={() => {
+          const created_at = new Date();
+          const siteInfo = getSiteById(site);
+          if (!siteInfo) return;
+
+          const libraryBook: LibraryBook =
+            "book_info" in book
+              ? book
+              : {
+                  id: `${siteInfo.id}_${book.volumeInfo.industryIdentifiers[0].identifier}`,
+                  book_info: book,
+                  site: siteInfo,
+                  available_count: 1,
+                  total_count: 1,
+                  created_at,
+                  updated_at: created_at,
+                  checkout_history: null,
+                };
+
+          // handleAddBook(libraryBook); // TODO: Figure out a way to link this.
+        }}
+        onRemove={() => {}}
+      />
+    </Suspense>
+  );
+}
+
+export function LookupBookLineItem({ book, kioskItem }: BookLineItemProps) {
   const { currBook, setCurrBook, setCart, setMaxCheckoutStepAllowed } =
     useKioskContext();
   return (
     <BookLineItem
       book={book}
       kioskItem={kioskItem}
-      location="cart"
+      location="lookup"
       onAdd={() => {
         if (currBook) {
           setCart((prev) => [...prev, currBook]);
@@ -175,10 +245,6 @@ export function CheckoutBookLineItem({ book, kioskItem }: BookLineItemProps) {
       onRemove={() => setCurrBook(null)}
     />
   );
-}
-
-export function LookupBookLineItem({ book, kioskItem }: BookLineItemProps) {
-  return <BookLineItem book={book} kioskItem={kioskItem} location="lookup" />;
 }
 
 export function ReturnBookLineItem({ book, kioskItem }: BookLineItemProps) {

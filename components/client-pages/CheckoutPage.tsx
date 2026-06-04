@@ -40,8 +40,8 @@ export default function CheckoutPage() {
   const isNextButtonDisabled = current + 1 > maxCheckoutStepAllowed;
 
   const today = new Date();
-  const twoWeeksFromToday = today;
-  twoWeeksFromToday.setDate(today.getDate() + 14);
+  const twoWeeksFromToday = new Date(today);
+  twoWeeksFromToday.setDate(twoWeeksFromToday.getDate() + 14);
   twoWeeksFromToday.setHours(23, 59, 0, 0);
 
   const handleCheckout = async (participant: Participant) => {

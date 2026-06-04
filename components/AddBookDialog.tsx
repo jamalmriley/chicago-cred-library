@@ -9,6 +9,7 @@ import { BookPlus, ChevronDown, Plus, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import useSound from "use-sound";
+import { AdminBookLineItem } from "./BookLineItem";
 import { BookScannerWrapper } from "./BookScannerWrapper";
 import Required from "./Required";
 import SiteDropdownMenuContent from "./SiteDropdownMenuContent";
@@ -208,6 +209,7 @@ function AddBookForm({
           setBook={setBook}
           onLookup={handleLookup}
           onScan={handleScan}
+          renderBook={(book) => <AdminBookLineItem book={book} />}
         />
       ) : tab === "Manual" ? (
         <FieldGroup>
@@ -418,53 +420,54 @@ function AddBookForm({
             />
             <FieldLabel htmlFor="test-data">This is test data.</FieldLabel>
           </AbacField>
+
+          {/* Submit Button */}
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={isLoading || isButtonDisabled}
+            onClick={() => {
+              if (!selectedSite || !publishedDate) return;
+
+              const book_info: ManualBook = {
+                volumeInfo: {
+                  title,
+                  authors,
+                  publishedDate: publishedDate.toDateString(),
+                  description,
+                  industryIdentifiers: [
+                    {
+                      type: isbn.length === 10 ? "ISBN_10" : "ISBN_13",
+                      identifier: isbn,
+                    },
+                  ],
+                  pageCount: parseInt(pageCount),
+                  categories: [...category.split(",").map((el) => el.trim())],
+                },
+              };
+
+              const id = `${isTestData ? "test_" : selectedSite.id + "_"}${isbn}`;
+              const created_at = new Date();
+              const book: LibraryBook = {
+                id,
+                book_info,
+                site: selectedSite,
+                available_count: 1,
+                total_count: 1,
+                created_at,
+                updated_at: created_at,
+                checkout_history: null,
+              };
+              handleAddBook(book);
+            }}
+          >
+            {isLoading ? "Adding book..." : "Add book"}
+            {isLoading && <Spinner data-icon="inline-start" />}
+          </Button>
         </FieldGroup>
       ) : (
         <></>
       )}
-      {/* Submit Button */}
-      <Button
-        type="submit"
-        className="w-full"
-        disabled={isLoading || isButtonDisabled}
-        onClick={() => {
-          if (!selectedSite || !publishedDate) return;
-
-          const book_info: ManualBook = {
-            volumeInfo: {
-              title,
-              authors,
-              publishedDate: publishedDate.toDateString(),
-              description,
-              industryIdentifiers: [
-                {
-                  type: isbn.length === 10 ? "ISBN_10" : "ISBN_13",
-                  identifier: isbn,
-                },
-              ],
-              pageCount: parseInt(pageCount),
-              categories: [...category.split(",").map((el) => el.trim())],
-            },
-          };
-
-          const id = `${isTestData ? "test_" : selectedSite.id + "_"}${isbn}`;
-          const created_at = new Date();
-          const book: LibraryBook = {
-            id,
-            book_info,
-            site: selectedSite,
-            available_count: 1,
-            total_count: 1,
-            created_at,
-            updated_at: created_at,
-            checkout_history: null,
-          };
-          handleAddBook(book);
-        }}
-      >
-        {isLoading ? "Adding book..." : "Add book"}
-        {isLoading && <Spinner data-icon="inline-start" />}
-      </Button>
     </div>
   );
 }
