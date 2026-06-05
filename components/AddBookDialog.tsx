@@ -2,7 +2,7 @@
 
 import { useAdminContext } from "@/contexts/admin-context";
 import { fetchGoogleBook } from "@/lib/books";
-import { Site, SITES } from "@/types/cred";
+import { getSiteById, Site, SITES } from "@/types/cred";
 import { GoogleBooks, LibraryBook, ManualBook } from "@/types/library";
 import { useUser } from "@clerk/nextjs";
 import { BookPlus, ChevronDown, Plus, X } from "lucide-react";
@@ -209,7 +209,31 @@ function AddBookForm({
           setBook={setBook}
           onLookup={handleLookup}
           onScan={handleScan}
-          renderBook={(book) => <AdminBookLineItem book={book} />}
+          renderBook={(book) => (
+            <AdminBookLineItem
+              book={book}
+              isDisabled={isButtonDisabled}
+              onAdd={(site) => {
+                const created_at = new Date();
+                const siteInfo = getSiteById(site?.id ?? null);
+                if (!siteInfo) return;
+
+                const libraryBook: LibraryBook = {
+                  id: `${siteInfo.id}_${book.volumeInfo.industryIdentifiers[0].identifier}`,
+                  book_info: book,
+                  site: siteInfo,
+                  available_count: 1,
+                  total_count: 1,
+                  created_at,
+                  updated_at: created_at,
+                  checkout_history: null,
+                };
+
+                handleAddBook(libraryBook);
+              }}
+              onRemove={() => setBook(null)}
+            />
+          )}
         />
       ) : tab === "Manual" ? (
         <FieldGroup>

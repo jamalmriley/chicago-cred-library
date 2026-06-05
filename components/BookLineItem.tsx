@@ -2,15 +2,15 @@ import { Button } from "@/components//ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useKioskContext } from "@/contexts/kiosk-context";
+import { Site } from "@/types/cred";
 import { GoogleBooks, KioskItem, LibraryBook } from "@/types/library";
 import { formatRelative } from "date-fns";
-import { BookMarked, Plus, X } from "lucide-react";
+import { BookMarked, ChevronDown, Plus, X } from "lucide-react";
 import Image from "next/image";
 import { Suspense, useState } from "react";
 import BookDialog from "./BookDialog";
-import { useAdminContext } from "@/contexts/admin-context";
-import { getSiteById } from "@/types/cred";
-import { useQueryState } from "nuqs";
+import SiteDropdownMenuContent from "./SiteDropdownMenuContent";
+import { DropdownMenu, DropdownMenuTrigger } from "./ui/dropdown-menu";
 
 export interface BookDisplayInfo {
   id: string;
@@ -22,9 +22,10 @@ export interface BookDisplayInfo {
 
 interface BookLineItemProps {
   book: LibraryBook | GoogleBooks.Book;
+  isDisabled?: boolean;
   kioskItem?: KioskItem;
-  location?: "cart" | "lookup" | "return";
-  onAdd?: () => void;
+  location?: "cart" | "lookup" | "return" | "admin";
+  onAdd?: (site: Site | null) => void;
   onRemove?: () => void;
   onReturn?: (item: KioskItem, didReport: boolean) => void;
   onUndoReturn?: (bookId: string) => void;
@@ -48,6 +49,7 @@ function toBookDisplayInfo(
 
 export function BookLineItem({
   book,
+  isDisabled = false,
   kioskItem,
   location = "cart",
   onAdd,
@@ -59,6 +61,7 @@ export function BookLineItem({
 
   const [checked, setChecked] = useState(false);
   const [didReport, setDidReport] = useState(false);
+  const [site, setSite] = useState<Site | null>(null);
   const isbn = displayInfo.isbn || "";
   const today = new Date();
 
@@ -73,21 +76,24 @@ export function BookLineItem({
 
   return (
     <div
-      className={`w-full flex flex-col gap-3 border rounded-xl p-3 transition-all ease-in-out duration-200 ${!checked ? "bg-muted/50 max-h-24" : "border-primary max-h-40"}`}
+      className={`w-full flex flex-col gap-0 border rounded-xl p-3 transition-all ease-in-out duration-200 ${checked || location === "admin" ? `max-h-40 ${checked ? " border-primary" : ""}` : "bg-muted/50 max-h-24"}`}
     >
       {/* Image, Details, and Buttons */}
       <div className="w-full flex items-center gap-3">
         {displayInfo.thumbnail ? (
-          <Image
-            src={displayInfo.thumbnail}
-            alt={displayInfo.title}
-            width={96}
-            height={96}
-            className={`h-full min-h-16 w-auto aspect-square object-cover rounded-sm shadow-sm transition-all ease-in-out duration-200 ${!checked && location === "return" ? "grayscale" : ""}`} // Crops thumbnail to square
-          />
+          <div
+            className={`relative min-h-16 min-w-16 aspect-square shrink-0 rounded-sm shadow-sm overflow-hidden transition-all ease-in-out duration-200 ${!checked && location === "return" ? "grayscale" : ""}`}
+          >
+            <Image
+              src={displayInfo.thumbnail}
+              alt={displayInfo.title}
+              fill
+              className="object-cover"
+            />
+          </div>
         ) : (
           <span
-            className={`h-full min-h-16 w-auto aspect-square bg-secondary/25 flex justify-center items-center rounded-sm shadow-sm transition-all ease-in-out duration-200 ${!checked && location === "return" ? "grayscale" : ""}`}
+            className={`min-h-16 min-w-16 aspect-square shrink-0 bg-secondary/25 flex justify-center items-center rounded-sm shadow-sm transition-all ease-in-out duration-200 ${!checked && location === "return" ? "grayscale" : ""}`}
           >
             <BookMarked className="size-full p-3 text-muted-foreground" />
           </span>
@@ -110,11 +116,15 @@ export function BookLineItem({
           )}
         </div>
 
-        <span className="ml-auto">
+        <span className={location === "admin" ? "ml-auto mb-auto" : "ml-auto"}>
           {location === "lookup" ? (
             // Add & cancel buttons
             <div className="flex gap-2">
-              <Button size="icon" onClick={() => onAdd?.()}>
+              <Button
+                size="icon"
+                onClick={() => onAdd?.(site)}
+                disabled={isDisabled}
+              >
                 <Plus />
               </Button>
 
@@ -122,6 +132,7 @@ export function BookLineItem({
                 variant="destructive"
                 size="icon"
                 onClick={() => onRemove?.()}
+                disabled={isDisabled}
               >
                 <X />
               </Button>
@@ -147,16 +158,53 @@ export function BookLineItem({
                 }
               }}
             />
+          ) : location === "admin" ? (
+            <Button
+              size="icon"
+              variant="ghost"
+              className="rounded-full text-muted-foreground"
+              onClick={() => onRemove?.()}
+              disabled={isDisabled}
+            >
+              <X />
+            </Button>
           ) : (
             <BookDialog isbn={isbn} />
           )}
         </span>
       </div>
 
+      {/* Add to site buttons */}
+      <span className="w-full relative flex items-center mt-3">
+        <Button
+          className="flex-1 rounded-r-none border-r-0"
+          disabled={location !== "admin" || !site || isDisabled}
+          onClick={() => onAdd?.(site)}
+        >
+          {site ? `Add book to ${site.nickname}` : "Add to site"}
+        </Button>
+        <span className="w-px h-8.5 bg-muted" />
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              size="icon"
+              className="rounded-l-none border-l-0"
+              disabled={isDisabled}
+            >
+              <ChevronDown />
+            </Button>
+          </DropdownMenuTrigger>
+          <SiteDropdownMenuContent
+            selectedSite={site}
+            setSelectedSite={setSite}
+          />
+        </DropdownMenu>
+      </span>
+
       {/* Book Report question */}
       <div
         className={`transition-all duration-300 ease-in-out overflow-hidden ${
-          checked ? "max-h-16" : "max-h-0"
+          checked ? "max-h-16 mt-3" : "max-h-0"
         }`}
       >
         <div className="flex items-center justify-between px-3 py-2 bg-muted rounded-sm">
@@ -192,36 +240,20 @@ export function CheckoutBookLineItem({ book, kioskItem }: BookLineItemProps) {
   return <BookLineItem book={book} kioskItem={kioskItem} location="cart" />;
 }
 
-export function AdminBookLineItem({ book, kioskItem }: BookLineItemProps) {
-  const [site] = useQueryState("site");
+export function AdminBookLineItem({
+  book,
+  kioskItem,
+  onAdd,
+  onRemove,
+}: BookLineItemProps) {
   return (
     <Suspense>
       <BookLineItem
         book={book}
         kioskItem={kioskItem}
-        location="lookup"
-        onAdd={() => {
-          const created_at = new Date();
-          const siteInfo = getSiteById(site);
-          if (!siteInfo) return;
-
-          const libraryBook: LibraryBook =
-            "book_info" in book
-              ? book
-              : {
-                  id: `${siteInfo.id}_${book.volumeInfo.industryIdentifiers[0].identifier}`,
-                  book_info: book,
-                  site: siteInfo,
-                  available_count: 1,
-                  total_count: 1,
-                  created_at,
-                  updated_at: created_at,
-                  checkout_history: null,
-                };
-
-          // handleAddBook(libraryBook); // TODO: Figure out a way to link this.
-        }}
-        onRemove={() => {}}
+        location="admin"
+        onAdd={(site) => onAdd?.(site)}
+        onRemove={() => onRemove?.()}
       />
     </Suspense>
   );
