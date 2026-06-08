@@ -12,29 +12,44 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
+import { capitalizeString } from "@/lib/utils";
 import { SITES } from "@/types/cred";
-import { UserButton, useUser } from "@clerk/nextjs";
+import { UserAvatar, useUser } from "@clerk/nextjs";
 import {
   ChevronRight,
+  ChevronsUpDown,
   CircleGauge,
   LibraryBig,
+  LogOut,
+  Moon,
   ScanBarcode,
   ScrollText,
   Settings,
+  Sun,
+  SunMoon,
   Users,
 } from "lucide-react";
+import { useTheme } from "next-themes";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { AppearanceToggle } from "./AppearanceToggle";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "./ui/collapsible";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 
 export default function AdminSidebar() {
-  const menuItems = [
+  const contentMenuItems = [
     {
       id: "dashboard",
       label: "Dashboard",
@@ -73,7 +88,8 @@ export default function AdminSidebar() {
     },
   ];
 
-  const { isLoaded, isSignedIn } = useUser();
+  const { theme, setTheme } = useTheme();
+  const { isLoaded, isSignedIn, user } = useUser();
   const [open, setOpen] = useState(false);
 
   if (!isLoaded || !isSignedIn) return null; // TODO: Return a skeleton sidebar.
@@ -85,7 +101,7 @@ export default function AdminSidebar() {
       <SidebarContent>
         <SidebarGroup>
           <SidebarMenu>
-            {menuItems.map((item, i) => (
+            {contentMenuItems.map((item, i) => (
               <SidebarMenuItem key={i}>
                 {item.id === "kiosk" ? (
                   <Collapsible open={open} onOpenChange={setOpen}>
@@ -143,17 +159,58 @@ export default function AdminSidebar() {
         <SidebarGroup />
       </SidebarContent>
       <SidebarFooter className="flex">
-        <AppearanceToggle />
-        <UserButton
-          appearance={{
-            elements: {
-              // userButtonAvatarBox: "size-full rounded-none",
-              // userButtonAvatarImage: "rounded-none",
-            },
-            options: { shimmer: false },
-          }}
-          showName
-        />
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <SidebarMenuButton className="py-3">
+                  <UserAvatar /> {user.fullName}
+                  <ChevronsUpDown className="ml-auto" />
+                </SidebarMenuButton>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-fit">
+                <DropdownMenuItem className="flex items-center gap-2">
+                  <UserAvatar />
+                  <span className="flex flex-col">
+                    <p>{user.fullName}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {user.emailAddresses[0].emailAddress}
+                    </p>
+                  </span>
+                </DropdownMenuItem>
+
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>
+                    {theme === "light" ? (
+                      <Sun />
+                    ) : theme === "dark" ? (
+                      <Moon />
+                    ) : (
+                      <SunMoon />
+                    )}
+                    Theme: {capitalizeString(theme)}
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuItem onClick={() => setTheme("light")}>
+                      Light
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setTheme("dark")}>
+                      Dark
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setTheme("system")}>
+                      System
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+
+                <DropdownMenuItem variant="destructive">
+                  <LogOut />
+                  Sign out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
   );

@@ -16,3 +16,15 @@ export function createPageTitle(
       description || "A literacy initiative powered by Chicago CRED.",
   };
 }
+
+export function capitalizeString(string: string | undefined) {
+  let result = "";
+  if (!string) return result;
+
+  for (let i = 0; i < string.length; i++) {
+    const char = string[i];
+    if (i === 0) result += char.toUpperCase();
+    else result += char;
+  }
+  return result;
+}
