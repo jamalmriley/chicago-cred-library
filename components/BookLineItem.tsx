@@ -175,31 +175,33 @@ export function BookLineItem({
       </div>
 
       {/* Add to site buttons */}
-      <span className="w-full relative flex items-center mt-3">
-        <Button
-          className="flex-1 rounded-r-none border-r-0"
-          disabled={location !== "admin" || !site || isDisabled}
-          onClick={() => onAdd?.(site)}
-        >
-          {site ? `Add book to ${site.nickname}` : "Add to site"}
-        </Button>
-        <span className="w-px h-8.5 bg-muted" />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              size="icon"
-              className="rounded-l-none border-l-0"
-              disabled={isDisabled}
-            >
-              <ChevronDown />
-            </Button>
-          </DropdownMenuTrigger>
-          <SiteDropdownMenuContent
-            selectedSite={site}
-            setSelectedSite={setSite}
-          />
-        </DropdownMenu>
-      </span>
+      {location === "admin" && (
+        <span className="w-full relative flex items-center mt-3">
+          <Button
+            className="flex-1 rounded-r-none border-r-0"
+            disabled={location !== "admin" || !site || isDisabled}
+            onClick={() => onAdd?.(site)}
+          >
+            {site ? `Add book to ${site.nickname}` : "Add to site"}
+          </Button>
+          <span className="w-px h-8.5 bg-muted" />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                size="icon"
+                className="rounded-l-none border-l-0"
+                disabled={isDisabled}
+              >
+                <ChevronDown />
+              </Button>
+            </DropdownMenuTrigger>
+            <SiteDropdownMenuContent
+              selectedSite={site}
+              setSelectedSite={setSite}
+            />
+          </DropdownMenu>
+        </span>
+      )}
 
       {/* Book Report question */}
       <div

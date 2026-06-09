@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/sidebar";
 import { capitalizeString } from "@/lib/utils";
 import { SITES } from "@/types/cred";
-import { UserAvatar, useUser } from "@clerk/nextjs";
+import { SignOutButton, UserAvatar, useUser } from "@clerk/nextjs";
 import {
   ChevronRight,
   ChevronsUpDown,
@@ -23,8 +23,6 @@ import {
   LogOut,
   Moon,
   ScanBarcode,
-  ScrollText,
-  Settings,
   Sun,
   SunMoon,
   Users,
@@ -74,18 +72,18 @@ export default function AdminSidebar() {
       href: "/kiosk",
       icon: <ScanBarcode className="sidebar-icon" />,
     },
-    {
-      id: "audit-log",
-      label: "Audit log",
-      href: "/admin/audit",
-      icon: <ScrollText className="sidebar-icon" />,
-    },
-    {
-      id: "settings",
-      label: "Settings",
-      href: "/admin/settings",
-      icon: <Settings className="sidebar-icon" />,
-    },
+    // {
+    //   id: "audit-log",
+    //   label: "Audit log",
+    //   href: "/admin/audit",
+    //   icon: <ScrollText className="sidebar-icon" />,
+    // },
+    // {
+    //   id: "settings",
+    //   label: "Settings",
+    //   href: "/admin/settings",
+    //   icon: <Settings className="sidebar-icon" />,
+    // },
   ];
 
   const { theme, setTheme } = useTheme();
@@ -202,11 +200,12 @@ export default function AdminSidebar() {
                     </DropdownMenuItem>
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
-
-                <DropdownMenuItem variant="destructive">
-                  <LogOut />
-                  Sign out
-                </DropdownMenuItem>
+                <SignOutButton>
+                  <DropdownMenuItem variant="destructive">
+                    <LogOut />
+                    Sign out
+                  </DropdownMenuItem>
+                </SignOutButton>
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>

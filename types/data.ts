@@ -1,0 +1,23 @@
+export type Month =
+  | "January"
+  | "February"
+  | "March"
+  | "April"
+  | "May"
+  | "June"
+  | "July"
+  | "August"
+  | "September"
+  | "October"
+  | "November"
+  | "December";
+
+export interface ChartDatum {
+  month: Month;
+  value: number;
+  value2?: number;
+  value3?: number;
+  fill?: string;
+}
+
+export type ChartData = ChartDatum[];

@@ -15,71 +15,21 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAdminContext } from "@/contexts/admin-context";
+import { useParticipants } from "@/hooks/use-participants";
+import { useUsers } from "@/hooks/use-users";
 import { canCreateUsers, hasPermission, ROLE_OPTIONS } from "@/lib/auth";
-import { Participant, UserType } from "@/types/cred";
+import { UserType } from "@/types/cred";
 import { useUser } from "@clerk/nextjs";
-import { User } from "@clerk/nextjs/server";
 import { formatRelative } from "date-fns";
 import { Eye, Pencil, RotateCcw, Trash, UserX } from "lucide-react";
-import { useEffect } from "react";
 
 export default function UsersPage() {
-  const {
-    lastUpdated,
-    setParticipants,
-    setParticipantsError,
-    setParticipantsLoading,
-    setUsers,
-    setUsersError,
-    setUsersLoading,
-  } = useAdminContext();
   const { isLoaded, user } = useUser();
   const tabs: UserType[] = ["Participant", "Staff"];
   const tabContent = {
     Participant: <ParticipantTable />,
     Staff: <UserTable />,
   };
-
-  useEffect(() => {
-    const fetchParticipants = async () => {
-      await setParticipantsLoading(true);
-      const res = await fetch("/api/participants");
-
-      if (!res.ok) {
-        setParticipantsLoading(false);
-        setParticipants(null);
-        setParticipantsError("There was an error loading participants.");
-        // console.error(await res.json());
-        return;
-      }
-
-      const data: Participant[] = await res.json();
-      setParticipantsLoading(false);
-      setParticipants(data);
-      setParticipantsError(null);
-    };
-
-    const fetchUsers = async () => {
-      await setParticipantsLoading(true);
-      const res = await fetch("/api/users");
-
-      if (!res.ok) {
-        setUsersLoading(false);
-        setUsers(null);
-        setUsersError("There was an error loading staff.");
-        // console.error(await res.json());
-        return;
-      }
-
-      const data: User[] = await res.json();
-      setUsersLoading(false);
-      setUsers(data);
-      setUsersError(null);
-    };
-
-    fetchParticipants();
-    fetchUsers();
-  }, [lastUpdated]);
 
   if (!isLoaded || !user) return; // TODO: Return a loading state.
   return (
@@ -157,8 +107,8 @@ function Fallback({
 }
 
 function ParticipantTable() {
-  const { participants, participantsError, participantsLoading } =
-    useAdminContext();
+  const { participants, participantsLoading, participantsError } =
+    useParticipants();
   const { user } = useUser();
 
   if (!user) return;
@@ -289,8 +239,8 @@ function ParticipantTable() {
 }
 
 function UserTable() {
-  const { users, usersError, usersLoading } = useAdminContext();
   const { user } = useUser();
+  const { users, usersError, usersLoading } = useUsers();
   const getRoleName = (value: string | undefined): string => {
     let result = "None";
     if (!value) return result;

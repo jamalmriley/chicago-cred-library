@@ -142,13 +142,13 @@ export default function ParticipantSelect() {
     <KioskCard title="What's your name?">
       {/* Participants List */}
       {participantsLoading ? (
-        <div className="w-60 h-full min-h-0 flex flex-col gap-5 overflow-y-scroll">
+        <div className="w-60 h-full min-h-0 flex flex-col gap-5 overflow-y-scroll scrollbar-none">
           {Array.from({ length: 26 }).map((_, i) => (
             <SkeletonParticipantList key={i} />
           ))}
         </div>
       ) : participants ? (
-        <div className="w-60 h-full min-h-0 flex flex-col gap-5 overflow-y-scroll">
+        <div className="w-60 h-full min-h-0 flex flex-col gap-5 overflow-y-scroll scrollbar-none">
           {selectedLetter ? (
             <FilteredParticipantList letter={selectedLetter} />
           ) : (
