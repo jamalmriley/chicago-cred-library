@@ -218,10 +218,10 @@ export const Logo = () => {
   return (
     <a href="/admin" className="py-3 pl-3">
       <Image
-        src="/logo.png"
+        src="/images/logo.png"
         alt="Chicago CRED"
-        width={100}
-        height={100}
+        width={767}
+        height={356}
         className="h-14 w-auto aspect-auto shrink-0 dark:invert select-none"
       />
     </a>

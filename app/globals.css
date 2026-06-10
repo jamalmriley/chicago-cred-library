@@ -150,7 +150,7 @@
   }
 
   .h2 {
-    @apply text-2xl text-muted-foreground font-bold my-5;
+    @apply text-2xl font-semibold my-5;
   }
 
   .kiosk {

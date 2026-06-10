@@ -1,12 +1,8 @@
-import { Toaster } from "@/components/ui/sonner";
-import { ThemeProvider } from "@/components/ui/theme-provider";
+import { Providers } from "@/components/ui/providers";
 import { cn, createPageTitle } from "@/lib/utils";
-import { ClerkProvider } from "@clerk/nextjs";
-import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
-import { Providers } from "@/components/ui/providers";
 
 const primaryFont = Inter({
   subsets: ["latin"],
