@@ -171,13 +171,30 @@ export function BookLineItem({
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>
-                      Who will read "{displayInfo.title}"?
-                    </DialogTitle>
-                    <DialogDescription>
-                      Let us know who this book is for.
-                    </DialogDescription>
+                  <DialogHeader className="flex flex-row! items-center gap-3">
+                    {displayInfo.thumbnail ? (
+                      <div className="relative size-16 aspect-square shrink-0 rounded-sm shadow-sm overflow-hidden">
+                        <Image
+                          src={displayInfo.thumbnail}
+                          alt={displayInfo.title}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <span className="size-16 aspect-square shrink-0 bg-secondary/25 flex justify-center items-center rounded-sm shadow-sm">
+                        <BookMarked className="size-full p-3 text-muted-foreground" />
+                      </span>
+                    )}
+
+                    <span className="flex flex-col">
+                      <DialogTitle>
+                        Who is "{displayInfo.title}" for?
+                      </DialogTitle>
+                      <DialogDescription>
+                        Select an option below.
+                      </DialogDescription>
+                    </span>
                   </DialogHeader>
 
                   <ToggleGroup
@@ -187,9 +204,10 @@ export function BookLineItem({
                     size="lg"
                     className="w-full"
                     value={checkoutPurpose}
-                    onValueChange={(value) =>
-                      setCheckoutPurpose(value as CheckoutPurpose)
-                    }
+                    onValueChange={(value) => {
+                      const newValue = value === "" ? undefined : value;
+                      setCheckoutPurpose(newValue as CheckoutPurpose);
+                    }}
                   >
                     {toggleGroupItems.map((item, i) => (
                       <ToggleGroupItem

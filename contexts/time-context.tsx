@@ -20,7 +20,7 @@ export default function TimeContextProvider({
   useEffect(() => {
     const interval = setInterval(() => {
       const d = new Date();
-      d.setHours(0, 0, 0, 0);
+      // d.setHours(0, 0, 0, 0);
       setToday(d);
     }, 1000);
 
