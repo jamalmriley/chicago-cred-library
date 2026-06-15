@@ -31,7 +31,11 @@ export default function AdminPage() {
             <CheckoutsByPurpose />
           </div>
           <div className="w-full h-1/2 flex gap-5">
-            <MostReadGenres />
+            <MostReadGenres
+              participants={participants}
+              isLoading={participantsLoading}
+              error={participantsError}
+            />
             <div className="w-1/3 h-full flex flex-col gap-5">
               <Card className="w-full h-1/2 p-6">
                 <p className="font-semibold">Books read</p>

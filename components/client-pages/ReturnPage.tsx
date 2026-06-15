@@ -12,8 +12,9 @@ import {
 } from "@/components/ui/carousel";
 import { Spinner } from "@/components/ui/spinner";
 import { useKioskContext } from "@/contexts/kiosk-context";
+import { useTimeContext } from "@/contexts/time-context";
 import { getSiteById, Participant } from "@/types/cred";
-import { KioskItem } from "@/types/library";
+import { CheckoutItem } from "@/types/library";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -22,11 +23,6 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function ReturnPage() {
-  const [site] = useQueryState("site");
-  const [api, setApi] = useState<CarouselApi>();
-  const [isLoading, setIsLoading] = useState(false);
-  const [current, setCurrent] = useState(0);
-  const [count, setCount] = useState(0);
   const {
     maxCheckoutStepAllowed,
     setMaxCheckoutStepAllowed,
@@ -37,8 +33,13 @@ export default function ReturnPage() {
     setCart,
     setCurrBook,
   } = useKioskContext();
+  const { today } = useTimeContext();
+  const [site] = useQueryState("site");
+  const [api, setApi] = useState<CarouselApi>();
+  const [isLoading, setIsLoading] = useState(false);
+  const [current, setCurrent] = useState(0);
+  const [count, setCount] = useState(0);
   const isNextButtonDisabled = current + 1 > maxCheckoutStepAllowed;
-  const today = new Date();
 
   const handleReturn = async (participant: Participant) => {
     await setIsLoading(true);
@@ -61,10 +62,10 @@ export default function ReturnPage() {
     const { checkout_history } = data;
 
     const updateCheckoutHistory = (
-      checkoutHistory: KioskItem[] | null,
-      returns: KioskItem[],
-    ): KioskItem[] | null => {
-      const result: KioskItem[] = [];
+      checkoutHistory: CheckoutItem[] | null,
+      returns: CheckoutItem[],
+    ): CheckoutItem[] | null => {
+      const result: CheckoutItem[] = [];
       if (!checkoutHistory) return null;
 
       for (const checkoutItem of checkoutHistory) {

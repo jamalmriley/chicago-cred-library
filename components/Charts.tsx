@@ -1,7 +1,16 @@
 import { Participant } from "@/types/cred";
 import { ChartData, Month } from "@/types/data";
 import { TrendingUp } from "lucide-react";
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  PolarAngleAxis,
+  PolarGrid,
+  Radar,
+  RadarChart,
+  XAxis,
+} from "recharts";
 import {
   Card,
   CardContent,
@@ -17,15 +26,17 @@ import {
 } from "./ui/chart";
 import { Skeleton } from "./ui/skeleton";
 
+interface ChartComponentProps {
+  participants: Participant[] | null;
+  isLoading: boolean;
+  error: string | null;
+}
+
 export function CheckoutsOverTime({
   participants,
   isLoading,
   error,
-}: {
-  participants: Participant[] | null;
-  isLoading: boolean;
-  error: string | null;
-}) {
+}: ChartComponentProps) {
   const chartData = convertToChartData(participants);
   const chartConfig = {
     value: {
@@ -37,18 +48,16 @@ export function CheckoutsOverTime({
     <Card className="w-2/3">
       <CardHeader>
         <CardTitle>Checkouts over time</CardTitle>
-        <CardDescription>
-          <div className="flex items-center gap-2 leading-none font-medium">
-            Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-          </div>
+        <CardDescription className="flex items-center gap-2 leading-none font-medium">
+          Up by 5.2% this month <TrendingUp className="size-4" />
         </CardDescription>
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="chart-card-content">
         {isLoading || error ? (
           <SkeletonChart isLoading={isLoading} error={error} />
         ) : (
-          <ChartContainer config={chartConfig} className="min-h-48 w-full">
+          <ChartContainer config={chartConfig} className="chart-container">
             <AreaChart
               accessibilityLayer
               data={chartData}
@@ -59,7 +68,7 @@ export function CheckoutsOverTime({
             >
               <CartesianGrid vertical={false} />
               <XAxis
-                dataKey="month"
+                dataKey="label"
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}
@@ -86,24 +95,76 @@ export function CheckoutsOverTime({
 
 export function CheckoutsByPurpose() {
   return (
-    <Card className="w-1/3 p-6">
-      <p className="font-semibold">Checkouts by purpose</p>
+    <Card className="w-1/3">
+      <CardHeader>
+        <CardTitle>Checkouts by purpose</CardTitle>
+        <CardDescription className="flex items-center gap-2 leading-none font-medium">
+          Up by 5.2% this month <TrendingUp className="size-4" />
+        </CardDescription>
+      </CardHeader>
     </Card>
   );
 }
 
-export function MostReadGenres() {
+export function MostReadGenres({
+  participants,
+  isLoading,
+  error,
+}: ChartComponentProps) {
+  const chartData = findMostReadGenrea(participants);
+  const chartConfig = {
+    value: {
+      label: "Count",
+      color: "var(--chart-1)",
+    },
+  } satisfies ChartConfig;
+
   return (
-    <Card className="w-1/3 p-6">
-      <p className="font-semibold">Most read genres</p>
+    <Card className="w-1/3">
+      <CardHeader>
+        <CardTitle>Most read genres</CardTitle>
+        <CardDescription className="flex items-center gap-2 leading-none font-medium">
+          Up by 5.2% this month <TrendingUp className="size-4" />
+        </CardDescription>
+
+        <CardContent className="">
+          {isLoading || error ? (
+            <SkeletonChart isLoading={isLoading} error={error} />
+          ) : (
+            <ChartContainer
+              config={chartConfig}
+              className="chart-container aspect-square"
+            >
+              <RadarChart data={chartData}>
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent />}
+                />
+                <PolarAngleAxis dataKey="label" />
+                <PolarGrid />
+                <Radar
+                  dataKey="value"
+                  fill="var(--color-primary)"
+                  fillOpacity={0.6}
+                />
+              </RadarChart>
+            </ChartContainer>
+          )}
+        </CardContent>
+      </CardHeader>
     </Card>
   );
 }
 
 export function ReadingPaceDistribution() {
   return (
-    <Card className="w-1/3 p-6">
-      <p className="font-semibold">Reading pace distribution</p>
+    <Card className="w-1/3">
+      <CardHeader>
+        <CardTitle>Reading pace distribution</CardTitle>
+        <CardDescription className="flex items-center gap-2 leading-none font-medium">
+          Up by 5.2% this month <TrendingUp className="size-4" />
+        </CardDescription>
+      </CardHeader>
     </Card>
   );
 }
@@ -146,7 +207,7 @@ function convertToChartData(participants: Participant[] | null): ChartData {
 
   if (!participants)
     return Array.from(chartDataMap.entries()).map(([month, value]) => ({
-      month,
+      label: month,
       value,
     }));
 
@@ -164,7 +225,35 @@ function convertToChartData(participants: Participant[] | null): ChartData {
   }
 
   return Array.from(chartDataMap.entries()).map(([month, value]) => ({
-    month,
+    label: month,
     value,
+  }));
+}
+
+function findMostReadGenrea(participants: Participant[] | null): ChartData {
+  const chartDataMap = new Map<string, number>();
+
+  if (!participants)
+    return Array.from(chartDataMap.entries()).map(([genre, count]) => ({
+      label: genre,
+      value: count,
+    }));
+
+  // Only include checkouts from participants with a checkout history,
+  // and flatten the checkout histories into a single array.
+  const filteredCheckoutHistory = participants.flatMap(
+    (p) => p.checkout_history || [],
+  );
+
+  for (const item of filteredCheckoutHistory) {
+    const genres = item.book.book_info.volumeInfo.categories;
+    for (const genre of genres) {
+      chartDataMap.set(genre, (chartDataMap.get(genre) || 0) + 1);
+    }
+  }
+
+  return Array.from(chartDataMap.entries()).map(([genre, count]) => ({
+    label: genre,
+    value: count,
   }));
 }

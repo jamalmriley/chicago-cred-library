@@ -34,7 +34,7 @@ export default function KioskPage() {
             <Button>
               <MapPin />
               {siteInfo
-                ? `${siteInfo.name} | ${siteInfo.neighborhood}`
+                ? `${siteInfo.name} — ${siteInfo.neighborhood}`
                 : "Select a site"}
               <ChevronDown />
             </Button>
@@ -82,7 +82,11 @@ export default function KioskPage() {
       </h1>
       <h2 className="h2">What would you like to do today?</h2>
       <div className="flex gap-10">
-        <Button asChild={Boolean(siteInfo)} disabled={Boolean(!siteInfo)}>
+        <Button
+          asChild={Boolean(siteInfo)}
+          className="molde-button"
+          disabled={Boolean(!siteInfo)}
+        >
           <Link
             href={`/kiosk/checkout${siteInfo ? `?site=${siteInfo.id}` : ""}`}
             className="flex gap-2 items-center"
@@ -94,6 +98,7 @@ export default function KioskPage() {
         <Button
           variant="outline"
           asChild={Boolean(siteInfo)}
+          className="molde-button"
           disabled={Boolean(!siteInfo)}
         >
           <Link

@@ -5,6 +5,7 @@ import AdminSidebar from "../AdminSidebar";
 import { SidebarProvider, SidebarTrigger } from "./sidebar";
 import { Toaster } from "./sonner";
 import { ThemeProvider } from "./theme-provider";
+import TimeContextProvider from "@/contexts/time-context";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -15,9 +16,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
         enableSystem
         disableTransitionOnChange
       >
-        <NuqsAdapter>
-          <main>{children}</main>
-        </NuqsAdapter>
+        <TimeContextProvider>
+          <NuqsAdapter>
+            <main>{children}</main>
+          </NuqsAdapter>
+        </TimeContextProvider>
         <Toaster />
       </ThemeProvider>
     </ClerkProvider>

@@ -2,10 +2,11 @@
 
 import { useAdminContext } from "@/contexts/admin-context";
 import { fetchGoogleBook } from "@/lib/books";
+import { getPreferredIsbn } from "@/lib/utils";
 import { getSiteById, Site, SITES } from "@/types/cred";
 import { GoogleBooks, LibraryBook, ManualBook } from "@/types/library";
 import { useUser } from "@clerk/nextjs";
-import { BookPlus, ChevronDown, Plus, X } from "lucide-react";
+import { ChevronDown, Plus, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import useSound from "use-sound";
@@ -43,7 +44,7 @@ export default function AddBookDialog() {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <AbacButton user={user} action="create" resource="books">
-          <BookPlus />
+          <Plus />
           Add book
         </AbacButton>
       </DialogTrigger>
@@ -169,15 +170,16 @@ function AddBookForm({
     const data: LibraryBook = await res.json();
     const { available_count, total_count } = data;
 
+    const isBookFound: boolean = res.ok;
+    const method = isBookFound ? "PATCH" : "POST"; // If the book is not found, it needs to be added, not updated.
     const body: LibraryBook = {
       ...book,
-      available_count: res.ok ? available_count + 1 : 1,
-      total_count: res.ok ? total_count + 1 : 1,
+      available_count: isBookFound ? available_count + 1 : 1,
+      total_count: isBookFound ? total_count + 1 : 1,
       updated_at: new Date(),
     };
 
-    const method = res.ok ? "PATCH" : "POST"; // If the book is not found, it needs to be added, not updated.
-    await fetch(`/api/library${res.ok ? `?id=${book.id}` : ""}`, {
+    await fetch(`/api/library${isBookFound ? `?id=${book.id}` : ""}`, {
       method,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -213,13 +215,13 @@ function AddBookForm({
             <AdminBookLineItem
               book={book}
               isDisabled={isButtonDisabled}
-              onAdd={(site) => {
+              onAdd={(options) => {
                 const created_at = new Date();
-                const siteInfo = getSiteById(site?.id ?? null);
+                const siteInfo = getSiteById(options?.site?.id ?? null);
                 if (!siteInfo) return;
 
                 const libraryBook: LibraryBook = {
-                  id: `${siteInfo.id}_${book.volumeInfo.industryIdentifiers[0].identifier}`,
+                  id: `${siteInfo.id}_${getPreferredIsbn(book.volumeInfo.industryIdentifiers)}`,
                   book_info: book,
                   site: siteInfo,
                   available_count: 1,

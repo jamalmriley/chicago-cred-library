@@ -23,7 +23,7 @@ export default async function HomePage() {
       />
 
       {/* 3. Black Overlay Div (Change /50 to adjust opacity, e.g., /70) */}
-      <div className="absolute inset-0 bg-black/60 -z-10" />
+      <div className="absolute inset-0 bg-black/75 -z-10" />
 
       {/* 4. Foreground Content */}
       <div className="text-white z-10 p-10 max-w-5xl">
@@ -62,28 +62,19 @@ export default async function HomePage() {
         </p>
         <br />
         <div className="w-full flex justify-center gap-5">
-          {isLoggedIn ? (
-            <Button asChild>
-              <Link href="/admin">
-                <LogIn />
-                Dashboard
-              </Link>
-            </Button>
-          ) : (
-            <Button asChild>
-              <Link href="/sign-in">
-                <LogIn />
-                Log in
-              </Link>
-            </Button>
-          )}
-          <Button variant="secondary" asChild>
+          <Button asChild className="molde-button">
+            <Link href={isLoggedIn ? "/admin" : "/sign-in"}>
+              <LogIn />
+              {isLoggedIn ? "Dashboard" : "Log in"}
+            </Link>
+          </Button>
+          <Button variant="secondary" asChild className="molde-button">
             <Link href="https://github.com/jamalmriley/project-library">
               <Code />
               View project
             </Link>
           </Button>
-          <Button variant="outline" asChild>
+          <Button variant="outline" asChild className="molde-button">
             <Link href="https://www.chicagocred.org/">
               <Info />
               Chicago CRED

@@ -12,9 +12,10 @@ import {
 } from "@/components/ui/carousel";
 import { Spinner } from "@/components/ui/spinner";
 import { useKioskContext } from "@/contexts/kiosk-context";
+import { useTimeContext } from "@/contexts/time-context";
 import { getSiteById, Participant } from "@/types/cred";
-import { KioskItem, LibraryBook } from "@/types/library";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { CheckoutItem, LibraryBook } from "@/types/library";
+import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQueryState } from "nuqs";
@@ -22,11 +23,6 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function CheckoutPage() {
-  const [site] = useQueryState("site");
-  const [api, setApi] = useState<CarouselApi>();
-  const [isLoading, setIsLoading] = useState(false);
-  const [current, setCurrent] = useState(0);
-  const [count, setCount] = useState(0);
   const {
     cart,
     setCart,
@@ -37,12 +33,13 @@ export default function CheckoutPage() {
     setCurrBook,
     setReturns,
   } = useKioskContext();
+  const { today, twoWeeksFromToday } = useTimeContext();
+  const [site] = useQueryState("site");
+  const [api, setApi] = useState<CarouselApi>();
+  const [isLoading, setIsLoading] = useState(false);
+  const [current, setCurrent] = useState(0);
+  const [count, setCount] = useState(0);
   const isNextButtonDisabled = current + 1 > maxCheckoutStepAllowed;
-
-  const today = new Date();
-  const twoWeeksFromToday = new Date(today);
-  twoWeeksFromToday.setDate(twoWeeksFromToday.getDate() + 14);
-  twoWeeksFromToday.setHours(23, 59, 0, 0);
 
   const handleCheckout = async (participant: Participant) => {
     await setIsLoading(true);
@@ -64,35 +61,13 @@ export default function CheckoutPage() {
     const data: Participant = await res.json();
     const { checkout_history } = data;
 
-    const convertCartToCheckout = (cart: LibraryBook[]): KioskItem[] => {
-      const result: KioskItem[] = [];
-
-      for (const item of cart) {
-        const checkoutItem: KioskItem = {
-          book: item,
-          checkout_date: today,
-          due_date: twoWeeksFromToday,
-          return_date: null,
-          is_returned: false,
-          extension_count: 0,
-          has_completed_book_report: false,
-        };
-
-        result.push(checkoutItem);
-      }
-
-      return result;
-    };
-
-    const checkoutItems = convertCartToCheckout(cart);
-
     await fetch(`/api/participants?id=${participant.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         checkout_history: checkout_history
-          ? [...checkout_history, ...checkoutItems]
-          : checkoutItems,
+          ? [...checkout_history, ...cart]
+          : cart,
         updated_at: today,
       }),
     })
@@ -208,7 +183,13 @@ export default function CheckoutPage() {
           }}
           disabled={isNextButtonDisabled || isLoading}
         >
-          {isLoading ? <Spinner /> : <ArrowRight />}
+          {isLoading ? (
+            <Spinner />
+          ) : current === 2 && maxCheckoutStepAllowed === 3 ? (
+            <Check />
+          ) : (
+            <ArrowRight />
+          )}
         </Button>
       </div>
     </div>

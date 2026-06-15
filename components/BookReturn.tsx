@@ -37,7 +37,7 @@ export default function BookReturn({
               <ReturnBookLineItem
                 key={index}
                 book={checkoutItem.book}
-                kioskItem={checkoutItem}
+                checkoutItem={checkoutItem}
                 location="return"
               />
             ))

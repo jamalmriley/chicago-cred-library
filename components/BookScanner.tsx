@@ -136,6 +136,7 @@ export default function BookScanner<T>({
         {!isManualSearchEnabled && (
           <Button
             variant={isScanning ? "destructive" : "default"}
+            className="molde-button"
             onClick={() => (isScanning ? stopScanning() : setIsScanning(true))}
           >
             {isScanning ? <OctagonX /> : <ScanBarcode />}
@@ -165,6 +166,7 @@ export default function BookScanner<T>({
 
         <Button
           variant="outline"
+          className="molde-button"
           disabled={isManualSearchLoading}
           onClick={async () => {
             if (isScanning) stopScanning();

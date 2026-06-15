@@ -2,15 +2,33 @@ import { Button } from "@/components//ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useKioskContext } from "@/contexts/kiosk-context";
+import { useTimeContext } from "@/contexts/time-context";
+import { getPreferredIsbn } from "@/lib/utils";
 import { Site } from "@/types/cred";
-import { GoogleBooks, KioskItem, LibraryBook } from "@/types/library";
+import {
+  CheckoutItem,
+  CheckoutPurpose,
+  GoogleBooks,
+  LibraryBook,
+} from "@/types/library";
 import { formatRelative } from "date-fns";
 import { BookMarked, ChevronDown, Plus, X } from "lucide-react";
 import Image from "next/image";
-import { Suspense, useState } from "react";
+import { Dispatch, SetStateAction, Suspense, useState } from "react";
 import BookDialog from "./BookDialog";
 import SiteDropdownMenuContent from "./SiteDropdownMenuContent";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "./ui/dialog";
 import { DropdownMenu, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
 
 export interface BookDisplayInfo {
   id: string;
@@ -22,12 +40,17 @@ export interface BookDisplayInfo {
 
 interface BookLineItemProps {
   book: LibraryBook | GoogleBooks.Book;
+  checkoutItem?: CheckoutItem;
+  isDialogOpen?: boolean;
+  setIsDialogOpen?: Dispatch<SetStateAction<boolean>>;
   isDisabled?: boolean;
-  kioskItem?: KioskItem;
   location?: "cart" | "lookup" | "return" | "admin";
-  onAdd?: (site: Site | null) => void;
+  onAdd?: (options?: {
+    checkoutPurpose?: CheckoutPurpose;
+    site?: Site | null;
+  }) => void;
   onRemove?: () => void;
-  onReturn?: (item: KioskItem, didReport: boolean) => void;
+  onReturn?: (item: CheckoutItem, didReport: boolean) => void;
   onUndoReturn?: (bookId: string) => void;
 }
 
@@ -37,33 +60,54 @@ function toBookDisplayInfo(
   // LibraryBook has book_info, GoogleBooks.Book has volumeInfo directly
   const volumeInfo =
     "book_info" in book ? book.book_info.volumeInfo : book.volumeInfo;
+  const { title, authors, industryIdentifiers } = volumeInfo;
 
   return {
     id: book.id,
-    title: volumeInfo.title,
-    authors: volumeInfo.authors,
+    title,
+    authors,
     thumbnail: volumeInfo.imageLinks?.thumbnail.replace("http://", "https://"),
-    isbn: volumeInfo.industryIdentifiers?.[0]?.identifier,
+    isbn: getPreferredIsbn(industryIdentifiers),
   };
 }
 
 export function BookLineItem({
   book,
+  checkoutItem,
+  isDialogOpen,
+  setIsDialogOpen,
   isDisabled = false,
-  kioskItem,
   location = "cart",
   onAdd,
   onRemove,
   onReturn,
   onUndoReturn,
 }: BookLineItemProps) {
-  const displayInfo = toBookDisplayInfo(book);
-
+  const { today } = useTimeContext();
   const [checked, setChecked] = useState(false);
+  const [checkoutPurpose, setCheckoutPurpose] =
+    useState<CheckoutPurpose>(undefined);
   const [didReport, setDidReport] = useState(false);
   const [site, setSite] = useState<Site | null>(null);
-  const isbn = displayInfo.isbn || "";
-  const today = new Date();
+  const displayInfo = toBookDisplayInfo(book);
+  const isbn = displayInfo.isbn;
+  const toggleGroupItems = [
+    {
+      label: "Me",
+      description: "I will read this book myself.",
+      value: "self",
+    },
+    {
+      label: "My kid(s)",
+      description: "My kid(s) will read this book.",
+      value: "child(ren)",
+    },
+    {
+      label: "Me and my kid(s)",
+      description: "My kid(s) and I will read this book together.",
+      value: "family",
+    },
+  ];
 
   const distanceBetweenDays = (
     date1: Date | string,
@@ -107,11 +151,11 @@ export function BookLineItem({
           <p className="text-xs italic text-muted-foreground line-clamp-1">
             {displayInfo.authors?.join(", ")}
           </p>
-          {kioskItem && (
+          {checkoutItem && (
             <p
-              className={`text-xs ${distanceBetweenDays(today, kioskItem.due_date) <= 5 ? "text-destructive" : "text-primary-foreground"} line-clamp-1 mt-0.5`}
+              className={`text-xs ${distanceBetweenDays(today, checkoutItem.due_date) <= 5 ? "text-destructive" : "text-primary-foreground"} line-clamp-1 mt-0.5`}
             >
-              Due {formatRelative(kioskItem.due_date, new Date())}
+              Due {formatRelative(checkoutItem.due_date, new Date())}
             </p>
           )}
         </div>
@@ -120,13 +164,63 @@ export function BookLineItem({
           {location === "lookup" ? (
             // Add & cancel buttons
             <div className="flex gap-2">
-              <Button
-                size="icon"
-                onClick={() => onAdd?.(site)}
-                disabled={isDisabled}
-              >
-                <Plus />
-              </Button>
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button size="icon" disabled={isDisabled}>
+                    <Plus />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>
+                      Who will read "{displayInfo.title}"?
+                    </DialogTitle>
+                    <DialogDescription>
+                      Let us know who this book is for.
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  <ToggleGroup
+                    variant="outline"
+                    type="single"
+                    orientation="vertical"
+                    size="lg"
+                    className="w-full"
+                    value={checkoutPurpose}
+                    onValueChange={(value) =>
+                      setCheckoutPurpose(value as CheckoutPurpose)
+                    }
+                  >
+                    {toggleGroupItems.map((item, i) => (
+                      <ToggleGroupItem
+                        key={i}
+                        value={item.value}
+                        className="h-fit flex flex-col py-2"
+                      >
+                        <span className="text-lg leading-none font-semibold">
+                          {item.label}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {item.description}
+                        </span>
+                      </ToggleGroupItem>
+                    ))}
+                  </ToggleGroup>
+
+                  <DialogFooter>
+                    <DialogClose asChild>
+                      <Button
+                        className="w-full molde-button"
+                        disabled={checkoutPurpose === undefined}
+                        onClick={() => onAdd?.({ checkoutPurpose })}
+                      >
+                        <Plus />
+                        Add book
+                      </Button>
+                    </DialogClose>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
 
               <Button
                 variant="destructive"
@@ -137,7 +231,7 @@ export function BookLineItem({
                 <X />
               </Button>
             </div>
-          ) : location === "return" && kioskItem ? (
+          ) : location === "return" && checkoutItem ? (
             // Return checkbox
             <Checkbox
               className="size-7"
@@ -147,14 +241,14 @@ export function BookLineItem({
                   setChecked(false);
                   onUndoReturn?.(book.id);
                 } else {
-                  const newKioskItem: KioskItem = {
-                    ...kioskItem,
+                  const newCheckoutItem: CheckoutItem = {
+                    ...checkoutItem,
                     return_date: today,
                     is_returned: true,
                     has_completed_book_report: didReport,
                   };
                   setChecked(true);
-                  onReturn?.(newKioskItem, didReport);
+                  onReturn?.(newCheckoutItem, didReport);
                 }
               }}
             />
@@ -169,7 +263,7 @@ export function BookLineItem({
               <X />
             </Button>
           ) : (
-            <BookDialog isbn={isbn} />
+            isbn && <BookDialog isbn={isbn} />
           )}
         </span>
       </div>
@@ -180,7 +274,7 @@ export function BookLineItem({
           <Button
             className="flex-1 rounded-r-none border-r-0"
             disabled={location !== "admin" || !site || isDisabled}
-            onClick={() => onAdd?.(site)}
+            onClick={() => onAdd?.({ site })}
           >
             {site ? `Add book to ${site.nickname}` : "Add to site"}
           </Button>
@@ -238,13 +332,18 @@ export function BookLineItem({
 
 const [currStep, nextStep] = [2, 3];
 
-export function CheckoutBookLineItem({ book, kioskItem }: BookLineItemProps) {
-  return <BookLineItem book={book} kioskItem={kioskItem} location="cart" />;
+export function CheckoutBookLineItem({
+  book,
+  checkoutItem,
+}: BookLineItemProps) {
+  return (
+    <BookLineItem book={book} checkoutItem={checkoutItem} location="cart" />
+  );
 }
 
 export function AdminBookLineItem({
   book,
-  kioskItem,
+  checkoutItem,
   onAdd,
   onRemove,
 }: BookLineItemProps) {
@@ -252,7 +351,7 @@ export function AdminBookLineItem({
     <Suspense>
       <BookLineItem
         book={book}
-        kioskItem={kioskItem}
+        checkoutItem={checkoutItem}
         location="admin"
         onAdd={(site) => onAdd?.(site)}
         onRemove={() => onRemove?.()}
@@ -261,17 +360,34 @@ export function AdminBookLineItem({
   );
 }
 
-export function LookupBookLineItem({ book, kioskItem }: BookLineItemProps) {
+export function LookupBookLineItem({
+  book,
+  isDialogOpen,
+  setIsDialogOpen,
+}: BookLineItemProps) {
   const { currBook, setCurrBook, setCart, setMaxCheckoutStepAllowed } =
     useKioskContext();
+  const { today, twoWeeksFromToday } = useTimeContext();
+
   return (
     <BookLineItem
       book={book}
-      kioskItem={kioskItem}
+      isDialogOpen={isDialogOpen} // missing
+      setIsDialogOpen={setIsDialogOpen} // missing
       location="lookup"
-      onAdd={() => {
+      onAdd={(options) => {
         if (currBook) {
-          setCart((prev) => [...prev, currBook]);
+          const newCheckoutItem: CheckoutItem = {
+            book: currBook,
+            checkout_date: today,
+            checkout_purpose: options?.checkoutPurpose,
+            due_date: twoWeeksFromToday,
+            return_date: null,
+            is_returned: false,
+            extension_count: 0,
+            has_completed_book_report: false,
+          };
+          setCart((prev) => [...prev, newCheckoutItem]);
           setCurrBook(null);
           setMaxCheckoutStepAllowed(nextStep);
         }
@@ -281,15 +397,15 @@ export function LookupBookLineItem({ book, kioskItem }: BookLineItemProps) {
   );
 }
 
-export function ReturnBookLineItem({ book, kioskItem }: BookLineItemProps) {
+export function ReturnBookLineItem({ book, checkoutItem }: BookLineItemProps) {
   const { returns, setReturns, setMaxCheckoutStepAllowed } = useKioskContext();
   return (
     <BookLineItem
       book={book}
-      kioskItem={kioskItem}
+      checkoutItem={checkoutItem}
       location="return"
-      onReturn={(newKioskItem) => {
-        setReturns((prev) => [...prev, newKioskItem]);
+      onReturn={(newCheckoutItem) => {
+        setReturns((prev) => [...prev, newCheckoutItem]);
         setMaxCheckoutStepAllowed(nextStep);
       }}
       onUndoReturn={(bookId) => {

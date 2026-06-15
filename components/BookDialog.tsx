@@ -44,7 +44,7 @@ export default function BookDialog({ isbn }: { isbn: string }) {
   }, []);
 
   const removeFromCart = (item: LibraryBook) => {
-    const filteredCart = cart.filter((itm) => itm.id !== item.id);
+    const filteredCart = cart.filter((itm) => itm.book.id !== item.id);
     setCart(filteredCart);
     setMaxCheckoutStepAllowed(filteredCart.length > 0 ? 3 : 2);
   };
@@ -144,7 +144,11 @@ export default function BookDialog({ isbn }: { isbn: string }) {
           </div>
 
           <DialogFooter className="sm:justify-start">
-            <Button variant="destructive" onClick={() => removeFromCart(book)}>
+            <Button
+              variant="destructive"
+              className="molde-button"
+              onClick={() => removeFromCart(book)}
+            >
               Remove from cart
             </Button>
           </DialogFooter>

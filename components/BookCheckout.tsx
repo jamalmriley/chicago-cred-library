@@ -7,6 +7,7 @@ import { Participant } from "@/types/cred";
 import { LibraryBook } from "@/types/library";
 import { LibraryBig } from "lucide-react";
 import { useQueryState } from "nuqs";
+import { useState } from "react";
 import { useSound } from "use-sound";
 import { CheckoutBookLineItem, LookupBookLineItem } from "./BookLineItem";
 import { BookScannerWrapper } from "./BookScannerWrapper";
@@ -17,31 +18,31 @@ export default function BookCheckout({
 }: {
   participant: Participant;
 }) {
-  const { cart, setCart, currBook, setCurrBook, setMaxCheckoutStepAllowed } =
-    useKioskContext();
+  const { cart, currBook, setCurrBook } = useKioskContext();
   const [playBeep] = useSound("/sounds/beep.m4a", { volume: 0.5 });
   const [site] = useQueryState("site");
+  const [isScanComplete, setIsScanComplete] = useState(false);
 
-  const handleScan = async (id: string) => {
-    playBeep();
-    const book = await fetchLibraryBook(`${site}_${id}`);
-    if (!book) return;
-    setCart((prev) => (prev ? [...prev, book] : [book]));
-    setMaxCheckoutStepAllowed(3);
-  };
-
-  const handleLookup = async (id: string) => {
+  const fetchAndSetBook = async (id: string, openDialog = false) => {
     const book = await fetchLibraryBook(`${site}_${id}`);
     if (!book) return;
     setCurrBook(book);
+    setIsScanComplete(openDialog);
   };
+
+  const handleScan = async (id: string) => {
+    playBeep();
+    await fetchAndSetBook(id, true);
+  };
+
+  const handleLookup = (id: string) => fetchAndSetBook(id);
 
   return (
     <KioskCard flex="row" title={`Start scanning, ${participant.first_name}.`}>
       <div className="w-80 h-full flex flex-col gap-3 overflow-y-hidden">
         {cart.length > 0 ? (
           cart.map((item, index) => (
-            <CheckoutBookLineItem key={index} book={item} />
+            <CheckoutBookLineItem key={index} book={item.book} />
           ))
         ) : (
           <div className="w-full h-full flex flex-col flex-1 grow justify-center items-center border rounded-xl p-10 bg-muted text-muted-foreground">
@@ -60,7 +61,12 @@ export default function BookCheckout({
           onLookup={handleLookup}
           onScan={handleScan}
           renderBook={(book) => (
-            <LookupBookLineItem book={book} location="lookup" />
+            <LookupBookLineItem
+              book={book}
+              location="lookup"
+              isDialogOpen={isScanComplete}
+              setIsDialogOpen={(open) => setIsScanComplete(open)}
+            />
           )}
         />
       </div>

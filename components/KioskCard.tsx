@@ -15,7 +15,9 @@ export default function KioskCard({
   return (
     <div className={`kiosk w-full p-10 flex justify-center items-center`}>
       <Card className={cn("w-fit h-full p-0", className)}>
-        <CardTitle className="px-10 pt-5">{title}</CardTitle>
+        <CardTitle className="px-10 pt-5 text-6xl uppercase font-secondary mb-4">
+          {title}
+        </CardTitle>
         <CardContent
           className={`h-full min-h-0 flex flex-${flex} items-center justify-center px-10 pb-10`}
         >

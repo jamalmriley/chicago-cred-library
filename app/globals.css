@@ -153,11 +153,23 @@
     @apply text-2xl font-semibold my-5;
   }
 
+  .molde-button {
+    @apply text-lg! font-secondary uppercase;
+  }
+
   .kiosk {
     @apply h-[calc(100dvh-4.75rem)];
   }
 
   .sidebar-icon {
     @apply h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200;
+  }
+
+  .chart-card-content {
+    @apply flex-1 min-h-0;
+  }
+
+  .chart-container {
+    @apply size-full;
   }
 }

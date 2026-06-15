@@ -28,3 +28,15 @@ export function capitalizeString(string: string | undefined) {
   }
   return result;
 }
+
+export function getPreferredIsbn(
+  identifiers: {
+    type: "ISBN_10" | "ISBN_13";
+    identifier: string;
+  }[],
+): string {
+  return (
+    identifiers.find((id) => id.type === "ISBN_13")?.identifier ??
+    identifiers[0].identifier
+  );
+}

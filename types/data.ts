@@ -13,7 +13,7 @@ export type Month =
   | "December";
 
 export interface ChartDatum {
-  month: Month;
+  label: string;
   value: number;
   value2?: number;
   value3?: number;

@@ -1,4 +1,4 @@
-import { KioskItem } from "./library";
+import { CheckoutItem } from "./library";
 
 export const SITES = [
   {
@@ -87,7 +87,7 @@ export interface Participant {
   email: string;
   site: Site;
   notes: string | null;
-  checkout_history: KioskItem[] | null;
+  checkout_history: CheckoutItem[] | null;
   updated_at: Date;
 }
 

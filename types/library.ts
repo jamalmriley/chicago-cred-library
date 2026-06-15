@@ -93,6 +93,7 @@ export type ManualBook = Omit<Partial<GoogleBooks.Book>, "volumeInfo"> & {
 };
 
 export type BookInfo = GoogleBooks.Book | ManualBook;
+export type CheckoutPurpose = "self" | "children" | "family" | undefined;
 
 export interface LibraryBook {
   id: string;
@@ -102,12 +103,13 @@ export interface LibraryBook {
   total_count: number;
   created_at: Date;
   updated_at: Date;
-  checkout_history: KioskItem[] | null;
+  checkout_history: CheckoutItem[] | null;
 }
 
-export interface KioskItem {
+export interface CheckoutItem {
   book: LibraryBook;
   checkout_date: Date;
+  checkout_purpose: CheckoutPurpose;
   due_date: Date;
   return_date: Date | null;
   is_returned: boolean;
