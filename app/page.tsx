@@ -23,16 +23,16 @@ export default async function HomePage() {
       />
 
       {/* 3. Black Overlay Div (Change /50 to adjust opacity, e.g., /70) */}
-      <div className="absolute inset-0 bg-black/75 -z-10" />
+      <div className="absolute inset-0 bg-background/75 -z-10" />
 
       {/* 4. Foreground Content */}
-      <div className="text-white z-10 p-10 max-w-5xl">
+      <div className="text-foreground z-10 p-10 max-w-5xl">
         <Image
           src={Logo}
           alt="Chicago CRED Logo"
           width={100}
           height={100}
-          className="h-24 w-auto aspect-auto mx-auto shrink-0" // Placed at the very bottom
+          className="h-24 w-auto aspect-auto mx-auto shrink-0 invert dark:invert-0" // Placed at the very bottom
         />
 
         <h1 className="text-9xl text-center font-secondary uppercase">
