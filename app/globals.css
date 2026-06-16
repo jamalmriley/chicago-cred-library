@@ -172,4 +172,8 @@
   .chart-container {
     @apply size-full;
   }
+
+  .card-text {
+    @apply font-heading text-base leading-normal font-medium;
+  }
 }

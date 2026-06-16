@@ -1,16 +1,21 @@
+import { cn } from "@/lib/utils";
 import { Participant } from "@/types/cred";
 import { ChartData, Month } from "@/types/data";
-import { TrendingUp } from "lucide-react";
+import { useMemo } from "react";
 import {
   Area,
   AreaChart,
   CartesianGrid,
+  Label,
+  Pie,
+  PieChart,
   PolarAngleAxis,
   PolarGrid,
   Radar,
   RadarChart,
   XAxis,
 } from "recharts";
+import TextTicker from "./TextTicker";
 import {
   Card,
   CardContent,
@@ -37,7 +42,7 @@ export function CheckoutsOverTime({
   isLoading,
   error,
 }: ChartComponentProps) {
-  const chartData = convertToChartData(participants);
+  const chartData = getCheckoutsOverTime(participants);
   const chartConfig = {
     value: {
       label: "Checkouts",
@@ -49,7 +54,8 @@ export function CheckoutsOverTime({
       <CardHeader>
         <CardTitle>Checkouts over time</CardTitle>
         <CardDescription className="flex items-center gap-2 leading-none font-medium">
-          Up by 5.2% this month <TrendingUp className="size-4" />
+          The number of checked out books over time.
+          {/* Up by 5.2% this month <TrendingUp className="size-4" /> */}
         </CardDescription>
       </CardHeader>
 
@@ -93,15 +99,96 @@ export function CheckoutsOverTime({
   );
 }
 
-export function CheckoutsByPurpose() {
+export function CheckoutsByPurpose({
+  participants,
+  isLoading,
+  error,
+}: ChartComponentProps) {
+  const chartData = getCheckoutsByPurpose(participants);
+  const chartConfig = {
+    checkouts: { label: "Checkouts" },
+    self: {
+      label: "Myself",
+      color: "var(--chart-1)",
+    },
+    children: {
+      label: "Child(ren)",
+      color: "var(--chart-2)",
+    },
+    family: {
+      label: "Family",
+      color: "var(--chart-3)",
+    },
+  } satisfies ChartConfig;
+
+  const totalCheckouts = useMemo(() => {
+    return chartData.reduce((acc, datum) => acc + datum.value, 0);
+  }, []);
+
   return (
-    <Card className="w-1/3">
+    <Card className="w-1/3 flex flex-col">
       <CardHeader>
         <CardTitle>Checkouts by purpose</CardTitle>
         <CardDescription className="flex items-center gap-2 leading-none font-medium">
-          Up by 5.2% this month <TrendingUp className="size-4" />
+          Who is reading our books.
+          {/* Up by 5.2% this month <TrendingUp className="size-4" /> */}
         </CardDescription>
       </CardHeader>
+
+      <CardContent className="flex-1 pb-0">
+        {isLoading || error ? (
+          <SkeletonChart isLoading={isLoading} error={error} />
+        ) : (
+          <ChartContainer
+            config={chartConfig}
+            className="mx-auto aspect-square max-h-[250px]"
+          >
+            <PieChart>
+              <ChartTooltip
+                cursor={false}
+                content={<ChartTooltipContent hideLabel />}
+              />
+              <Pie
+                data={chartData}
+                dataKey="value"
+                nameKey="label"
+                innerRadius={50}
+                strokeWidth={5}
+              >
+                <Label
+                  content={({ viewBox }) => {
+                    if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                      return (
+                        <text
+                          x={viewBox.cx}
+                          y={viewBox.cy}
+                          textAnchor="middle"
+                          dominantBaseline="middle"
+                        >
+                          <tspan
+                            x={viewBox.cx}
+                            y={viewBox.cy}
+                            className="fill-foreground text-3xl font-bold"
+                          >
+                            {totalCheckouts.toLocaleString()}
+                          </tspan>
+                          <tspan
+                            x={viewBox.cx}
+                            y={(viewBox.cy || 0) + 24}
+                            className="fill-muted-foreground"
+                          >
+                            Checkouts
+                          </tspan>
+                        </text>
+                      );
+                    }
+                  }}
+                />
+              </Pie>
+            </PieChart>
+          </ChartContainer>
+        )}
+      </CardContent>
     </Card>
   );
 }
@@ -111,7 +198,7 @@ export function MostReadGenres({
   isLoading,
   error,
 }: ChartComponentProps) {
-  const chartData = findMostReadGenrea(participants);
+  const chartData = findMostReadGenres(participants);
   const chartConfig = {
     value: {
       label: "Count",
@@ -124,7 +211,7 @@ export function MostReadGenres({
       <CardHeader>
         <CardTitle>Most read genres</CardTitle>
         <CardDescription className="flex items-center gap-2 leading-none font-medium">
-          Up by 5.2% this month <TrendingUp className="size-4" />
+          {/* Up by 5.2% this month <TrendingUp className="size-4" /> */}
         </CardDescription>
 
         <CardContent className="">
@@ -156,15 +243,44 @@ export function MostReadGenres({
   );
 }
 
+// A stacked bar chart where the total is the number of participants,
+// and each category where participants primarily read their book.
 export function ReadingPaceDistribution() {
   return (
     <Card className="w-1/3">
       <CardHeader>
         <CardTitle>Reading pace distribution</CardTitle>
         <CardDescription className="flex items-center gap-2 leading-none font-medium">
-          Up by 5.2% this month <TrendingUp className="size-4" />
+          How long it takes.
+          {/* Up by 5.2% this month <TrendingUp className="size-4" /> */}
         </CardDescription>
       </CardHeader>
+    </Card>
+  );
+}
+
+export function KpiCard({
+  value,
+  labelSingular,
+  labelPlural,
+  className,
+}: {
+  value: number;
+  labelSingular: string;
+  labelPlural: string;
+  className?: string;
+}) {
+  return (
+    <Card
+      className={cn(
+        "flex flex-col justify-center items-center gap-0 p-6",
+        className,
+      )}
+    >
+      <TextTicker value={value} />
+      <span className="w-full text-center card-text line-clamp-1">
+        {value === 1 ? labelSingular : labelPlural}
+      </span>
     </Card>
   );
 }
@@ -189,7 +305,7 @@ function SkeletonChart({
   );
 }
 
-function convertToChartData(participants: Participant[] | null): ChartData {
+function getCheckoutsOverTime(participants: Participant[] | null): ChartData {
   const chartDataMap = new Map<Month, number>([
     ["January", 0],
     ["February", 0],
@@ -230,7 +346,44 @@ function convertToChartData(participants: Participant[] | null): ChartData {
   }));
 }
 
-function findMostReadGenrea(participants: Participant[] | null): ChartData {
+function getCheckoutsByPurpose(participants: Participant[] | null): ChartData {
+  const chartDataMap = new Map<string, number>();
+
+  if (!participants)
+    return Array.from(chartDataMap.entries()).map(
+      ([checkoutPurpose, count], i) => ({
+        label: checkoutPurpose,
+        value: count,
+        fill: `var(--chart-${i + 1})`,
+      }),
+    );
+
+  // Only include checkouts from participants with a checkout history,
+  // and flatten the checkout histories into a single array.
+  const filteredCheckoutHistory = participants.flatMap(
+    (p) => p.checkout_history || [],
+  );
+
+  for (const item of filteredCheckoutHistory) {
+    const { checkout_purpose } = item;
+    if (!checkout_purpose) continue;
+    chartDataMap.set(
+      checkout_purpose,
+      (chartDataMap.get(checkout_purpose) || 0) + 1,
+    );
+  }
+
+  const result = Array.from(chartDataMap.entries()).map(
+    ([checkoutPurpose, count], i) => ({
+      label: checkoutPurpose,
+      value: count,
+      fill: `var(--chart-${i * 2 + 1})`,
+    }),
+  );
+  return result;
+}
+
+function findMostReadGenres(participants: Participant[] | null): ChartData {
   const chartDataMap = new Map<string, number>();
 
   if (!participants)
@@ -256,4 +409,35 @@ function findMostReadGenrea(participants: Participant[] | null): ChartData {
     label: genre,
     value: count,
   }));
+}
+
+export function getReaderMetrics(participants: Participant[] | null) {
+  let activeReaders = 0,
+    bookReports = 0,
+    booksRead = 0;
+
+  if (!participants) return { activeReaders, bookReports, booksRead };
+
+  // Only include checkouts from participants with a checkout history,
+  // and flatten the checkout histories into a single array.
+  const filteredCheckoutHistory = participants.flatMap(
+    (p) => p.checkout_history || [],
+  );
+
+  // The number of checkouts with return dates.
+  booksRead = filteredCheckoutHistory.filter(
+    (checkout) => checkout.return_date,
+  ).length;
+
+  // The number of participants with a checkout history.
+  activeReaders = participants.filter(
+    (participant) => participant.checkout_history,
+  ).length;
+
+  // The number of book reports completed.
+  bookReports = filteredCheckoutHistory.filter(
+    (checkout) => checkout.has_completed_book_report,
+  ).length;
+
+  return { activeReaders, bookReports, booksRead };
 }

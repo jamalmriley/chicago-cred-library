@@ -3,15 +3,21 @@
 import {
   CheckoutsByPurpose,
   CheckoutsOverTime,
+  getReaderMetrics,
+  KpiCard,
   MostReadGenres,
   ReadingPaceDistribution,
 } from "@/components/Charts";
+import TextTicker from "@/components/TextTicker";
 import { Card } from "@/components/ui/card";
 import { useParticipants } from "@/hooks/use-participants";
 
 export default function AdminPage() {
   const { participants, participantsLoading, participantsError } =
     useParticipants();
+  const { activeReaders, bookReports, booksRead } =
+    getReaderMetrics(participants);
+
   return (
     // 32px is the height of the sidebar trigger.
     <div className="w-full h-[calc(100%-32px)] flex flex-col">
@@ -28,7 +34,11 @@ export default function AdminPage() {
               isLoading={participantsLoading}
               error={participantsError}
             />
-            <CheckoutsByPurpose />
+            <CheckoutsByPurpose
+              participants={participants}
+              isLoading={participantsLoading}
+              error={participantsError}
+            />
           </div>
           <div className="w-full h-1/2 flex gap-5">
             <MostReadGenres
@@ -37,23 +47,34 @@ export default function AdminPage() {
               error={participantsError}
             />
             <div className="w-1/3 h-full flex flex-col gap-5">
-              <Card className="w-full h-1/2 p-6">
-                <p className="font-semibold">Books read</p>
-              </Card>
+              <KpiCard
+                value={booksRead}
+                labelSingular="book read"
+                labelPlural="books read"
+                className="w-full h-1/2"
+              />
+
               <div className="w-full h-1/2 flex gap-5">
-                <Card className="w-1/2 h-full p-6">
-                  <p className="font-semibold">Number of readers</p>
-                </Card>
-                <Card className="w-1/2 h-full p-6">
-                  <p className="font-semibold">Book reports</p>
-                </Card>
+                <KpiCard
+                  value={activeReaders}
+                  labelSingular="reader"
+                  labelPlural="readers"
+                  className="w-1/2 h-full"
+                />
+
+                <KpiCard
+                  value={bookReports}
+                  labelSingular="book report"
+                  labelPlural="book reports"
+                  className="w-1/2 h-full"
+                />
               </div>
             </div>
             <ReadingPaceDistribution />
           </div>
         </div>
         <Card className="w-1/4 h-full p-6">
-          <p className="font-semibold">Top readers</p>
+          <span className="card-text">Top readers</span>
         </Card>
       </div>
     </div>
