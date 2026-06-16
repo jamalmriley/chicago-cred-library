@@ -1,10 +1,13 @@
 import { cn } from "@/lib/utils";
 import { Participant } from "@/types/cred";
 import { ChartData, Month } from "@/types/data";
+import { differenceInDays } from "date-fns";
 import { useMemo } from "react";
 import {
   Area,
   AreaChart,
+  Bar,
+  BarChart,
   CartesianGrid,
   Label,
   Pie,
@@ -16,6 +19,7 @@ import {
   XAxis,
 } from "recharts";
 import TextTicker from "./TextTicker";
+import { Badge } from "./ui/badge";
 import {
   Card,
   CardContent,
@@ -30,6 +34,15 @@ import {
   type ChartConfig,
 } from "./ui/chart";
 import { Skeleton } from "./ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "./ui/table";
 
 interface ChartComponentProps {
   participants: Participant[] | null;
@@ -50,8 +63,8 @@ export function CheckoutsOverTime({
     },
   } satisfies ChartConfig;
   return (
-    <Card className="w-2/3">
-      <CardHeader>
+    <Card className="w-2/3 card">
+      <CardHeader className="card-header">
         <CardTitle>Checkouts over time</CardTitle>
         <CardDescription className="flex items-center gap-2 leading-none font-medium">
           The number of checked out books over time.
@@ -126,8 +139,8 @@ export function CheckoutsByPurpose({
   }, []);
 
   return (
-    <Card className="w-1/3 flex flex-col">
-      <CardHeader>
+    <Card className="w-1/3 card">
+      <CardHeader className="card-header">
         <CardTitle>Checkouts by purpose</CardTitle>
         <CardDescription className="flex items-center gap-2 leading-none font-medium">
           Who is reading our books.
@@ -135,14 +148,11 @@ export function CheckoutsByPurpose({
         </CardDescription>
       </CardHeader>
 
-      <CardContent className="flex-1 pb-0">
+      <CardContent className="chart-card-content">
         {isLoading || error ? (
           <SkeletonChart isLoading={isLoading} error={error} />
         ) : (
-          <ChartContainer
-            config={chartConfig}
-            className="mx-auto aspect-square max-h-[250px]"
-          >
+          <ChartContainer config={chartConfig} className="chart-container">
             <PieChart>
               <ChartTooltip
                 cursor={false}
@@ -198,7 +208,7 @@ export function MostReadGenres({
   isLoading,
   error,
 }: ChartComponentProps) {
-  const chartData = findMostReadGenres(participants);
+  const chartData = getMostReadGenres(participants);
   const chartConfig = {
     value: {
       label: "Count",
@@ -207,54 +217,85 @@ export function MostReadGenres({
   } satisfies ChartConfig;
 
   return (
-    <Card className="w-1/3">
-      <CardHeader>
+    <Card className="w-full card">
+      <CardHeader className="card-header">
         <CardTitle>Most read genres</CardTitle>
         <CardDescription className="flex items-center gap-2 leading-none font-medium">
           {/* Up by 5.2% this month <TrendingUp className="size-4" /> */}
+          What we are reading.
         </CardDescription>
-
-        <CardContent className="">
-          {isLoading || error ? (
-            <SkeletonChart isLoading={isLoading} error={error} />
-          ) : (
-            <ChartContainer
-              config={chartConfig}
-              className="chart-container aspect-square"
-            >
-              <RadarChart data={chartData}>
-                <ChartTooltip
-                  cursor={false}
-                  content={<ChartTooltipContent />}
-                />
-                <PolarAngleAxis dataKey="label" />
-                <PolarGrid />
-                <Radar
-                  dataKey="value"
-                  fill="var(--color-primary)"
-                  fillOpacity={0.6}
-                />
-              </RadarChart>
-            </ChartContainer>
-          )}
-        </CardContent>
       </CardHeader>
+
+      <CardContent className="chart-card-content">
+        {isLoading || error ? (
+          <SkeletonChart isLoading={isLoading} error={error} />
+        ) : (
+          <ChartContainer config={chartConfig} className="chart-container">
+            <RadarChart data={chartData}>
+              <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+              <PolarAngleAxis dataKey="label" />
+              <PolarGrid />
+              <Radar
+                dataKey="value"
+                fill="var(--color-primary)"
+                fillOpacity={0.6}
+              />
+            </RadarChart>
+          </ChartContainer>
+        )}
+      </CardContent>
     </Card>
   );
 }
 
-// A stacked bar chart where the total is the number of participants,
+// TODO: A stacked bar chart where the total is the number of participants,
 // and each category where participants primarily read their book.
-export function ReadingPaceDistribution() {
+export function ReadingPaceDistribution({
+  participants,
+  isLoading,
+  error,
+}: ChartComponentProps) {
+  const chartData = getReadingPaceDistribution(participants);
+  const chartConfig = {
+    value: {
+      label: "Count",
+      color: "var(--chart-1)",
+    },
+  } satisfies ChartConfig;
+
   return (
-    <Card className="w-1/3">
-      <CardHeader>
+    <Card className="w-1/3 card">
+      <CardHeader className="card-header">
         <CardTitle>Reading pace distribution</CardTitle>
         <CardDescription className="flex items-center gap-2 leading-none font-medium">
           How long it takes.
           {/* Up by 5.2% this month <TrendingUp className="size-4" /> */}
         </CardDescription>
       </CardHeader>
+
+      <CardContent className="chart-card-content">
+        {isLoading || error ? (
+          <SkeletonChart isLoading={isLoading} error={error} />
+        ) : (
+          <ChartContainer config={chartConfig} className="chart-container">
+            <BarChart accessibilityLayer data={chartData}>
+              <CartesianGrid vertical={false} />
+              <XAxis
+                dataKey="label"
+                tickLine={false}
+                tickMargin={10}
+                axisLine={false}
+                // tickFormatter={(value) => value.slice(0, 3)}
+              />
+              <ChartTooltip
+                cursor={false}
+                content={<ChartTooltipContent hideLabel />}
+              />
+              <Bar dataKey="value" fill="var(--color-primary)" radius={8} />
+            </BarChart>
+          </ChartContainer>
+        )}
+      </CardContent>
     </Card>
   );
 }
@@ -281,6 +322,65 @@ export function KpiCard({
       <span className="w-full text-center card-text line-clamp-1">
         {value === 1 ? labelSingular : labelPlural}
       </span>
+    </Card>
+  );
+}
+
+export function TopReaders({
+  participants,
+  isLoading,
+  error,
+}: ChartComponentProps) {
+  const data = getTopReaders(participants);
+  return (
+    <Card className="w-1/4 h-full">
+      <CardHeader>
+        <CardTitle>Most read genres</CardTitle>
+        <CardDescription className="flex items-center gap-2 leading-none font-medium">
+          {/* Up by 5.2% this month <TrendingUp className="size-4" /> */}
+          Who's really reading.
+        </CardDescription>
+      </CardHeader>
+
+      <CardContent className="">
+        {isLoading || error ? (
+          <SkeletonChart isLoading={isLoading} error={error} />
+        ) : (
+          data && (
+            <Table>
+              <TableCaption>
+                {data.length > 1 && `The top ${data.length} readers.`}
+              </TableCaption>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[50px] text-xs text-center">#</TableHead>
+                  <TableHead className="text-xs w-full">Participant</TableHead>
+                  <TableHead className="text-xs text-center">Site</TableHead>
+                  <TableHead className="text-xs text-center">Books</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {data.map((participant, i) => (
+                  <TableRow key={i}>
+                    <TableCell className="font-medium text-center">
+                      {i + 1}
+                    </TableCell>
+                    <TableCell className="line-clamp-1">
+                      {participant.first_name} {participant.last_name[0]}.
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Badge>{participant.site.nickname}</Badge>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {participant.checkout_history?.length}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )
+        )}
+      </CardContent>
     </Card>
   );
 }
@@ -383,7 +483,7 @@ function getCheckoutsByPurpose(participants: Participant[] | null): ChartData {
   return result;
 }
 
-function findMostReadGenres(participants: Participant[] | null): ChartData {
+function getMostReadGenres(participants: Participant[] | null): ChartData {
   const chartDataMap = new Map<string, number>();
 
   if (!participants)
@@ -409,6 +509,97 @@ function findMostReadGenres(participants: Participant[] | null): ChartData {
     label: genre,
     value: count,
   }));
+}
+
+function getReadingPaceDistribution(
+  participants: Participant[] | null,
+): ChartData {
+  const chartDataMap = new Map<string, number>([
+    ["0-7", 0],
+    ["8-14", 0],
+    ["15-30", 0],
+    ["30+", 0],
+  ]);
+
+  if (!participants)
+    return Array.from(chartDataMap.entries()).map(([label, value]) => ({
+      label,
+      value,
+    }));
+
+  // Only include checkouts from participants with a checkout history,
+  // and flatten the checkout histories into a single array.
+  const filteredCheckoutHistory = participants.flatMap(
+    (p) => p.checkout_history || [],
+  );
+
+  for (const item of filteredCheckoutHistory) {
+    const { checkout_date, return_date } = item;
+    if (!checkout_date || !return_date) continue;
+    const diffInDays: number = differenceInDays(return_date, checkout_date);
+
+    let group: string;
+
+    switch (true) {
+      case diffInDays >= 0 && diffInDays <= 7:
+        group = "0-7";
+        break;
+      case diffInDays > 7 && diffInDays <= 14:
+        group = "8-14";
+        break;
+      case diffInDays > 14 && diffInDays <= 30:
+        group = "15-30";
+        break;
+      default:
+        group = "30+";
+        break;
+    }
+
+    chartDataMap.set(group, (chartDataMap.get(group) || 0) + 1);
+  }
+
+  const result = Array.from(chartDataMap.entries()).map(
+    ([checkoutPurpose, count], i) => ({
+      label: checkoutPurpose,
+      value: count,
+      fill: "var(--chart-3)",
+    }),
+  );
+  return result;
+}
+
+function getTopReaders(
+  participants: Participant[] | null,
+): Participant[] | null {
+  if (!participants) return null;
+
+  const filteredAndSortedParticipants = participants
+    .map((participant) => ({
+      ...participant,
+      checkout_history:
+        participant.checkout_history?.filter(
+          (item) => item.return_date !== null,
+        ) ?? [],
+    }))
+    .filter((participant) => participant.checkout_history.length > 0);
+
+  return filteredAndSortedParticipants
+    .sort((a, b) => {
+      const historyA = a.checkout_history;
+      const historyB = b.checkout_history;
+
+      // Primary sort: completed checkouts (all remaining items have return dates)
+      if (historyA.length !== historyB.length) {
+        return historyB.length - historyA.length;
+      }
+
+      // Tie-breaker: alphabetical
+      const nameA = `${a.last_name} ${a.first_name}`.toLowerCase();
+      const nameB = `${b.last_name} ${b.first_name}`.toLowerCase();
+
+      return nameA.localeCompare(nameB);
+    })
+    .slice(0, 20);
 }
 
 export function getReaderMetrics(participants: Participant[] | null) {
