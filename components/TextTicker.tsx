@@ -43,7 +43,7 @@ function Counter({
 
 export default function TextTicker({ value }: { value: number }) {
   return (
-    <span className="text-7xl font-bold tabular-nums tracking-tight">
+    <span className="text-5xl font-bold tabular-nums tracking-tight">
       <Counter value={value} /> {/* use direction param for "up" or "down" */}
     </span>
   );

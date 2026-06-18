@@ -6,6 +6,7 @@ import {
   getReaderMetrics,
   KpiCard,
   MostReadGenres,
+  PageGauge,
   ReadingPaceDistribution,
   TopReaders,
 } from "@/components/Charts";
@@ -16,6 +17,11 @@ export default function AdminPage() {
     useParticipants();
   const { activeReaders, bookReports, booksRead } =
     getReaderMetrics(participants);
+
+  const dateRange = {
+    from: new Date(2026, 4, 1), // Beginning of May 2026
+    to: new Date(2026, 6, 31), // End of July 2026
+  };
 
   return (
     // 92px is the height of the sidebar trigger.
@@ -49,11 +55,10 @@ export default function AdminPage() {
 
               {/* KPI Cards */}
               <div className="w-full h-full flex flex-col gap-5  min-h-0">
-                <KpiCard
-                  value={booksRead}
-                  labelSingular="book read"
-                  labelPlural="books read"
-                  className="w-full h-1/2"
+                <PageGauge
+                  participants={participants}
+                  isLoading={participantsLoading}
+                  error={participantsError}
                 />
 
                 <div className="w-full h-1/2 flex gap-5 min-h-0">
@@ -65,9 +70,9 @@ export default function AdminPage() {
                   />
 
                   <KpiCard
-                    value={bookReports}
-                    labelSingular="book report"
-                    labelPlural="book reports"
+                    value={booksRead}
+                    labelSingular="book read"
+                    labelPlural="books read"
                     className="w-1/2 h-full"
                   />
                 </div>

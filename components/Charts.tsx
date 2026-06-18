@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { Participant } from "@/types/cred";
 import { ChartData, Month } from "@/types/data";
 import { differenceInDays } from "date-fns";
+import dynamic from "next/dynamic";
 import { useMemo } from "react";
 import {
   Area,
@@ -300,6 +301,29 @@ export function ReadingPaceDistribution({
   );
 }
 
+// Disable SSR safely for window-dependent component modules
+const LiquidGauge = dynamic(() => import("@/components/LiquidGauge"), {
+  ssr: false,
+});
+
+export function PageGauge({
+  participants,
+  isLoading,
+  error,
+}: ChartComponentProps) {
+  return (
+    <Card className="w-full h-1/2 relative overflow-hidden">
+      <CardContent className="flex justify-center items-center p-6">
+        {isLoading || error ? (
+          <SkeletonChart isLoading={isLoading} error={error} />
+        ) : (
+          <LiquidGauge value={50} caption="500/1,000 pages read" />
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export function KpiCard({
   value,
   labelSingular,
@@ -314,12 +338,12 @@ export function KpiCard({
   return (
     <Card
       className={cn(
-        "flex flex-col justify-center items-center gap-0 p-6",
+        "flex flex-col justify-center items-center gap-0",
         className,
       )}
     >
       <TextTicker value={value} />
-      <span className="w-full text-center card-text line-clamp-1">
+      <span className="w-full text-center card-text line-clamp-1 text-sm">
         {value === 1 ? labelSingular : labelPlural}
       </span>
     </Card>
@@ -335,7 +359,7 @@ export function TopReaders({
   return (
     <Card className="w-1/4 h-full">
       <CardHeader>
-        <CardTitle>Most read genres</CardTitle>
+        <CardTitle>Top readers</CardTitle>
         <CardDescription className="flex items-center gap-2 leading-none font-medium">
           {/* Up by 5.2% this month <TrendingUp className="size-4" /> */}
           Who's really reading.
@@ -353,7 +377,9 @@ export function TopReaders({
               </TableCaption>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[50px] text-xs text-center">#</TableHead>
+                  <TableHead className="w-[50px] text-xs text-center">
+                    #
+                  </TableHead>
                   <TableHead className="text-xs w-full">Participant</TableHead>
                   <TableHead className="text-xs text-center">Site</TableHead>
                   <TableHead className="text-xs text-center">Books</TableHead>
@@ -362,16 +388,16 @@ export function TopReaders({
               <TableBody>
                 {data.map((participant, i) => (
                   <TableRow key={i}>
-                    <TableCell className="font-medium text-center">
+                    <TableCell className="font-medium text-xs text-center">
                       {i + 1}
                     </TableCell>
-                    <TableCell className="line-clamp-1">
+                    <TableCell className="text-xs line-clamp-1">
                       {participant.first_name} {participant.last_name[0]}.
                     </TableCell>
-                    <TableCell className="text-center">
+                    <TableCell className="text-xs text-center">
                       <Badge>{participant.site.nickname}</Badge>
                     </TableCell>
-                    <TableCell className="text-center">
+                    <TableCell className="text-xs text-center">
                       {participant.checkout_history?.length}
                     </TableCell>
                   </TableRow>
