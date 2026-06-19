@@ -1,6 +1,6 @@
 "use client";
 
-import AddUserDialog from "@/components/AddUserDialog";
+import UserDialog from "@/components/UserDialog";
 import { AbacTableCell, AbacTableHead } from "@/components/ui/abac";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,17 +18,34 @@ import { useAdminContext } from "@/contexts/admin-context";
 import { useParticipants } from "@/hooks/use-participants";
 import { useUsers } from "@/hooks/use-users";
 import { canCreateUsers, hasPermission, ROLE_OPTIONS } from "@/lib/auth";
-import { UserType } from "@/types/cred";
+import { Participant, UserType } from "@/types/cred";
 import { useUser } from "@clerk/nextjs";
+import { User } from "@clerk/nextjs/server";
 import { formatRelative } from "date-fns";
 import { Eye, Pencil, RotateCcw, Trash, UserX } from "lucide-react";
 
 export default function UsersPage() {
   const { isLoaded, user } = useUser();
+  const { users, usersError, usersLoading } = useUsers();
+  const { participants, participantsLoading, participantsError } =
+    useParticipants();
+
   const tabs: UserType[] = ["Participant", "Staff"];
   const tabContent = {
-    Participant: <ParticipantTable />,
-    Staff: <UserTable />,
+    Participant: (
+      <ParticipantTable
+        participants={participants}
+        participantsError={participantsError}
+        participantsLoading={participantsLoading}
+      />
+    ),
+    Staff: (
+      <UserTable
+        users={users}
+        usersError={usersError}
+        usersLoading={usersLoading}
+      />
+    ),
   };
 
   if (!isLoaded || !user) return; // TODO: Return a loading state.
@@ -36,7 +53,7 @@ export default function UsersPage() {
     <div>
       <div className="w-full flex justify-between items-baseline">
         <h1 className="h1">Users</h1>
-        <AddUserDialog />
+        <UserDialog action="create" />
       </div>
 
       {/* Manage and/or view staff and/or participants. */}
@@ -90,7 +107,7 @@ function Fallback({
       </p>
       {fallback === "none" ? (
         <div className="flex gap-5">
-          <AddUserDialog />
+          <UserDialog action="create" />
           <Button onClick={refresh} variant="outline">
             <RotateCcw />
             Refresh
@@ -106,11 +123,16 @@ function Fallback({
   );
 }
 
-function ParticipantTable() {
-  const { participants, participantsLoading, participantsError } =
-    useParticipants();
+function ParticipantTable({
+  participants,
+  participantsError,
+  participantsLoading,
+}: {
+  participants: Participant[] | null;
+  participantsError: string | null;
+  participantsLoading: boolean;
+}) {
   const { user } = useUser();
-
   if (!user) return;
   return (
     <>
@@ -212,20 +234,9 @@ function ParticipantTable() {
                   resource="participants"
                   className="flex justify-center items-center gap-1.5"
                 >
-                  <Button size="icon-xs" variant="secondary" disabled>
-                    <Eye />
-                    <span className="sr-only">View participant</span>
-                  </Button>
-
-                  <Button size="icon-xs" variant="secondary" disabled>
-                    <Pencil />
-                    <span className="sr-only">Edit participant</span>
-                  </Button>
-
-                  <Button size="icon-xs" variant="destructive" disabled>
-                    <Trash />
-                    <span className="sr-only">Inactivate participant</span>
-                  </Button>
+                  <UserDialog action="read" data={participant} />
+                  <UserDialog action="update" data={participant} />
+                  <UserDialog action="delete" data={participant} />
                 </AbacTableCell>
               </TableRow>
             ))}
@@ -238,9 +249,16 @@ function ParticipantTable() {
   );
 }
 
-function UserTable() {
+function UserTable({
+  users,
+  usersError,
+  usersLoading,
+}: {
+  users: User[] | null;
+  usersError: string | null;
+  usersLoading: boolean;
+}) {
   const { user } = useUser();
-  const { users, usersError, usersLoading } = useUsers();
   const getRoleName = (value: string | undefined): string => {
     let result = "None";
     if (!value) return result;
@@ -359,20 +377,9 @@ function UserTable() {
                   resource="users"
                   className="flex justify-center items-center gap-1.5"
                 >
-                  <Button size="icon-xs" variant="secondary" disabled>
-                    <Eye />
-                    <span className="sr-only">View participant</span>
-                  </Button>
-
-                  <Button size="icon-xs" variant="secondary" disabled>
-                    <Pencil />
-                    <span className="sr-only">Edit participant</span>
-                  </Button>
-
-                  <Button size="icon-xs" variant="destructive" disabled>
-                    <Trash />
-                    <span className="sr-only">Inactivate participant</span>
-                  </Button>
+                  <UserDialog action="read" data={userAccount} />
+                  <UserDialog action="update" data={userAccount} />
+                  <UserDialog action="delete" data={userAccount} />
                 </AbacTableCell>
               </TableRow>
             ))}

@@ -72,6 +72,7 @@ export const getSiteById = (id: string | null) => {
 };
 
 export interface ClerkUser {
+  id: string | null;
   firstName: string;
   lastName: string;
   email: string;
