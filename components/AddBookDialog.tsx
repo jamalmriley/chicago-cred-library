@@ -127,7 +127,7 @@ function AddBookForm({
     authors.filter((author) => author !== "").length === 0 ||
     !publishedDate ||
     isbn === "" ||
-    (isbn.length !== 10 && isbn.length !== 13) ||
+    (isbn.length !== 10 && isbn.length !== 12 && isbn.length !== 13) ||
     description === "" ||
     category === "" ||
     pageCount === "";

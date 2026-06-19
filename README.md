@@ -97,12 +97,12 @@ This project uses Supabase as its backend. The `participants` table should have 
 
 ## API Routes
 
-| Method  | Route                       | Description                                   |
-| ------- | --------------------------- | --------------------------------------------- |
-| `GET`   | `/api/google-books?isbn={isbn}`    | Fetch a book by ISBN from Google Books API    |
-| `GET`   | `/api/participants`         | Fetch all participants                        |
-| `GET`   | `/api/participants?id={id}` | Fetch a single participant by ID              |
-| `PATCH` | `/api/participants?id={id}` | Update a participant (checkout history, etc.) |
+| Method  | Route                           | Description                                   |
+| ------- | ------------------------------- | --------------------------------------------- |
+| `GET`   | `/api/google-books?isbn={isbn}` | Fetch a book by ISBN from Google Books API    |
+| `GET`   | `/api/participants`             | Fetch all participants                        |
+| `GET`   | `/api/participants?id={id}`     | Fetch a single participant by ID              |
+| `PATCH` | `/api/participants?id={id}`     | Update a participant (checkout history, etc.) |
 
 ---
 
@@ -110,7 +110,7 @@ This project uses Supabase as its backend. The `participants` table should have 
 
 **Touchscreen-first design** — all interactions are designed for large touch targets on kiosk displays, with no keyboard required for the core checkout flow.
 
-**Barcode scanning** — uses the device camera to scan EAN-13 ISBN barcodes in real time with a 2-second cooldown between scans to support continuous multi-book checkout.
+**Barcode scanning** — uses the device camera to scan ISBN and comic book serial barcodes in real time with a 2-second cooldown between scans to support continuous multi-book checkout.
 
 **Birthday verification** — participants verify their identity by entering their birthday (MM/DD) via a large OTP-style input before proceeding to checkout.
 

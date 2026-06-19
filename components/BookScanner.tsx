@@ -158,7 +158,8 @@ export default function BookScanner<T>({
                 />
               </div>
               <FieldDescription>
-                Enter the 10- or 13-digit ISBN code, without dashes.
+                Enter the 10- or 13-digit ISBN number, without dashes. For comic
+                books, enter the 12-digit serial number.
               </FieldDescription>
             </Field>
           </div>
