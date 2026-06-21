@@ -5,18 +5,27 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import { Skeleton } from "./ui/skeleton";
+import { Separator } from "./ui/separator";
 
 const filterBooksBySelectedLetter = (
   books: LibraryBook[],
   selectedLetter: string,
 ) => {
   if (selectedLetter === "#")
-    return books.filter((book) =>
-      Number.isInteger(parseInt(getSortableTitle(book)[0])),
+    return books
+      .filter((book) => Number.isInteger(parseInt(getSortableTitle(book)[0])))
+      .sort((a, b) =>
+        getSortableTitle(a).localeCompare(getSortableTitle(b), undefined, {
+          sensitivity: "base",
+        }),
+      );
+  return books
+    .filter((book) => getSortableTitle(book).startsWith(selectedLetter))
+    .sort((a, b) =>
+      getSortableTitle(a).localeCompare(getSortableTitle(b), undefined, {
+        sensitivity: "base",
+      }),
     );
-  return books.filter((book) =>
-    getSortableTitle(book).startsWith(selectedLetter),
-  );
 };
 
 const hasBookThatStartWithSelectedLetter = (
@@ -121,14 +130,33 @@ export default function BookSelect() {
             {selectedLetter ? (
               <FilteredBookList letter={selectedLetter} />
             ) : (
-              alphabet
-                .flat()
-                .map(
-                  (letter, i) =>
-                    hasBookThatStartWithSelectedLetter(books, letter) && (
-                      <FilteredBookList key={i} letter={letter} />
-                    ),
-                )
+              <>
+                {alphabet
+                  .flat()
+                  .map(
+                    (letter, i) =>
+                      hasBookThatStartWithSelectedLetter(books, letter) && (
+                        <FilteredBookList key={i} letter={letter} />
+                      ),
+                  )}
+                <Separator decorative />
+                <span className="w-full flex gap-3 text-xs justify-center text-muted-foreground select-none">
+                  <span>{books.length} books</span>
+                  <span>|</span>
+                  <span>
+                    {
+                      [
+                        ...new Set(
+                          books.flatMap(
+                            (book) => book.book_info.volumeInfo.categories,
+                          ),
+                        ),
+                      ].length
+                    }{" "}
+                    genres
+                  </span>
+                </span>
+              </>
             )}
           </div>
         ) : (
@@ -151,7 +179,7 @@ function FilteredBookList({ letter }: { letter: string }) {
   return (
     <div className="w-full flex flex-col gap-2">
       <span className="select-none text-xs font-bold">{letter}</span>
-      <div className="flex gap-5 overflow-x-scroll scrollbar-none">
+      <div className="flex items-end gap-5 overflow-x-scroll scrollbar-none">
         {books &&
           filterBooksBySelectedLetter(books, letter).map(
             (book: LibraryBook) => <BookItem key={book.id} book={book} />,

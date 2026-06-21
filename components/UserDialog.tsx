@@ -20,7 +20,7 @@ import { canCreateUsers, hasPermission, Role, ROLE_OPTIONS } from "@/lib/auth";
 import { ClerkUser, Participant, Site, SITES, UserType } from "@/types/cred";
 import { useUser } from "@clerk/nextjs";
 import { User } from "@clerk/nextjs/server";
-import { ChevronDown, Eye, Pencil, Trash, UserPlus } from "lucide-react";
+import { ChevronDown, Eye, Pencil, Plus, Trash } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import Required from "./Required";
@@ -43,7 +43,7 @@ const actionInfo = {
   create: {
     title: "Add user",
     description: "Fill out the information below.",
-    icon: <UserPlus />,
+    icon: <Plus />,
     buttonText: {
       default: "Add",
       loading: "Adding",
@@ -114,12 +114,10 @@ export default function UserDialog({
                 : "default"
           }
         >
-          <>
-            {actionInfo[action].icon}
-            <span className={action !== "create" ? "sr-only" : ""}>
-              {actionInfo[action].title}
-            </span>
-          </>
+          {actionInfo[action].icon}
+          <span className={action !== "create" ? "sr-only" : "molde-button"}>
+            {actionInfo[action].title}
+          </span>
         </AbacButton>
       </DialogTrigger>
       <DialogContent>

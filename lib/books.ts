@@ -69,3 +69,22 @@ export async function fetchLibraryBook(
     return null;
   }
 }
+
+export async function updateBookAvailability(
+  bookId: string,
+  delta: number, // 1 for return, -1 for checkout
+  updated_at: Date,
+) {
+  const res = await fetch(`/api/library?id=${bookId}`);
+  if (!res.ok) return;
+
+  const book: LibraryBook = await res.json();
+  await fetch(`/api/library?id=${bookId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      available_count: Math.max(0, book.available_count + delta),
+      updated_at,
+    }),
+  });
+}

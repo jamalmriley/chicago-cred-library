@@ -43,7 +43,12 @@ export default function AddBookDialog() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <AbacButton user={user} action="create" resource="books">
+        <AbacButton
+          user={user}
+          action="create"
+          resource="books"
+          className="molde-button"
+        >
           <Plus />
           Add book
         </AbacButton>

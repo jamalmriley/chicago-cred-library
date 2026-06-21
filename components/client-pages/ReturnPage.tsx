@@ -13,6 +13,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { useKioskContext } from "@/contexts/kiosk-context";
 import { useTimeContext } from "@/contexts/time-context";
+import { updateBookAvailability } from "@/lib/books";
 import { getSiteById, Participant } from "@/types/cred";
 import { CheckoutItem } from "@/types/library";
 import { ArrowLeft, ArrowRight } from "lucide-react";
@@ -91,7 +92,11 @@ export default function ReturnPage() {
         updated_at: today,
       }),
     })
-      .then(() => {
+      .then(async () => {
+        // Increment available_count for each returned book
+        await Promise.all(
+          returns.map((item) => updateBookAvailability(item.book.id, 1, today)),
+        );
         setMaxCheckoutStepAllowed(3);
         api?.scrollNext();
       })

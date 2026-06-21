@@ -90,7 +90,8 @@ export function BookLineItem({
   const [didReport, setDidReport] = useState(false);
   const [site, setSite] = useState<Site | null>(null);
   const displayInfo = toBookDisplayInfo(book);
-  const isbn = displayInfo.isbn;
+  const { isbn } = displayInfo;
+  const isLibraryBook = "available_count" in book;
   const toggleGroupItems = [
     {
       label: "Me",
@@ -170,74 +171,100 @@ export function BookLineItem({
                     <Plus />
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader className="flex flex-row! items-center gap-3">
-                    {displayInfo.thumbnail ? (
-                      <div className="relative size-16 aspect-square shrink-0 rounded-sm shadow-sm overflow-hidden">
-                        <Image
-                          src={displayInfo.thumbnail}
-                          alt={displayInfo.title}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                    ) : (
-                      <span className="size-16 aspect-square shrink-0 bg-secondary/25 flex justify-center items-center rounded-sm shadow-sm">
-                        <BookMarked className="size-full p-3 text-muted-foreground" />
+                {isLibraryBook && (
+                  <DialogContent>
+                    <DialogHeader className="flex flex-row! items-center gap-3">
+                      {displayInfo.thumbnail ? (
+                        <div className="relative size-16 aspect-square shrink-0 rounded-sm shadow-sm overflow-hidden">
+                          <Image
+                            src={displayInfo.thumbnail}
+                            alt={displayInfo.title}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <span className="size-16 aspect-square shrink-0 bg-secondary/25 flex justify-center items-center rounded-sm shadow-sm">
+                          <BookMarked className="size-full p-3 text-muted-foreground" />
+                        </span>
+                      )}
+
+                      <span className="flex flex-col">
+                        <DialogTitle>
+                          {book.available_count > 0
+                            ? `Who is "${displayInfo.title}" for?`
+                            : `This book is unavailable.`}
+                        </DialogTitle>
+                        <DialogDescription>
+                          {book.available_count > 0
+                            ? "Select an option below."
+                            : "Please select another book."}
+                        </DialogDescription>
                       </span>
+                    </DialogHeader>
+
+                    {book.available_count > 0 ? (
+                      <ToggleGroup
+                        variant="outline"
+                        type="single"
+                        orientation="vertical"
+                        size="lg"
+                        className="w-full"
+                        value={checkoutPurpose}
+                        onValueChange={(value) => {
+                          const newValue = value === "" ? undefined : value;
+                          setCheckoutPurpose(newValue as CheckoutPurpose);
+                        }}
+                      >
+                        {toggleGroupItems.map((item, i) => (
+                          <ToggleGroupItem
+                            key={i}
+                            value={item.value}
+                            className="h-fit flex flex-col py-2"
+                          >
+                            <span className="text-lg leading-none font-semibold">
+                              {item.label}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {item.description}
+                            </span>
+                          </ToggleGroupItem>
+                        ))}
+                      </ToggleGroup>
+                    ) : (
+                      <p>
+                        <span className="text-muted-foreground dark:text-primary">
+                          "{displayInfo.title}"
+                        </span>{" "}
+                        is currently checked out by another participant. Please
+                        see your Site Manager or Educational Support Tutor for
+                        more details or assistance.
+                      </p>
                     )}
 
-                    <span className="flex flex-col">
-                      <DialogTitle>
-                        Who is "{displayInfo.title}" for?
-                      </DialogTitle>
-                      <DialogDescription>
-                        Select an option below.
-                      </DialogDescription>
-                    </span>
-                  </DialogHeader>
-
-                  <ToggleGroup
-                    variant="outline"
-                    type="single"
-                    orientation="vertical"
-                    size="lg"
-                    className="w-full"
-                    value={checkoutPurpose}
-                    onValueChange={(value) => {
-                      const newValue = value === "" ? undefined : value;
-                      setCheckoutPurpose(newValue as CheckoutPurpose);
-                    }}
-                  >
-                    {toggleGroupItems.map((item, i) => (
-                      <ToggleGroupItem
-                        key={i}
-                        value={item.value}
-                        className="h-fit flex flex-col py-2"
-                      >
-                        <span className="text-lg leading-none font-semibold">
-                          {item.label}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {item.description}
-                        </span>
-                      </ToggleGroupItem>
-                    ))}
-                  </ToggleGroup>
-
-                  <DialogFooter>
-                    <DialogClose asChild>
-                      <Button
-                        className="w-full molde-button"
-                        disabled={checkoutPurpose === undefined}
-                        onClick={() => onAdd?.({ checkoutPurpose })}
-                      >
-                        <Plus />
-                        Add book
-                      </Button>
-                    </DialogClose>
-                  </DialogFooter>
-                </DialogContent>
+                    <DialogFooter>
+                      <DialogClose asChild>
+                        {book.available_count > 0 ? (
+                          <Button
+                            className="w-full molde-button"
+                            disabled={checkoutPurpose === undefined}
+                            onClick={() => onAdd?.({ checkoutPurpose })}
+                          >
+                            <Plus />
+                            Add book
+                          </Button>
+                        ) : (
+                          <Button
+                            className="w-full molde-button"
+                            variant="destructive"
+                          >
+                            Close
+                          </Button>
+                        )}
+                      </DialogClose>
+                    </DialogFooter>
+                  </DialogContent>
+                )}
               </Dialog>
 
               <Button
