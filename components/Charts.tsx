@@ -137,7 +137,7 @@ export function CheckoutsByPurpose({
 
   const totalCheckouts = useMemo(() => {
     return chartData.reduce((acc, datum) => acc + datum.value, 0);
-  }, []);
+  }, [chartData]);
 
   return (
     <Card className="w-1/3 card">

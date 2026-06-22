@@ -1,12 +1,6 @@
 import { useAdminContext } from "@/contexts/admin-context";
 import { LibraryBook } from "@/types/library";
-import {
-  BookX,
-  ImageOff,
-  LibraryBig,
-  RotateCcw,
-  ScanBarcode,
-} from "lucide-react";
+import { BookX, ImageOff, RotateCcw } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import AdminBookDialog from "./AdminBookDialog";
@@ -14,8 +8,6 @@ import { Button } from "./ui/button";
 import {
   ContextMenu,
   ContextMenuContent,
-  ContextMenuGroup,
-  ContextMenuItem,
   ContextMenuTrigger,
 } from "./ui/context-menu";
 import { Separator } from "./ui/separator";
@@ -227,11 +219,10 @@ function BookItem({ book }: { book: LibraryBook }) {
           )}
         </ContextMenuTrigger>
         <ContextMenuContent>
-          <ContextMenuGroup>
-            <AdminBookDialog action="read" data={book} />
-            <AdminBookDialog action="update" data={book} />
-
-            <ContextMenuItem disabled={book.available_count === 0}>
+          <AdminBookDialog action="read" data={book} />
+          <AdminBookDialog action="update" data={book} />
+          {/* TODO: Add checkout/return functionality */}
+          {/* <ContextMenuItem disabled={book.available_count === 0}>
               <ScanBarcode />
               Check out book
             </ContextMenuItem>
@@ -240,8 +231,7 @@ function BookItem({ book }: { book: LibraryBook }) {
             >
               <LibraryBig />
               Mark book "Returned"
-            </ContextMenuItem>
-          </ContextMenuGroup>
+            </ContextMenuItem> */}
           <AdminBookDialog action="delete" data={book} />
         </ContextMenuContent>
       </ContextMenu>

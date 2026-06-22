@@ -338,6 +338,52 @@ function AdminBookForm({
       .finally(() => setIsLoading(false));
   };
 
+  const handleUpdateBook = async (book: LibraryBook) => {
+    setIsLoading(true);
+    const { title } = book.book_info.volumeInfo;
+
+    await fetch(`/api/library?id=${book.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(book),
+    })
+      .then(() => {
+        toast.success(`"${title}" was updated successfully.`, {
+          position: "bottom-right",
+        });
+        clearAllFields();
+        setLastUpdated(new Date().toString());
+      })
+      .catch(() => {
+        toast.error(
+          `There was an issue updating "${title}". Please try again.`,
+          { position: "bottom-right" },
+        );
+      })
+      .finally(() => setIsLoading(false));
+  };
+
+  const handleDeleteBook = async (book: LibraryBook) => {
+    setIsLoading(true);
+    const title = book.book_info.volumeInfo.title;
+
+    await fetch(`/api/library?id=${book.id}`, { method: "DELETE" })
+      .then(() => {
+        toast.success(`"${title}" was removed from the library.`, {
+          position: "bottom-right",
+        });
+        clearAllFields();
+        setLastUpdated(new Date().toString());
+      })
+      .catch(() => {
+        toast.error(
+          `There was an issue removing "${title}". Please try again.`,
+          { position: "bottom-right" },
+        );
+      })
+      .finally(() => setIsLoading(false));
+  };
+
   if (!isLoaded || !user) return;
   return (
     <div className="flex flex-col gap-5">
@@ -375,221 +421,224 @@ function AdminBookForm({
         />
       ) : (
         <FieldGroup>
-          {/* Title */}
-          <span className="flex gap-5">
-            <Field>
-              <FieldLabel htmlFor="site">
-                Site
-                <Required />
-              </FieldLabel>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild id="site">
-                  <Button
-                    variant="outline"
-                    className={`flex justify-between ${selectedSite ? "text-foreground" : "text-muted-foreground"}`}
+          {action !== "delete" && (
+            <>
+              {/* Title */}
+              <span className="flex gap-5">
+                <Field>
+                  <FieldLabel htmlFor="site">
+                    Site
+                    <Required />
+                  </FieldLabel>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild id="site">
+                      <Button
+                        variant="outline"
+                        className={`flex justify-between ${selectedSite ? "text-foreground" : "text-muted-foreground"}`}
+                        disabled={action === "read"}
+                      >
+                        {selectedSite
+                          ? (SITES.find((site) => site.id === selectedSite.id)
+                              ?.nickname ?? "Select a site")
+                          : "Select a site"}
+                        <ChevronDown />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <SiteDropdownMenuContent
+                      selectedSite={selectedSite}
+                      setSelectedSite={setSelectedSite}
+                    />
+                  </DropdownMenu>
+                </Field>
+
+                <Field>
+                  <FieldLabel htmlFor="title">
+                    Title
+                    <Required />
+                  </FieldLabel>
+                  <Input
+                    id="title"
+                    placeholder="The Hobbit"
+                    required
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
                     disabled={action === "read"}
-                  >
-                    {selectedSite
-                      ? (SITES.find((site) => site.id === selectedSite.id)
-                          ?.nickname ?? "Select a site")
-                      : "Select a site"}
-                    <ChevronDown />
-                  </Button>
-                </DropdownMenuTrigger>
-                <SiteDropdownMenuContent
-                  selectedSite={selectedSite}
-                  setSelectedSite={setSelectedSite}
-                />
-              </DropdownMenu>
-            </Field>
-
-            <Field>
-              <FieldLabel htmlFor="title">
-                Title
-                <Required />
-              </FieldLabel>
-              <Input
-                id="title"
-                placeholder="The Hobbit"
-                required
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                disabled={action === "read"}
-              />
-            </Field>
-          </span>
-
-          {/* Author */}
-          <Field>
-            <FieldLabel htmlFor="author">
-              Author{authorCount === 1 ? "" : "s"}
-              <Required />
-            </FieldLabel>
-
-            {Array.from({ length: authorCount }).map((_, i) => (
-              <span key={i} className="flex gap-2">
-                <Input
-                  id="author"
-                  placeholder={
-                    i === 0 && authorCount === 1
-                      ? "J.R.R. Tolkien"
-                      : `Author ${i + 1}`
-                  }
-                  required
-                  type="text"
-                  value={authors[i]}
-                  onChange={(e) => updateAuthor(i, e.target.value)}
-                  disabled={action === "read"}
-                />
-                <Button
-                  size="icon"
-                  onClick={() => {
-                    setAuthorCount((prev) => prev + 1);
-                    insertAuthor(i + 1);
-                  }}
-                  disabled={action === "read"}
-                >
-                  <Plus />
-                </Button>
-                <Button
-                  size="icon"
-                  variant="destructive"
-                  onClick={() => {
-                    setAuthorCount((prev) => Math.max(1, prev - 1));
-                    removeAuthor(i);
-                  }}
-                  disabled={authorCount === 1 || action === "read"}
-                >
-                  <X />
-                </Button>
-              </span>
-            ))}
-          </Field>
-
-          {/* Date Published & ISBN */}
-          <span className="flex gap-5">
-            <Field>
-              <FieldLabel htmlFor="date">
-                Date Published
-                <Required />
-              </FieldLabel>
-              <Popover open={open} onOpenChange={setOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    id="date"
-                    className={`justify-start font-normal ${publishedDate ? "" : "text-muted-foreground"}`}
-                    disabled={action === "read"}
-                  >
-                    {publishedDate?.toLocaleDateString("en-US", {
-                      timeZone: "UTC",
-                    }) ?? "Select date"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent
-                  className="w-auto overflow-hidden p-0"
-                  align="start"
-                >
-                  <Calendar
-                    mode="single"
-                    selected={publishedDate}
-                    defaultMonth={publishedDate}
-                    captionLayout="dropdown"
-                    onSelect={(date) => {
-                      setPublishedDate(date);
-                      setOpen(false);
-                    }}
                   />
-                </PopoverContent>
-              </Popover>
-            </Field>
+                </Field>
+              </span>
 
-            <Field>
-              <FieldLabel htmlFor="isbn">
-                ISBN
-                <Required />
-              </FieldLabel>
-              <Input
-                id="isbn"
-                placeholder="9780547928227"
-                required
-                type="text"
-                value={isbn}
-                onChange={(e) => setIsbn(e.target.value)}
-                disabled={action === "read"}
-              />
-            </Field>
-          </span>
+              {/* Author */}
+              <Field>
+                <FieldLabel htmlFor="author">
+                  Author{authorCount === 1 ? "" : "s"}
+                  <Required />
+                </FieldLabel>
 
-          {/* Description */}
-          <Field>
-            <FieldLabel htmlFor="description">
-              Description
-              <Required />
-            </FieldLabel>
-            <Textarea
-              id="description"
-              placeholder="Lorem ipsum dolor sit amet..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              disabled={action === "read"}
-            />
-          </Field>
+                {Array.from({ length: authorCount }).map((_, i) => (
+                  <span key={i} className="flex gap-2">
+                    <Input
+                      id="author"
+                      placeholder={
+                        i === 0 && authorCount === 1
+                          ? "J.R.R. Tolkien"
+                          : `Author ${i + 1}`
+                      }
+                      required
+                      type="text"
+                      value={authors[i]}
+                      onChange={(e) => updateAuthor(i, e.target.value)}
+                      disabled={action === "read"}
+                    />
+                    <Button
+                      size="icon"
+                      onClick={() => {
+                        setAuthorCount((prev) => prev + 1);
+                        insertAuthor(i + 1);
+                      }}
+                      disabled={action === "read"}
+                    >
+                      <Plus />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="destructive"
+                      onClick={() => {
+                        setAuthorCount((prev) => Math.max(1, prev - 1));
+                        removeAuthor(i);
+                      }}
+                      disabled={authorCount === 1 || action === "read"}
+                    >
+                      <X />
+                    </Button>
+                  </span>
+                ))}
+              </Field>
 
-          {/* Category & Page Count */}
-          <span className="flex gap-5">
-            <Field>
-              <FieldLabel htmlFor="category">
-                Category
-                <Required />
-              </FieldLabel>
-              <Input
-                id="category"
-                placeholder="Fantasy"
-                required
-                type="text"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                disabled={action === "read"}
-              />
-            </Field>
+              {/* Date Published & ISBN */}
+              <span className="flex gap-5">
+                <Field>
+                  <FieldLabel htmlFor="date">
+                    Date Published
+                    <Required />
+                  </FieldLabel>
+                  <Popover open={open} onOpenChange={setOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        id="date"
+                        className={`justify-start font-normal ${publishedDate ? "" : "text-muted-foreground"}`}
+                        disabled={action === "read"}
+                      >
+                        {publishedDate?.toLocaleDateString("en-US", {
+                          timeZone: "UTC",
+                        }) ?? "Select date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      className="w-auto overflow-hidden p-0"
+                      align="start"
+                    >
+                      <Calendar
+                        mode="single"
+                        selected={publishedDate}
+                        defaultMonth={publishedDate}
+                        captionLayout="dropdown"
+                        onSelect={(date) => {
+                          setPublishedDate(date);
+                          setOpen(false);
+                        }}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </Field>
 
-            <Field>
-              <FieldLabel htmlFor="page-count">
-                Page Count
-                <Required />
-              </FieldLabel>
-              <Input
-                id="page-count"
-                placeholder="300"
-                required
-                type="number"
-                min={1}
-                value={pageCount}
-                onChange={(e) => setPageCount(e.target.value)}
-                disabled={action === "read"}
-              />
-            </Field>
-          </span>
+                <Field>
+                  <FieldLabel htmlFor="isbn">
+                    ISBN
+                    <Required />
+                  </FieldLabel>
+                  <Input
+                    id="isbn"
+                    placeholder="9780547928227"
+                    required
+                    type="text"
+                    value={isbn}
+                    onChange={(e) => setIsbn(e.target.value)}
+                    disabled={action === "read"}
+                  />
+                </Field>
+              </span>
 
-          {/* Test Data */}
-          <AbacField
-            orientation="horizontal"
-            user={user}
-            action="create"
-            resource="test_data"
-          >
-            <Checkbox
-              id="test-data"
-              name="test-data"
-              checked={isTestData}
-              onCheckedChange={() => setIsTestData((prev) => !prev)}
-              disabled={action === "read"}
-            />
-            <FieldLabel htmlFor="test-data">This is test data.</FieldLabel>
-          </AbacField>
+              {/* Description */}
+              <Field>
+                <FieldLabel htmlFor="description">
+                  Description
+                  <Required />
+                </FieldLabel>
+                <Textarea
+                  id="description"
+                  placeholder="Lorem ipsum dolor sit amet..."
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  disabled={action === "read"}
+                />
+              </Field>
 
+              {/* Category & Page Count */}
+              <span className="flex gap-5">
+                <Field>
+                  <FieldLabel htmlFor="category">
+                    Category
+                    <Required />
+                  </FieldLabel>
+                  <Input
+                    id="category"
+                    placeholder="Fantasy"
+                    required
+                    type="text"
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    disabled={action === "read"}
+                  />
+                </Field>
+
+                <Field>
+                  <FieldLabel htmlFor="page-count">
+                    Page Count
+                    <Required />
+                  </FieldLabel>
+                  <Input
+                    id="page-count"
+                    placeholder="300"
+                    required
+                    type="number"
+                    min={1}
+                    value={pageCount}
+                    onChange={(e) => setPageCount(e.target.value)}
+                    disabled={action === "read"}
+                  />
+                </Field>
+              </span>
+
+              {/* Test Data */}
+              <AbacField
+                orientation="horizontal"
+                user={user}
+                action="create"
+                resource="test_data"
+              >
+                <Checkbox
+                  id="test-data"
+                  name="test-data"
+                  checked={isTestData}
+                  onCheckedChange={() => setIsTestData((prev) => !prev)}
+                  disabled={action === "read"}
+                />
+                <FieldLabel htmlFor="test-data">This is test data.</FieldLabel>
+              </AbacField>
+            </>
+          )}
           {/* Submit Button */}
           {action !== "read" && (
             <Button
@@ -601,7 +650,9 @@ function AdminBookForm({
                 if (!selectedSite || !publishedDate) return;
 
                 const book_info: ManualBook = {
+                  ...(data?.book_info ?? {}), // This preserves existing GoogleBooks.Book data, if any.
                   volumeInfo: {
+                    ...(data?.book_info.volumeInfo ?? {}), // This preserves existing fields for updating books.
                     title,
                     authors,
                     publishedDate: publishedDate.toDateString(),
@@ -617,19 +668,27 @@ function AdminBookForm({
                   },
                 };
 
-                const id = `${isTestData ? "test_" : selectedSite.id + "_"}${isbn}`;
-                const created_at = new Date();
+                const id =
+                  data?.id ??
+                  `${isTestData ? "test_" : selectedSite.id + "_"}${isbn}`;
+
+                const today = new Date();
                 const book: LibraryBook = {
                   id,
                   book_info,
                   site: selectedSite,
-                  available_count: 1,
-                  total_count: 1,
-                  created_at,
-                  updated_at: created_at,
-                  checkout_history: null,
+                  available_count: data?.available_count ?? 1,
+                  total_count: data?.total_count ?? 1,
+                  created_at: data?.created_at ?? today,
+                  updated_at: today,
+                  checkout_history: data?.checkout_history ?? null,
                 };
-                handleAddBook(book);
+
+                action === "create"
+                  ? handleAddBook(book)
+                  : action === "update"
+                    ? handleUpdateBook(book)
+                    : handleDeleteBook(book);
               }}
             >
               {isLoading

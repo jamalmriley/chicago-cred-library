@@ -2,6 +2,18 @@ import { supabase } from "@/lib/supabase";
 import { LibraryBook } from "@/types/library";
 import { NextRequest, NextResponse } from "next/server";
 
+export async function POST(request: NextRequest) {
+  const body = await request.json();
+
+  const { data, error } = await supabase()
+    .from("library")
+    .insert([body])
+    .select<"*", LibraryBook>();
+
+  if (error) return NextResponse.json({ error }, { status: 500 });
+  return NextResponse.json(data);
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
@@ -41,13 +53,18 @@ export async function PATCH(request: NextRequest) {
   return NextResponse.json(data);
 }
 
-export async function POST(request: NextRequest) {
-  const body = await request.json();
+export async function DELETE(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get("id");
+
+  if (!id) return NextResponse.json({ error: "Missing ID." }, { status: 400 });
 
   const { data, error } = await supabase()
     .from("library")
-    .insert([body])
-    .select<"*", LibraryBook>();
+    .delete()
+    .eq("id", id)
+    .select<"*", LibraryBook>()
+    .single();
 
   if (error) return NextResponse.json({ error }, { status: 500 });
   return NextResponse.json(data);
