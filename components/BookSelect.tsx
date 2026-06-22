@@ -1,11 +1,25 @@
 import { useAdminContext } from "@/contexts/admin-context";
 import { LibraryBook } from "@/types/library";
-import { BookX, ImageOff, RotateCcw } from "lucide-react";
+import {
+  BookX,
+  ImageOff,
+  LibraryBig,
+  RotateCcw,
+  ScanBarcode,
+} from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import AdminBookDialog from "./AdminBookDialog";
 import { Button } from "./ui/button";
-import { Skeleton } from "./ui/skeleton";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuGroup,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "./ui/context-menu";
 import { Separator } from "./ui/separator";
+import { Skeleton } from "./ui/skeleton";
 
 const filterBooksBySelectedLetter = (
   books: LibraryBook[],
@@ -193,19 +207,45 @@ function BookItem({ book }: { book: LibraryBook }) {
   const { volumeInfo } = book.book_info;
   return (
     <span className="w-40 min-w-40 flex flex-col gap-5">
-      {volumeInfo.imageLinks ? (
-        <Image
-          src={volumeInfo.imageLinks.thumbnail.replace("http://", "https://")}
-          alt={book.book_info.volumeInfo.title}
-          width={200}
-          height={200}
-          className="w-full h-auto aspect-auto shrink-0 rounded-lg border" // Maintains thumbnail aspect ratio
-        />
-      ) : (
-        <div className="w-full aspect-3/4 flex justify-center items-center rounded-lg border bg-muted text-muted-foreground font-bold text-3xl">
-          <ImageOff className="size-16" />
-        </div>
-      )}
+      <ContextMenu>
+        <ContextMenuTrigger>
+          {volumeInfo.imageLinks ? (
+            <Image
+              src={volumeInfo.imageLinks.thumbnail.replace(
+                "http://",
+                "https://",
+              )}
+              alt={book.book_info.volumeInfo.title}
+              width={200}
+              height={200}
+              className="w-full h-auto aspect-auto shrink-0 rounded-lg border hover:scale-105 hover:shadow-lg transform transition-all ease-in-out duration-200" // Maintains thumbnail aspect ratio
+            />
+          ) : (
+            <div className="w-full aspect-3/4 flex justify-center items-center rounded-lg border bg-muted text-muted-foreground font-bold text-3xl hover:scale-105 hover:shadow-lg transform transition-all ease-in-out duration-200">
+              <ImageOff className="size-16" />
+            </div>
+          )}
+        </ContextMenuTrigger>
+        <ContextMenuContent>
+          <ContextMenuGroup>
+            <AdminBookDialog action="read" data={book} />
+            <AdminBookDialog action="update" data={book} />
+
+            <ContextMenuItem disabled={book.available_count === 0}>
+              <ScanBarcode />
+              Check out book
+            </ContextMenuItem>
+            <ContextMenuItem
+              disabled={book.available_count === book.total_count}
+            >
+              <LibraryBig />
+              Mark book "Returned"
+            </ContextMenuItem>
+          </ContextMenuGroup>
+          <AdminBookDialog action="delete" data={book} />
+        </ContextMenuContent>
+      </ContextMenu>
+
       <span>
         <p className="font-bold line-clamp-1">{volumeInfo.title}</p>
         <p className="text-sm line-clamp-1">{volumeInfo.authors.join(", ")}</p>

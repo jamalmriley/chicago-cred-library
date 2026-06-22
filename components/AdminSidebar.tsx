@@ -23,6 +23,7 @@ import {
   LogOut,
   Moon,
   ScanBarcode,
+  Settings,
   Sun,
   SunMoon,
   Users,

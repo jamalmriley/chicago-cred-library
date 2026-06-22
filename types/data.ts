@@ -21,3 +21,5 @@ export interface ChartDatum {
 }
 
 export type ChartData = ChartDatum[];
+
+export type Action = "create" | "read" | "update" | "delete";

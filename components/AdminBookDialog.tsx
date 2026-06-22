@@ -1,20 +1,22 @@
 "use client";
 
 import { useAdminContext } from "@/contexts/admin-context";
+import { PermissionUser } from "@/lib/auth";
 import { fetchGoogleBook } from "@/lib/books";
-import { getPreferredIsbn } from "@/lib/utils";
+import { getPreferredIsbn, safeParseDate } from "@/lib/utils";
 import { getSiteById, Site, SITES } from "@/types/cred";
+import { Action } from "@/types/data";
 import { GoogleBooks, LibraryBook, ManualBook } from "@/types/library";
 import { useUser } from "@clerk/nextjs";
-import { ChevronDown, Plus, X } from "lucide-react";
-import { useState } from "react";
+import { ChevronDown, Info, Pencil, Plus, Trash, X } from "lucide-react";
+import { Dispatch, SetStateAction, useState } from "react";
 import { toast } from "sonner";
 import useSound from "use-sound";
 import { AdminBookLineItem } from "./BookLineItem";
 import { BookScannerWrapper } from "./BookScannerWrapper";
 import Required from "./Required";
 import SiteDropdownMenuContent from "./SiteDropdownMenuContent";
-import { AbacButton, AbacField } from "./ui/abac";
+import { AbacButton, AbacContextMenuItem, AbacField } from "./ui/abac";
 import { Button } from "./ui/button";
 import { Calendar } from "./ui/calendar";
 import { Checkbox } from "./ui/checkbox";
@@ -34,63 +36,180 @@ import { Spinner } from "./ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Textarea } from "./ui/textarea";
 
-export default function AddBookDialog() {
+const actionInfo = {
+  create: {
+    title: "Add book",
+    description: "Scan or fill out the book's information below.",
+    buttonText: {
+      default: "Add",
+      loading: "Adding",
+    },
+    trigger: (user: PermissionUser, action: Action) => (
+      <AbacButton
+        user={user}
+        action={action}
+        resource="books"
+        className="molde-button"
+      >
+        <Plus />
+        Add book
+      </AbacButton>
+    ),
+  },
+  read: {
+    title: "View book details",
+    description: "",
+    buttonText: {
+      default: null,
+      loading: null,
+    },
+    trigger: (
+      user: PermissionUser,
+      action: Action,
+      setIsOpen: Dispatch<SetStateAction<boolean>>,
+    ) => (
+      <AbacContextMenuItem
+        user={user}
+        action={action}
+        resource="books"
+        onClick={(e) => {
+          e.preventDefault();
+          setIsOpen(true);
+        }}
+      >
+        <Info />
+        View book details
+      </AbacContextMenuItem>
+    ),
+  },
+  update: {
+    title: "Edit book details",
+    description: "Edit the information below.",
+    buttonText: {
+      default: "Update",
+      loading: "Updating",
+    },
+    trigger: (
+      user: PermissionUser,
+      action: Action,
+      setIsOpen: Dispatch<SetStateAction<boolean>>,
+    ) => (
+      <AbacContextMenuItem
+        user={user}
+        action={action}
+        resource="books"
+        onClick={(e) => {
+          e.preventDefault();
+          setIsOpen(true);
+        }}
+      >
+        <Pencil />
+        Edit book details
+      </AbacContextMenuItem>
+    ),
+  },
+  delete: {
+    title: "Are you sure?",
+    description: "This action cannot be undone.",
+    buttonText: {
+      default: "Delete",
+      loading: "Deleting",
+    },
+    trigger: (
+      user: PermissionUser,
+      action: Action,
+      setIsOpen: Dispatch<SetStateAction<boolean>>,
+    ) => (
+      <AbacContextMenuItem
+        user={user}
+        action={action}
+        resource="books"
+        variant="destructive"
+        onClick={(e) => {
+          e.preventDefault();
+          setIsOpen(true);
+        }}
+      >
+        <Trash />
+        Delete book
+      </AbacContextMenuItem>
+    ),
+  },
+};
+
+export default function AdminBookDialog({
+  action,
+  data,
+}: {
+  action: Action;
+  data?: LibraryBook;
+}) {
   const { user } = useUser();
   const [isOpen, setIsOpen] = useState(false);
-  const tabs = ["Scan", "Manual"];
+  const tabs: ("Scan" | "Manual")[] = ["Scan", "Manual"];
 
   if (!user) return;
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <AbacButton
-          user={user}
-          action="create"
-          resource="books"
-          className="molde-button"
-        >
-          <Plus />
-          Add book
-        </AbacButton>
+        {actionInfo[action].trigger(user, action, setIsOpen)}
       </DialogTrigger>
-      <DialogContent className="max-h-[75vh] flex flex-col">
+      <DialogContent className="max-h-[75vh] flex flex-col overflow-y-scroll scrollbar-none">
         <DialogHeader>
-          <DialogTitle>Add a book</DialogTitle>
+          <DialogTitle>{actionInfo[action].title}</DialogTitle>
           <DialogDescription>
-            Scan or fill out the book's information below.
+            {actionInfo[action].description}
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue={tabs[0]} className="h-full overflow-y-hidden">
-          <TabsList variant="line" className="mb-3">
-            {tabs.map((tab) => (
-              <TabsTrigger key={tab} value={tab}>
-                {tab}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+        {action === "create" ? (
+          <Tabs defaultValue={tabs[0]} className="h-full overflow-y-hidden">
+            <TabsList variant="line" className="mb-3">
+              {tabs.map((tab) => (
+                <TabsTrigger key={tab} value={tab}>
+                  {tab}
+                </TabsTrigger>
+              ))}
+            </TabsList>
 
-          {tabs.map((tab) => (
-            <TabsContent
-              key={tab}
-              value={tab}
-              className="flex-1 min-h-0 overflow-y-auto p-5 border rounded-xl scrollbar-none"
-            >
-              <AddBookForm tab={tab} setIsDrawerOpen={setIsOpen} />
-            </TabsContent>
-          ))}
-        </Tabs>
+            {tabs.map((tab) => (
+              <TabsContent
+                key={tab}
+                value={tab}
+                className="flex-1 min-h-0 overflow-y-auto p-5 border rounded-xl scrollbar-none"
+              >
+                <AdminBookForm
+                  action={action}
+                  data={data}
+                  setIsDrawerOpen={setIsOpen}
+                  tab={tab}
+                />
+              </TabsContent>
+            ))}
+          </Tabs>
+        ) : (
+          <AdminBookForm
+            action={action}
+            data={data}
+            setIsDrawerOpen={setIsOpen}
+            tab="Manual"
+          />
+        )}
       </DialogContent>
     </Dialog>
   );
 }
 
-function AddBookForm({
-  tab,
+function AdminBookForm({
+  action,
+  data,
   setIsDrawerOpen,
+  tab,
 }: {
-  tab: string;
+  action: Action;
+  data?: LibraryBook;
   setIsDrawerOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  tab: "Scan" | "Manual";
 }) {
   const { setLastUpdated } = useAdminContext();
   const { isLoaded, user } = useUser();
@@ -111,18 +230,30 @@ function AddBookForm({
     setBook(book);
   };
 
-  const [selectedSite, setSelectedSite] = useState<Site | null>(null);
-  const [title, setTitle] = useState("");
-  const [authors, setAuthors] = useState<string[]>([""]);
-  const [authorCount, setAuthorCount] = useState(1);
+  const volumeInfo = data?.book_info.volumeInfo;
+
+  const [selectedSite, setSelectedSite] = useState<Site | null>(
+    data?.site ?? null,
+  );
+  const [title, setTitle] = useState(volumeInfo?.title ?? "");
+  const [authors, setAuthors] = useState<string[]>(volumeInfo?.authors ?? [""]);
+  const [authorCount, setAuthorCount] = useState(
+    volumeInfo?.authors.length ?? 1,
+  );
   const [open, setOpen] = useState(false);
   const [publishedDate, setPublishedDate] = useState<Date | undefined>(
-    undefined,
+    data ? safeParseDate(data.book_info.volumeInfo.publishedDate) : undefined,
   );
-  const [isbn, setIsbn] = useState("");
-  const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("");
-  const [pageCount, setPageCount] = useState("");
+  const [isbn, setIsbn] = useState(
+    data ? getPreferredIsbn(data.book_info.volumeInfo.industryIdentifiers) : "",
+  );
+  const [description, setDescription] = useState(volumeInfo?.description ?? "");
+  const [category, setCategory] = useState(
+    volumeInfo?.categories.join(", ") ?? "",
+  );
+  const [pageCount, setPageCount] = useState(
+    String(volumeInfo?.pageCount) ?? "",
+  );
 
   const [isTestData, setIsTestData] = useState(false);
 
@@ -242,7 +373,7 @@ function AddBookForm({
             />
           )}
         />
-      ) : tab === "Manual" ? (
+      ) : (
         <FieldGroup>
           {/* Title */}
           <span className="flex gap-5">
@@ -256,13 +387,11 @@ function AddBookForm({
                   <Button
                     variant="outline"
                     className={`flex justify-between ${selectedSite ? "text-foreground" : "text-muted-foreground"}`}
+                    disabled={action === "read"}
                   >
                     {selectedSite
-                      ? SITES.filter(
-                          (site) =>
-                            JSON.stringify(site) ===
-                            JSON.stringify(selectedSite),
-                        )[0].nickname
+                      ? (SITES.find((site) => site.id === selectedSite.id)
+                          ?.nickname ?? "Select a site")
                       : "Select a site"}
                     <ChevronDown />
                   </Button>
@@ -286,6 +415,7 @@ function AddBookForm({
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
+                disabled={action === "read"}
               />
             </Field>
           </span>
@@ -310,6 +440,7 @@ function AddBookForm({
                   type="text"
                   value={authors[i]}
                   onChange={(e) => updateAuthor(i, e.target.value)}
+                  disabled={action === "read"}
                 />
                 <Button
                   size="icon"
@@ -317,6 +448,7 @@ function AddBookForm({
                     setAuthorCount((prev) => prev + 1);
                     insertAuthor(i + 1);
                   }}
+                  disabled={action === "read"}
                 >
                   <Plus />
                 </Button>
@@ -327,7 +459,7 @@ function AddBookForm({
                     setAuthorCount((prev) => Math.max(1, prev - 1));
                     removeAuthor(i);
                   }}
-                  disabled={authorCount === 1}
+                  disabled={authorCount === 1 || action === "read"}
                 >
                   <X />
                 </Button>
@@ -348,10 +480,11 @@ function AddBookForm({
                     variant="outline"
                     id="date"
                     className={`justify-start font-normal ${publishedDate ? "" : "text-muted-foreground"}`}
+                    disabled={action === "read"}
                   >
-                    {publishedDate
-                      ? publishedDate.toLocaleDateString()
-                      : "Select date"}
+                    {publishedDate?.toLocaleDateString("en-US", {
+                      timeZone: "UTC",
+                    }) ?? "Select date"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent
@@ -384,6 +517,7 @@ function AddBookForm({
                 type="text"
                 value={isbn}
                 onChange={(e) => setIsbn(e.target.value)}
+                disabled={action === "read"}
               />
             </Field>
           </span>
@@ -399,6 +533,7 @@ function AddBookForm({
               placeholder="Lorem ipsum dolor sit amet..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              disabled={action === "read"}
             />
           </Field>
 
@@ -416,6 +551,7 @@ function AddBookForm({
                 type="text"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
+                disabled={action === "read"}
               />
             </Field>
 
@@ -432,6 +568,7 @@ function AddBookForm({
                 min={1}
                 value={pageCount}
                 onChange={(e) => setPageCount(e.target.value)}
+                disabled={action === "read"}
               />
             </Field>
           </span>
@@ -448,56 +585,61 @@ function AddBookForm({
               name="test-data"
               checked={isTestData}
               onCheckedChange={() => setIsTestData((prev) => !prev)}
+              disabled={action === "read"}
             />
             <FieldLabel htmlFor="test-data">This is test data.</FieldLabel>
           </AbacField>
 
           {/* Submit Button */}
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={isLoading || isButtonDisabled}
-            onClick={() => {
-              if (!selectedSite || !publishedDate) return;
+          {action !== "read" && (
+            <Button
+              type="submit"
+              variant={action === "delete" ? "destructive" : "default"}
+              className="w-full molde-button"
+              disabled={isLoading || isButtonDisabled}
+              onClick={() => {
+                if (!selectedSite || !publishedDate) return;
 
-              const book_info: ManualBook = {
-                volumeInfo: {
-                  title,
-                  authors,
-                  publishedDate: publishedDate.toDateString(),
-                  description,
-                  industryIdentifiers: [
-                    {
-                      type: isbn.length === 10 ? "ISBN_10" : "ISBN_13",
-                      identifier: isbn,
-                    },
-                  ],
-                  pageCount: parseInt(pageCount),
-                  categories: [...category.split(",").map((el) => el.trim())],
-                },
-              };
+                const book_info: ManualBook = {
+                  volumeInfo: {
+                    title,
+                    authors,
+                    publishedDate: publishedDate.toDateString(),
+                    description,
+                    industryIdentifiers: [
+                      {
+                        type: isbn.length === 10 ? "ISBN_10" : "ISBN_13",
+                        identifier: isbn,
+                      },
+                    ],
+                    pageCount: parseInt(pageCount),
+                    categories: [...category.split(",").map((el) => el.trim())],
+                  },
+                };
 
-              const id = `${isTestData ? "test_" : selectedSite.id + "_"}${isbn}`;
-              const created_at = new Date();
-              const book: LibraryBook = {
-                id,
-                book_info,
-                site: selectedSite,
-                available_count: 1,
-                total_count: 1,
-                created_at,
-                updated_at: created_at,
-                checkout_history: null,
-              };
-              handleAddBook(book);
-            }}
-          >
-            {isLoading ? "Adding book..." : "Add book"}
-            {isLoading && <Spinner data-icon="inline-start" />}
-          </Button>
+                const id = `${isTestData ? "test_" : selectedSite.id + "_"}${isbn}`;
+                const created_at = new Date();
+                const book: LibraryBook = {
+                  id,
+                  book_info,
+                  site: selectedSite,
+                  available_count: 1,
+                  total_count: 1,
+                  created_at,
+                  updated_at: created_at,
+                  checkout_history: null,
+                };
+                handleAddBook(book);
+              }}
+            >
+              {isLoading
+                ? actionInfo[action].buttonText.loading
+                : actionInfo[action].buttonText.default}{" "}
+              book
+              {isLoading && <Spinner data-icon="inline-start" />}
+            </Button>
+          )}
         </FieldGroup>
-      ) : (
-        <></>
       )}
     </div>
   );

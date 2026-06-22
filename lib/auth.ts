@@ -66,6 +66,10 @@ export type Permissions = {
     dataType: any; // TODO: Specify later
     action: "create" | "read" | "update" | "delete";
   };
+  settings: {
+    dataType: any; // TODO: Specify later
+    action: "create" | "read" | "update" | "delete";
+  };
 };
 
 // Checks if the target role (i.e. the user) has access to the listed (i.e. accessible) roles.
@@ -85,6 +89,7 @@ const ROLE_PERMISSIONS = {
     users: { create: true, read: true, update: true, delete: true },
     test_data: { create: true, read: true, update: true, delete: true },
     audit_logs: { create: true, read: true, update: true, delete: false },
+    settings: { create: true, read: true, update: true, delete: false },
   },
   // Admins can create and update staff/viewers, but they can also update their own profile.
   admin: {
@@ -101,6 +106,7 @@ const ROLE_PERMISSIONS = {
     },
     test_data: { create: false, read: true, update: true, delete: false },
     audit_logs: { create: true, read: true, update: false, delete: false },
+    settings: { create: false, read: true, update: true, delete: false },
   },
   // Staff can update their own profile.
   staff: {
@@ -114,6 +120,7 @@ const ROLE_PERMISSIONS = {
     },
     test_data: { create: false, read: true, update: true, delete: false },
     audit_logs: { create: true, read: true, update: false, delete: false },
+    settings: { create: false, read: true, update: false, delete: false },
   },
   viewer: {
     books: { create: false, read: true, update: false, delete: false },
@@ -121,6 +128,7 @@ const ROLE_PERMISSIONS = {
     users: { create: false, read: true, update: false, delete: false },
     test_data: { create: false, read: true, update: false, delete: false },
     audit_logs: { create: false, read: true, update: false, delete: false },
+    settings: { create: false, read: true, update: false, delete: false },
   },
 } as const satisfies RolesWithPermissions;
 

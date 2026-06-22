@@ -1,6 +1,6 @@
 "use client";
 
-import AddBookDialog from "@/components/AddBookDialog";
+import AdminBookDialog from "@/components/AdminBookDialog";
 import BookSelect from "@/components/BookSelect";
 import { hasPermission } from "@/lib/auth";
 import { useUser } from "@clerk/nextjs";
@@ -13,7 +13,7 @@ export default function LibraryPage() {
     <div>
       <div className="w-full flex justify-between items-baseline">
         <h1 className="h1">Library</h1>
-        <AddBookDialog />
+        <AdminBookDialog action="create" />
       </div>
 
       {/* Manage and/or view staff and/or participants. */}

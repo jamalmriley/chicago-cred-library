@@ -36,8 +36,7 @@ import { Item, ItemContent, ItemDescription, ItemTitle } from "./ui/item";
 import { Spinner } from "./ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Textarea } from "./ui/textarea";
-
-type Action = "create" | "read" | "update" | "delete";
+import { Action } from "@/types/data";
 
 const actionInfo = {
   create: {
@@ -50,7 +49,7 @@ const actionInfo = {
     },
   },
   read: {
-    title: "View user",
+    title: "View user details",
     description: "",
     icon: <Eye />,
     buttonText: {
@@ -59,8 +58,8 @@ const actionInfo = {
     },
   },
   update: {
-    title: "Update user",
-    description: "Update the information below.",
+    title: "Edit user details",
+    description: "Edit the information below.",
     icon: <Pencil />,
     buttonText: {
       default: "Update",
@@ -359,7 +358,6 @@ function UserForm({
   };
 
   // Participant functions
-
   const handleAddParticipant = async (user: Participant) => {
     await setIsLoading(true);
 
@@ -385,7 +383,6 @@ function UserForm({
       })
       .finally(() => setIsLoading(false));
   };
-
   const handleUpdateParticipant = async (user: Participant) => {
     setIsLoading(true);
     await fetch(`/api/participants?id=${user.id}`, {
@@ -408,7 +405,6 @@ function UserForm({
       })
       .finally(() => setIsLoading(false));
   };
-
   const handleDeleteParticipant = async (user: Participant) => {
     setIsLoading(true);
     await fetch(`/api/participants?id=${user.id}`, { method: "DELETE" })
@@ -431,7 +427,6 @@ function UserForm({
   };
 
   // User functions
-
   const handleAddUser = async (user: ClerkUser) => {
     await setIsLoading(true);
 
@@ -460,7 +455,6 @@ function UserForm({
       })
       .finally(() => setIsLoading(false));
   };
-
   const handleUpdateUser = async (user: ClerkUser) => {
     setIsLoading(true);
     await fetch(`/api/users?id=${user.id}`, {
@@ -483,7 +477,6 @@ function UserForm({
       })
       .finally(() => setIsLoading(false));
   };
-
   const handleDeleteUser = async (user: ClerkUser) => {
     setIsLoading(true);
     await fetch(`/api/users?id=${user.id}`, { method: "DELETE" })
@@ -721,7 +714,7 @@ function UserForm({
           <Button
             type="submit"
             variant={action === "delete" ? "destructive" : "default"}
-            className="w-full"
+            className="w-full molde-button"
             disabled={
               isLoading ||
               (action === "delete"

@@ -15,13 +15,7 @@ import { useParticipants } from "@/hooks/use-participants";
 export default function AdminPage() {
   const { participants, participantsLoading, participantsError } =
     useParticipants();
-  const { activeReaders, bookReports, booksRead } =
-    getReaderMetrics(participants);
-
-  const dateRange = {
-    from: new Date(2026, 4, 1), // Beginning of May 2026
-    to: new Date(2026, 6, 31), // End of July 2026
-  };
+  const { activeReaders, booksRead } = getReaderMetrics(participants);
 
   return (
     // 92px is the height of the sidebar trigger.

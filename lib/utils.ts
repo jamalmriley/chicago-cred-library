@@ -40,3 +40,13 @@ export function getPreferredIsbn(
     identifiers[0].identifier
   );
 }
+
+export function safeParseDate(date: string) {
+  // Check if input is a 4-digit string or number (e.g., "1978" or 1978)
+  const isYearOnly = /^\d{4}$/.test(String(date).trim());
+
+  // Pad with month and day if it's just a year, otherwise leave it alone
+  const standardizedInput = isYearOnly ? `${date.trim()}-01-01` : date;
+
+  return new Date(standardizedInput);
+}
