@@ -79,12 +79,12 @@ export default function AdminSidebar() {
     //   href: "/admin/audit",
     //   icon: <ScrollText className="sidebar-icon" />,
     // },
-    // {
-    //   id: "settings",
-    //   label: "Settings",
-    //   href: "/admin/settings",
-    //   icon: <Settings className="sidebar-icon" />,
-    // },
+    {
+      id: "settings",
+      label: "Settings",
+      href: "/admin/settings",
+      icon: <Settings className="sidebar-icon" />,
+    },
   ];
 
   const { theme, setTheme } = useTheme();

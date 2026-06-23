@@ -184,4 +184,8 @@
   .card-text {
     @apply font-heading text-base leading-normal font-medium;
   }
+
+  .setting-item {
+    @apply border p-3 rounded-md;
+  }
 }
