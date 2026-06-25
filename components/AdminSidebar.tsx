@@ -12,8 +12,8 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
+import { useSites } from "@/hooks/use-sites";
 import { capitalizeString } from "@/lib/utils";
-import { SITES } from "@/types/cred";
 import { SignOutButton, UserAvatar, useUser } from "@clerk/nextjs";
 import {
   ChevronRight,
@@ -87,11 +87,12 @@ export default function AdminSidebar() {
     },
   ];
 
+  const { sites } = useSites();
   const { theme, setTheme } = useTheme();
   const { isLoaded, isSignedIn, user } = useUser();
   const [open, setOpen] = useState(false);
 
-  if (!isLoaded || !isSignedIn) return null; // TODO: Return a skeleton sidebar.
+  if (!isLoaded || !isSignedIn || !sites) return null; // TODO: Return a skeleton sidebar.
   return (
     <Sidebar>
       <SidebarHeader>
@@ -115,31 +116,33 @@ export default function AdminSidebar() {
                     </CollapsibleTrigger>
                     <CollapsibleContent>
                       <SidebarMenuSub>
-                        {SITES.map((site) => (
-                          <SidebarMenuSubItem key={site.id}>
-                            <SidebarMenuButton asChild>
-                              <Link
-                                href={`${item.href}?site=${site.id}`}
-                                className="h-fit flex flex-col items-start leading-none"
-                              >
-                                {site.name}
+                        {sites
+                          .sort((a, b) => a.order - b.order)
+                          .map((site) => (
+                            <SidebarMenuSubItem key={site.id}>
+                              <SidebarMenuButton asChild>
+                                <Link
+                                  href={`${item.href}?site=${site.id}`}
+                                  className="h-fit flex flex-col items-start leading-none"
+                                >
+                                  {site.name}
 
-                                <span className="text-xs text-muted-foreground">
-                                  {[
-                                    site.name === site.nickname
-                                      ? ""
-                                      : site.nickname,
-                                    site.neighborhood === "Chicago"
-                                      ? ""
-                                      : site.neighborhood,
-                                  ]
-                                    .filter((el) => el !== "")
-                                    .join(" | ")}
-                                </span>
-                              </Link>
-                            </SidebarMenuButton>
-                          </SidebarMenuSubItem>
-                        ))}
+                                  <span className="text-xs text-muted-foreground">
+                                    {[
+                                      site.name === site.nickname
+                                        ? ""
+                                        : site.nickname,
+                                      site.neighborhood === "Chicago"
+                                        ? ""
+                                        : site.neighborhood,
+                                    ]
+                                      .filter((el) => el !== "")
+                                      .join(" | ")}
+                                  </span>
+                                </Link>
+                              </SidebarMenuButton>
+                            </SidebarMenuSubItem>
+                          ))}
                       </SidebarMenuSub>
                     </CollapsibleContent>
                   </Collapsible>

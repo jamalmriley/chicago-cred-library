@@ -17,14 +17,16 @@ import {
   ItemDescription,
   ItemTitle,
 } from "@/components/ui/item";
-import { getSiteById, REGIONS } from "@/types/cred";
+import { useSites } from "@/hooks/use-sites";
+import { getSiteById } from "@/types/cred";
 import { ChevronDown, LibraryBig, MapPin, ScanBarcode } from "lucide-react";
 import Link from "next/link";
 import { useQueryState } from "nuqs";
 
 export default function KioskPage() {
+  const { regions, sites } = useSites();
   const [site, setSite] = useQueryState("site");
-  const siteInfo = getSiteById(site);
+  const siteInfo = sites ? getSiteById(site, sites) : null;
 
   return (
     <div className="min-h-dvh flex flex-col justify-center items-center gap-5">
@@ -41,7 +43,7 @@ export default function KioskPage() {
           </Badge>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-fit">
-          {REGIONS.map((region, i) => (
+          {regions.map((region, i) => (
             <DropdownMenuGroup key={i}>
               {region.name !== "Chicago" && (
                 <DropdownMenuLabel>{region.name}</DropdownMenuLabel>
@@ -70,7 +72,7 @@ export default function KioskPage() {
                   </Item>
                 </DropdownMenuCheckboxItem>
               ))}
-              {i < REGIONS.length - 1 && <DropdownMenuSeparator />}
+              {i < regions.length - 1 && <DropdownMenuSeparator />}
             </DropdownMenuGroup>
           ))}
         </DropdownMenuContent>

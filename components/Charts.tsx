@@ -372,7 +372,7 @@ export function TopReaders({
         ) : (
           data && (
             <Table>
-              <TableCaption>
+              <TableCaption className="text-xs">
                 {data.length > 1 && `The top ${data.length} readers.`}
               </TableCaption>
               <TableHeader>

@@ -1,21 +1,22 @@
 "use client";
 
 import { useAdminContext } from "@/contexts/admin-context";
+import { useSites } from "@/hooks/use-sites";
 import { PermissionUser } from "@/lib/auth";
 import { fetchGoogleBook } from "@/lib/books";
 import { getPreferredIsbn, safeParseDate } from "@/lib/utils";
-import { getSiteById, Site, SITES } from "@/types/cred";
+import { getSiteById, Site } from "@/types/cred";
 import { Action } from "@/types/data";
 import { GoogleBooks, LibraryBook, ManualBook } from "@/types/library";
 import { useUser } from "@clerk/nextjs";
-import { ChevronDown, Info, Pencil, Plus, Trash, X } from "lucide-react";
+import { Info, Pencil, Plus, Trash, X } from "lucide-react";
 import { Dispatch, SetStateAction, useState } from "react";
 import { toast } from "sonner";
 import useSound from "use-sound";
 import { AdminBookLineItem } from "./BookLineItem";
 import { BookScannerWrapper } from "./BookScannerWrapper";
 import Required from "./Required";
-import SiteDropdownMenuContent from "./SiteDropdownMenuContent";
+import SiteSelect from "./SiteSelect";
 import { AbacButton, AbacContextMenuItem, AbacField } from "./ui/abac";
 import { Button } from "./ui/button";
 import { Calendar } from "./ui/calendar";
@@ -28,7 +29,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
-import { DropdownMenu, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { Field, FieldGroup, FieldLabel } from "./ui/field";
 import { Input } from "./ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
@@ -212,6 +212,7 @@ function AdminBookForm({
   tab: "Scan" | "Manual";
 }) {
   const { setLastUpdated } = useAdminContext();
+  const { sites } = useSites();
   const { isLoaded, user } = useUser();
   const [isLoading, setIsLoading] = useState(false);
   const [book, setBook] = useState<GoogleBooks.Book | null>(null);
@@ -384,7 +385,7 @@ function AdminBookForm({
       .finally(() => setIsLoading(false));
   };
 
-  if (!isLoaded || !user) return;
+  if (!isLoaded || !user || !sites) return; // TODO: Add a loading and error state.
   return (
     <div className="flex flex-col gap-5">
       {tab === "Scan" ? (
@@ -399,7 +400,7 @@ function AdminBookForm({
               isDisabled={isButtonDisabled}
               onAdd={(options) => {
                 const created_at = new Date();
-                const siteInfo = getSiteById(options?.site?.id ?? null);
+                const siteInfo = getSiteById(options?.site?.id ?? null, sites);
                 if (!siteInfo) return;
 
                 const libraryBook: LibraryBook = {
@@ -430,25 +431,11 @@ function AdminBookForm({
                     Site
                     <Required />
                   </FieldLabel>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild id="site">
-                      <Button
-                        variant="outline"
-                        className={`flex justify-between ${selectedSite ? "text-foreground" : "text-muted-foreground"}`}
-                        disabled={action === "read"}
-                      >
-                        {selectedSite
-                          ? (SITES.find((site) => site.id === selectedSite.id)
-                              ?.nickname ?? "Select a site")
-                          : "Select a site"}
-                        <ChevronDown />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <SiteDropdownMenuContent
-                      selectedSite={selectedSite}
-                      setSelectedSite={setSelectedSite}
-                    />
-                  </DropdownMenu>
+                  <SiteSelect
+                    selectedSite={selectedSite}
+                    setSelectedSite={setSelectedSite}
+                    isDisabled={action === "read"}
+                  />
                 </Field>
 
                 <Field>

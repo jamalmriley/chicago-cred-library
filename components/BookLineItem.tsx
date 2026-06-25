@@ -1,8 +1,8 @@
 import { Button } from "@/components//ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useAppContext } from "@/contexts/app-context";
 import { useKioskContext } from "@/contexts/kiosk-context";
-import { useTimeContext } from "@/contexts/time-context";
 import { getPreferredIsbn } from "@/lib/utils";
 import { Site } from "@/types/cred";
 import {
@@ -12,11 +12,11 @@ import {
   LibraryBook,
 } from "@/types/library";
 import { formatRelative } from "date-fns";
-import { BookMarked, ChevronDown, Plus, X } from "lucide-react";
+import { BookMarked, Plus, X } from "lucide-react";
 import Image from "next/image";
 import { Dispatch, SetStateAction, Suspense, useState } from "react";
 import BookDialog from "./BookDialog";
-import SiteDropdownMenuContent from "./SiteDropdownMenuContent";
+import SiteSelect from "./SiteSelect";
 import {
   Dialog,
   DialogClose,
@@ -27,7 +27,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
-import { DropdownMenu, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
 
 export interface BookDisplayInfo {
@@ -83,7 +82,7 @@ export function BookLineItem({
   onReturn,
   onUndoReturn,
 }: BookLineItemProps) {
-  const { today } = useTimeContext();
+  const { today } = useAppContext();
   const [checked, setChecked] = useState(false);
   const [checkoutPurpose, setCheckoutPurpose] =
     useState<CheckoutPurpose>(undefined);
@@ -324,21 +323,11 @@ export function BookLineItem({
             {site ? `Add book to ${site.nickname}` : "Add to site"}
           </Button>
           <span className="w-px h-8.5 bg-muted" />
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                size="icon"
-                className="rounded-l-none border-l-0"
-                disabled={isDisabled}
-              >
-                <ChevronDown />
-              </Button>
-            </DropdownMenuTrigger>
-            <SiteDropdownMenuContent
-              selectedSite={site}
-              setSelectedSite={setSite}
-            />
-          </DropdownMenu>
+          <SiteSelect
+            selectedSite={site}
+            setSelectedSite={setSite}
+            isDisabled={isDisabled}
+          />
         </span>
       )}
 
@@ -412,7 +401,7 @@ export function LookupBookLineItem({
 }: BookLineItemProps) {
   const { currBook, setCurrBook, setCart, setMaxCheckoutStepAllowed } =
     useKioskContext();
-  const { today, twoWeeksFromToday } = useTimeContext();
+  const { today, twoWeeksFromToday } = useAppContext();
 
   return (
     <BookLineItem

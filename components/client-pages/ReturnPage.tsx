@@ -11,8 +11,9 @@ import {
   CarouselItem,
 } from "@/components/ui/carousel";
 import { Spinner } from "@/components/ui/spinner";
+import { useAppContext } from "@/contexts/app-context";
 import { useKioskContext } from "@/contexts/kiosk-context";
-import { useTimeContext } from "@/contexts/time-context";
+import { useSites } from "@/hooks/use-sites";
 import { updateBookAvailability } from "@/lib/books";
 import { getSiteById, Participant } from "@/types/cred";
 import { CheckoutItem } from "@/types/library";
@@ -24,6 +25,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function ReturnPage() {
+  const { today } = useAppContext();
   const {
     maxCheckoutStepAllowed,
     setMaxCheckoutStepAllowed,
@@ -34,7 +36,7 @@ export default function ReturnPage() {
     setCart,
     setCurrBook,
   } = useKioskContext();
-  const { today } = useTimeContext();
+  const { sites } = useSites();
   const [site] = useQueryState("site");
   const [api, setApi] = useState<CarouselApi>();
   const [isLoading, setIsLoading] = useState(false);
@@ -133,7 +135,7 @@ export default function ReturnPage() {
 
   // Redirect the user if a proper state variable is not found.
   const router = useRouter();
-  const siteInfo = getSiteById(site);
+  const siteInfo = sites ? getSiteById(site, sites) : null;
 
   useEffect(() => {
     if (!site || !siteInfo) router.replace("/kiosk");

@@ -1,74 +1,69 @@
 import { CheckoutItem } from "./library";
 
-export const SITES = [
-  {
-    id: "ypc",
-    name: "Youth Peace Center",
-    nickname: "YPC",
-    region: "South",
-    neighborhood: "Roseland",
-  },
-  {
-    id: "ss_hub_2",
-    name: "SS Hub 2",
-    nickname: "95th St",
-    region: "South",
-    neighborhood: "Pullman",
-  },
-  {
-    id: "wc",
-    name: "Women's Center",
-    nickname: "Women's Center",
-    region: "South",
-    neighborhood: "Roseland",
-  },
-  {
-    id: "ws_hub_1",
-    name: "WS Hub 1",
-    nickname: "Iron St",
-    region: "West",
-    neighborhood: "North Lawndale",
-  },
-  {
-    id: "ws_hub_2",
-    name: "WS Hub 2",
-    nickname: "2501",
-    region: "West",
-    neighborhood: "North Lawndale",
-  },
-  {
-    id: "ws_hub_3",
-    name: "WS Hub 3",
-    nickname: "424",
-    region: "West",
-    neighborhood: "North Lawndale",
-  },
-  {
-    id: "e_and_t",
-    name: "Employment & Training",
-    nickname: "E&T",
-    region: "Chicago",
-    neighborhood: "Chicago",
-  },
-] as const;
-export type Site = (typeof SITES)[number];
-export type AllSites = typeof SITES;
+export interface Site {
+  id: string;
+  order: number;
+  name: string;
+  nickname: string;
+  region: string;
+  neighborhood: string;
+  created_at: Date;
+  updated_at: Date;
+  settings: SiteSettings | null;
+}
 
-const groupSitesByRegion = () => {
-  const regions = [...new Set(SITES.map((site) => site.region))];
+export const RETURN_DURATION_OPTS = [
+  "1 week",
+  "2 weeks",
+  "3 weeks",
+  "1 month",
+] as const;
+export type DurationOption = (typeof RETURN_DURATION_OPTS)[number];
+
+export const OVERDUE_PENALTY_OPTS = [
+  "Book report",
+  "Community service",
+  "Site tasks",
+  "Stipend deduction",
+] as const;
+export type PenaltyOption = (typeof OVERDUE_PENALTY_OPTS)[number];
+
+export interface SiteSettings {
+  // General settings
+  notification_recipients: string[] | undefined;
+  // Checkout settings
+  book_checkout_limit: number | "Unlimited" | undefined;
+  kiosk_checkout_limit: number | "Unlimited" | undefined;
+  is_limits_synced: boolean | undefined;
+  // Return settings
+  return_window: DurationOption | undefined;
+  return_extension: DurationOption | undefined;
+  return_extension_limit: number | "Unlimited" | undefined;
+  overdue_penalty: PenaltyOption | undefined;
+}
+
+export interface Region {
+  name: string;
+  sites: Site[];
+}
+
+export const groupSitesByRegion = (sites: Site[] | null): Region[] => {
+  if (!sites) return [];
+  const regions = [...new Set(sites.map((site) => site.region))];
   return regions.map((region) => ({
     name: region,
-    sites: SITES.filter((site: Site) => site.region === region),
+    sites: sites
+      .filter((site: Site) => site.region === region)
+      .sort((a, b) => a.order - b.order),
   }));
 };
-export const REGIONS = groupSitesByRegion();
 
-export const getSiteById = (id: string | null) => {
-  if (!id) return undefined;
-  for (const site of SITES) {
+export const getSiteById = (id: string | null, sites: Site[]) => {
+  if (!id) return null;
+  for (const site of sites) {
     if (site.id === id) return site;
   }
-  return undefined;
+  return null;
 };
 
 export interface ClerkUser {

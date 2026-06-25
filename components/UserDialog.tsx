@@ -17,14 +17,15 @@ import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useAdminContext } from "@/contexts/admin-context";
 import { canCreateUsers, hasPermission, Role, ROLE_OPTIONS } from "@/lib/auth";
-import { ClerkUser, Participant, Site, SITES, UserType } from "@/types/cred";
+import { ClerkUser, Participant, Site, UserType } from "@/types/cred";
+import { Action } from "@/types/data";
 import { useUser } from "@clerk/nextjs";
 import { User } from "@clerk/nextjs/server";
 import { ChevronDown, Eye, Pencil, Plus, Trash } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import Required from "./Required";
-import SiteDropdownMenuContent from "./SiteDropdownMenuContent";
+import SiteSelect from "./SiteSelect";
 import { Button } from "./ui/button";
 import { Checkbox } from "./ui/checkbox";
 import {
@@ -36,7 +37,6 @@ import { Item, ItemContent, ItemDescription, ItemTitle } from "./ui/item";
 import { Spinner } from "./ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Textarea } from "./ui/textarea";
-import { Action } from "@/types/data";
 
 const actionInfo = {
   create: {
@@ -646,25 +646,11 @@ function UserForm({
                   </span>
                 )}
               </FieldLabel>
-              <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-                <DropdownMenuTrigger asChild id="site">
-                  <Button
-                    variant="outline"
-                    className={`flex justify-between ${selectedSite ? "text-foreground" : "text-muted-foreground"}`}
-                    disabled={action === "read"}
-                  >
-                    {selectedSite
-                      ? (SITES.find((site) => site.id === selectedSite.id)
-                          ?.nickname ?? "Select a site")
-                      : "Select a site"}
-                    <ChevronDown />
-                  </Button>
-                </DropdownMenuTrigger>
-                <SiteDropdownMenuContent
-                  selectedSite={selectedSite}
-                  setSelectedSite={setSelectedSite}
-                />
-              </DropdownMenu>
+              <SiteSelect
+                selectedSite={selectedSite}
+                setSelectedSite={setSelectedSite}
+                isDisabled={action === "read"}
+              />
             </Field>
           </span>
 
