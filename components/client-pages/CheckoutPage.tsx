@@ -15,8 +15,10 @@ import { useAppContext } from "@/contexts/app-context";
 import { useKioskContext } from "@/contexts/kiosk-context";
 import { useSites } from "@/hooks/use-sites";
 import { updateBookAvailability } from "@/lib/books";
+import { handleConfetti } from "@/lib/utils";
 import { getSiteById, Participant } from "@/types/cred";
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
+import { useTheme } from "next-themes";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQueryState } from "nuqs";
@@ -24,7 +26,13 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function CheckoutPage() {
-  const { today, twoWeeksFromToday } = useAppContext();
+  const {
+    today,
+    oneWeekFromToday,
+    twoWeeksFromToday,
+    threeWeeksFromToday,
+    oneMonthFromToday,
+  } = useAppContext();
   const {
     cart,
     setCart,
@@ -36,6 +44,7 @@ export default function CheckoutPage() {
     setReturns,
   } = useKioskContext();
   const { sites } = useSites();
+  const { resolvedTheme } = useTheme();
   const [site] = useQueryState("site");
   const [api, setApi] = useState<CarouselApi>();
   const [isLoading, setIsLoading] = useState(false);
@@ -80,6 +89,7 @@ export default function CheckoutPage() {
         );
         setMaxCheckoutStepAllowed(3);
         api?.scrollNext();
+        handleConfetti(resolvedTheme === "dark");
       })
       .catch(() => {
         toast.error(
@@ -120,6 +130,27 @@ export default function CheckoutPage() {
     if (!site || !siteInfo) router.replace("/kiosk");
   }, [site]);
 
+  if (!siteInfo || !siteInfo.settings) return;
+
+  let dueDate: Date;
+  switch (siteInfo.settings.return_window) {
+    case "1 week":
+      dueDate = oneWeekFromToday;
+      break;
+    case "2 weeks":
+      dueDate = twoWeeksFromToday;
+      break;
+    case "3 weeks":
+      dueDate = threeWeeksFromToday;
+      break;
+    case "1 month":
+      dueDate = oneMonthFromToday;
+      break;
+    default:
+      dueDate = oneWeekFromToday;
+      break;
+  }
+
   return (
     <div className="p-0 flex flex-col justify-between items-center">
       <Carousel
@@ -138,7 +169,8 @@ export default function CheckoutPage() {
             {participant && (
               <CheckoutConfirm
                 participant={participant}
-                returnDate={twoWeeksFromToday}
+                dueDate={dueDate}
+                returnWindow={siteInfo.settings.return_window}
               />
             )}
           </CarouselItem>

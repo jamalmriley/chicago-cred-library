@@ -39,7 +39,7 @@ export default function ReturnConfirm({
               Place your book{returns.length === 1 ? "" : "s"} in the book
               return bin
               {hasCompletedBookReport
-                ? `, and don't forget hand your book report${completedBookReportCount === 1 ? "" : "s"} to your tutor or life coach to earn extra points`
+                ? `, and don't forget hand your book report${completedBookReportCount === 1 ? "" : "s"} to your tutor to earn extra points`
                 : ""}
               .
             </p>

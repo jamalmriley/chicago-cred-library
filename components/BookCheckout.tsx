@@ -39,7 +39,7 @@ export default function BookCheckout({
 
   return (
     <KioskCard flex="row" title={`Start scanning, ${participant.first_name}.`}>
-      <div className="w-80 h-full flex flex-col gap-3 overflow-y-hidden">
+      <div className="w-80 h-full flex flex-col gap-3 overflow-y-scroll scrollbar-none">
         {cart.length > 0 ? (
           cart.map((item, index) => (
             <CheckoutBookLineItem key={index} book={item.book} />
@@ -66,6 +66,7 @@ export default function BookCheckout({
               location="lookup"
               isDialogOpen={isScanComplete}
               setIsDialogOpen={(open) => setIsScanComplete(open)}
+              participant={participant}
             />
           )}
         />

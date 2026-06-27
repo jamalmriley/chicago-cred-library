@@ -15,9 +15,11 @@ import { useAppContext } from "@/contexts/app-context";
 import { useKioskContext } from "@/contexts/kiosk-context";
 import { useSites } from "@/hooks/use-sites";
 import { updateBookAvailability } from "@/lib/books";
+import { handleConfetti } from "@/lib/utils";
 import { getSiteById, Participant } from "@/types/cred";
 import { CheckoutItem } from "@/types/library";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { useTheme } from "next-themes";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQueryState } from "nuqs";
@@ -37,6 +39,7 @@ export default function ReturnPage() {
     setCurrBook,
   } = useKioskContext();
   const { sites } = useSites();
+  const { resolvedTheme } = useTheme();
   const [site] = useQueryState("site");
   const [api, setApi] = useState<CarouselApi>();
   const [isLoading, setIsLoading] = useState(false);
@@ -101,6 +104,7 @@ export default function ReturnPage() {
         );
         setMaxCheckoutStepAllowed(3);
         api?.scrollNext();
+        handleConfetti(resolvedTheme === "dark");
       })
       .catch(() => {
         toast.error(

@@ -1,10 +1,12 @@
+"use client";
+
 import { Button } from "@/components//ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAppContext } from "@/contexts/app-context";
 import { useKioskContext } from "@/contexts/kiosk-context";
 import { getPreferredIsbn } from "@/lib/utils";
-import { Site } from "@/types/cred";
+import { getSiteById, Participant, Site } from "@/types/cred";
 import {
   CheckoutItem,
   CheckoutPurpose,
@@ -28,6 +30,8 @@ import {
   DialogTrigger,
 } from "./ui/dialog";
 import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
+import { useQueryState } from "nuqs";
+import { toast } from "sonner";
 
 export interface BookDisplayInfo {
   id: string;
@@ -44,6 +48,7 @@ interface BookLineItemProps {
   setIsDialogOpen?: Dispatch<SetStateAction<boolean>>;
   isDisabled?: boolean;
   location?: "cart" | "lookup" | "return" | "admin";
+  participant?: Participant;
   onAdd?: (options?: {
     checkoutPurpose?: CheckoutPurpose;
     site?: Site | null;
@@ -236,8 +241,7 @@ export function BookLineItem({
                           "{displayInfo.title}"
                         </span>{" "}
                         is currently checked out by another participant. Please
-                        see your Site Manager or Educational Support Tutor for
-                        more details or assistance.
+                        see your tutor for more details or assistance.
                       </p>
                     )}
 
@@ -398,32 +402,86 @@ export function LookupBookLineItem({
   book,
   isDialogOpen,
   setIsDialogOpen,
+  participant,
 }: BookLineItemProps) {
-  const { currBook, setCurrBook, setCart, setMaxCheckoutStepAllowed } =
+  const { currBook, setCurrBook, cart, setCart, setMaxCheckoutStepAllowed } =
     useKioskContext();
-  const { today, twoWeeksFromToday } = useAppContext();
+  const {
+    sites,
+    today,
+    oneWeekFromToday,
+    twoWeeksFromToday,
+    threeWeeksFromToday,
+    oneMonthFromToday,
+  } = useAppContext();
+  const [site] = useQueryState("site");
 
   return (
     <BookLineItem
       book={book}
-      isDialogOpen={isDialogOpen} // missing
-      setIsDialogOpen={setIsDialogOpen} // missing
+      isDialogOpen={isDialogOpen}
+      setIsDialogOpen={setIsDialogOpen}
       location="lookup"
+      participant={participant}
       onAdd={(options) => {
-        if (currBook) {
-          const newCheckoutItem: CheckoutItem = {
-            book: currBook,
-            checkout_date: today,
-            checkout_purpose: options?.checkoutPurpose,
-            due_date: twoWeeksFromToday,
-            return_date: null,
-            is_returned: false,
-            extension_count: 0,
-            has_completed_book_report: false,
-          };
-          setCart((prev) => [...prev, newCheckoutItem]);
-          setCurrBook(null);
-          setMaxCheckoutStepAllowed(nextStep);
+        if (!sites || !participant) return;
+        const siteInfo = getSiteById(site, sites);
+        if (currBook && siteInfo && siteInfo.settings) {
+          const { book_checkout_limit, kiosk_checkout_limit, return_window } =
+            siteInfo.settings;
+          const checkedOutBookCount =
+            participant.checkout_history?.filter(
+              (checkoutItem) => !checkoutItem.is_returned,
+            ).length ?? 0;
+          const canAddBooks =
+            cart.length + 1 <=
+            Math.min(
+              !book_checkout_limit || book_checkout_limit === "Unlimited"
+                ? Number.POSITIVE_INFINITY
+                : book_checkout_limit - checkedOutBookCount,
+              !kiosk_checkout_limit || kiosk_checkout_limit === "Unlimited"
+                ? Number.POSITIVE_INFINITY
+                : kiosk_checkout_limit,
+            );
+
+          if (canAddBooks) {
+            let due_date: Date;
+            switch (return_window) {
+              case "1 week":
+                due_date = oneWeekFromToday;
+                break;
+              case "2 weeks":
+                due_date = twoWeeksFromToday;
+                break;
+              case "3 weeks":
+                due_date = threeWeeksFromToday;
+                break;
+              case "1 month":
+                due_date = oneMonthFromToday;
+                break;
+              default:
+                due_date = oneWeekFromToday;
+                break;
+            }
+
+            const newCheckoutItem: CheckoutItem = {
+              book: currBook,
+              checkout_date: today,
+              checkout_purpose: options?.checkoutPurpose,
+              due_date,
+              return_date: null,
+              is_returned: false,
+              extension_count: 0,
+              has_completed_book_report: false,
+            };
+            setCart((prev) => [...prev, newCheckoutItem]);
+            setCurrBook(null);
+            setMaxCheckoutStepAllowed(nextStep);
+          } else {
+            toast.error("Checkout limit reached.", {
+              position: "bottom-right",
+            });
+          }
         }
       }}
       onRemove={() => setCurrBook(null)}

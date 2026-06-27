@@ -17,7 +17,10 @@ type AppContext = {
   // Time
   today: Date;
   setToday: React.Dispatch<React.SetStateAction<Date>>;
+  oneWeekFromToday: Date;
   twoWeeksFromToday: Date;
+  threeWeeksFromToday: Date;
+  oneMonthFromToday: Date;
 };
 
 export const AppContext = createContext<AppContext | null>(null);
@@ -52,9 +55,21 @@ export default function AppContextProvider({
     return minOrderA - minOrderB;
   });
 
+  const oneWeekFromToday = new Date(today);
+  oneWeekFromToday.setDate(oneWeekFromToday.getDate() + 7);
+  oneWeekFromToday.setHours(23, 59, 0, 0);
+
   const twoWeeksFromToday = new Date(today);
   twoWeeksFromToday.setDate(twoWeeksFromToday.getDate() + 14);
   twoWeeksFromToday.setHours(23, 59, 0, 0);
+
+  const threeWeeksFromToday = new Date(today);
+  threeWeeksFromToday.setDate(threeWeeksFromToday.getDate() + 21);
+  threeWeeksFromToday.setHours(23, 59, 0, 0);
+
+  const oneMonthFromToday = new Date(today);
+  oneMonthFromToday.setDate(oneMonthFromToday.getMonth() + 1);
+  oneMonthFromToday.setHours(23, 59, 0, 0);
 
   return (
     <AppContext.Provider
@@ -70,7 +85,10 @@ export default function AppContextProvider({
         setSitesLoading,
         today,
         setToday,
+        oneWeekFromToday,
         twoWeeksFromToday,
+        threeWeeksFromToday,
+        oneMonthFromToday,
       }}
     >
       {children}

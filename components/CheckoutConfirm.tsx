@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useKioskContext } from "@/contexts/kiosk-context";
-import { Participant } from "@/types/cred";
+import { DurationOption, Participant } from "@/types/cred";
 import { format } from "date-fns";
 import { CircleCheckBig } from "lucide-react";
 import Link from "next/link";
@@ -12,10 +12,12 @@ import KioskCard from "./KioskCard";
 
 export default function CheckoutConfirm({
   participant,
-  returnDate,
+  dueDate,
+  returnWindow,
 }: {
   participant: Participant;
-  returnDate: Date;
+  dueDate: Date;
+  returnWindow: DurationOption | undefined;
 }) {
   const { cart } = useKioskContext();
   const [site] = useQueryState("site");
@@ -29,8 +31,12 @@ export default function CheckoutConfirm({
               We hope you enjoy your book{cart.length === 1 ? "" : "s"}!
             </h2>
             <p className="text-muted-foreground">
-              {cart.length === 1 ? "It's" : "They're"} due back in 2 weeks, on{" "}
-              {format(returnDate, "eeee, MMMM d, yyyy")}.
+              {cart.length === 1 ? "It's" : "They're"} due back{" "}
+              {returnWindow
+                ? `in ${returnWindow}, on
+              ${format(dueDate, "eeee, MMMM d, yyyy")}`
+                : "soon"}
+              .
             </p>
           </span>
           <Button asChild>

@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Field, FieldDescription } from "@/components/ui/field";
+import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
@@ -145,30 +145,27 @@ export default function BookScanner<T>({
         )}
 
         {isManualSearchEnabled && (
-          <div className="flex flex-col">
-            <Field>
-              <div className="w-full relative">
-                <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Type an ISBN number..."
-                  className="w-full pl-8"
-                  value={manualIsbn}
-                  onChange={(e) => setManualIsbn(e.target.value)}
-                />
-              </div>
-              <FieldDescription>
-                Enter the 10- or 13-digit ISBN number, without dashes. For comic
-                books, enter the 12-digit serial number.
-              </FieldDescription>
-            </Field>
-          </div>
+          <Field className="flex flex-col">
+            <div className="w-full relative">
+              <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Type an ISBN number..."
+                className="w-full pl-8"
+                value={manualIsbn}
+                onChange={(e) => setManualIsbn(e.target.value)}
+              />
+            </div>
+          </Field>
         )}
 
         <Button
           variant="outline"
           className="molde-button"
-          disabled={isManualSearchLoading}
+          disabled={
+            isManualSearchLoading ||
+            (isManualSearchEnabled && manualIsbn === "")
+          }
           onClick={async () => {
             if (isScanning) stopScanning();
             setIsManualSearchEnabled(true);
@@ -188,6 +185,13 @@ export default function BookScanner<T>({
               : "Search for a book"}
         </Button>
       </div>
+
+      {isManualSearchEnabled && (
+        <span className="text-xs text-muted-foreground">
+          Enter the 10- or 13-digit ISBN number, without dashes. For comic
+          books, enter the 12-digit serial number.
+        </span>
+      )}
 
       {isManualSearchEnabled && !book && (
         <Button
