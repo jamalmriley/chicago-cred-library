@@ -17,12 +17,17 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
+  const site = searchParams.get("site");
 
   const query = supabase().from("participants").select<"*", Participant>();
 
   // Only filter by ID if one was provided.
   // Otherwise, return all participants.
-  const { data, error } = id ? await query.eq("id", id).single() : await query;
+  const { data, error } = id
+    ? await query.eq("id", id).single()
+    : site
+      ? await query.eq("site->>id", site) // Queries the ID key inside the site JSONB column
+      : await query;
 
   if (error) return NextResponse.json({ error }, { status: 500 });
   return NextResponse.json(data);

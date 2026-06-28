@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
-import { Code, Info, LogIn } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
 import BackgroundImage from "@/public/images/ed-image-3.png";
 import Logo from "@/public/images/logo.svg";
 import { auth } from "@clerk/nextjs/server";
+import { Code, LogIn, Plus } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 
 export default async function HomePage() {
   const { userId } = await auth();
@@ -68,16 +68,18 @@ export default async function HomePage() {
               {isLoggedIn ? "Dashboard" : "Log in"}
             </Link>
           </Button>
-          <Button variant="secondary" asChild className="molde-button">
+          {!isLoggedIn && (
+            <Button variant="secondary" asChild className="molde-button">
+              <Link href="/sign-up">
+                <Plus />
+                Create account
+              </Link>
+            </Button>
+          )}
+          <Button variant="outline" asChild className="molde-button">
             <Link href="https://github.com/jamalmriley/project-library">
               <Code />
               View project
-            </Link>
-          </Button>
-          <Button variant="outline" asChild className="molde-button">
-            <Link href="https://www.chicagocred.org/">
-              <Info />
-              Chicago CRED
             </Link>
           </Button>
         </div>

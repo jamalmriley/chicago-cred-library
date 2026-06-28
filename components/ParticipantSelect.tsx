@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import {
@@ -10,9 +12,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useKioskContext } from "@/contexts/kiosk-context";
 import { Participant } from "@/types/cred";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
-import { CircleX } from "lucide-react";
+import { CircleX, Plus } from "lucide-react";
+import { useQueryState } from "nuqs";
 import { useEffect, useState } from "react";
 import KioskCard from "./KioskCard";
+import { AbacButton } from "./ui/abac";
+import { useUser } from "@clerk/nextjs";
+import Link from "next/link";
 
 const filterParticipantsBySelectedLetter = (
   participants: Participant[],
@@ -34,6 +40,8 @@ export default function ParticipantSelect() {
     setParticipantsLoading,
     setMaxCheckoutStepAllowed,
   } = useKioskContext();
+  const { isLoaded, user } = useUser();
+  const [site] = useQueryState("site");
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
 
   const [birthday, setBirthday] = useState<string>("");
@@ -57,7 +65,7 @@ export default function ParticipantSelect() {
   useEffect(() => {
     const fetchParticipants = async () => {
       await setParticipantsLoading(true);
-      const res = await fetch("/api/participants");
+      const res = await fetch(`/api/participants?site=${site}`);
 
       if (!res.ok) {
         setParticipantsLoading(false);
@@ -138,6 +146,7 @@ export default function ParticipantSelect() {
     fetchParticipantBirthday();
   }, [birthday, participant]);
 
+  if (!user || !isLoaded) return;
   return (
     <KioskCard title="What's your name?">
       {/* Participants List */}
@@ -147,7 +156,14 @@ export default function ParticipantSelect() {
             <SkeletonParticipantList key={i} />
           ))}
         </div>
-      ) : participants ? (
+      ) : participantsError ? (
+        <div className="w-60 h-full min-h-0 flex flex-col justify-center items-center gap-5">
+          <CircleX className="text-destructive size-20" />
+          <span className="text-muted-foreground text-center">
+            {participantsError}
+          </span>
+        </div>
+      ) : participants && participants.length > 0 ? (
         <div className="w-60 h-full min-h-0 flex flex-col gap-5 overflow-y-scroll scrollbar-none">
           {selectedLetter ? (
             <FilteredParticipantList letter={selectedLetter} />
@@ -163,11 +179,20 @@ export default function ParticipantSelect() {
           )}
         </div>
       ) : (
-        <div className="w-60 h-full min-h-0 flex flex-col justify-center items-center gap-5">
-          <CircleX className="text-destructive size-20" />
-          <span className="text-muted-foreground text-center">
-            {participantsError}
-          </span>
+        <div className="w-60 h-full min-h-0 flex flex-col gap-5 overflow-y-scroll scrollbar-none flex-1 grow justify-center items-center border rounded-xl p-5 bg-muted text-muted-foreground text-center">
+          <span>No participants have been added to your site yet.</span>
+          <AbacButton
+            user={user}
+            resource="participants"
+            action="create"
+            className="molde-button"
+            asChild
+          >
+            <Link href="/admin/users">
+              <Plus />
+              Add participant
+            </Link>
+          </AbacButton>
         </div>
       )}
 

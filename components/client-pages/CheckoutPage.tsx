@@ -130,10 +130,10 @@ export default function CheckoutPage() {
     if (!site || !siteInfo) router.replace("/kiosk");
   }, [site]);
 
-  if (!siteInfo || !siteInfo.settings) return;
+  if (!siteInfo) return;
 
   let dueDate: Date;
-  switch (siteInfo.settings.return_window) {
+  switch (siteInfo.settings?.return_extension) {
     case "1 week":
       dueDate = oneWeekFromToday;
       break;
@@ -170,7 +170,7 @@ export default function CheckoutPage() {
               <CheckoutConfirm
                 participant={participant}
                 dueDate={dueDate}
-                returnWindow={siteInfo.settings.return_window}
+                returnWindow={siteInfo.settings?.return_window ?? "1 week"}
               />
             )}
           </CarouselItem>
