@@ -49,15 +49,11 @@ export async function POST(request: NextRequest) {
   // Handle user creation
   if (webhookEvent.type === "user.created") {
     const { id, public_metadata } = webhookEvent.data;
-    const firstName = (public_metadata?.firstName as string) || undefined;
-    const lastName = (public_metadata?.lastName as string) || undefined;
 
-    const keysToRemove = ["firstName", "lastName"];
-    const filteredMetadata = Object.fromEntries(
-      Object.entries(public_metadata).filter(
-        ([key]) => !keysToRemove.includes(key),
-      ),
-    );
+    const metadata = public_metadata as UserPublicMetadata;
+
+    const { firstName, lastName, ...filteredMetadata } =
+      public_metadata as UserPublicMetadata;
 
     // Patch name fields onto the top-level user fields, and remove them from the public metadata.
     if (firstName || lastName) {

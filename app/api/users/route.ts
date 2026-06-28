@@ -1,5 +1,6 @@
+import { hasPermission } from "@/lib/auth";
 import { ClerkUser } from "@/types/cred";
-import { clerkClient } from "@clerk/nextjs/server";
+import { auth, clerkClient } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -60,21 +61,54 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
+    const { userId: currentUserId } = await auth();
     const { searchParams } = new URL(request.url);
+
     const id = searchParams.get("id");
 
-    if (!id)
-      return NextResponse.json({ error: "Missing user ID." }, { status: 400 });
+    const targetUserId = id ?? currentUserId;
 
-    const { firstName, lastName, publicMetadata } = await request.json();
+    if (!targetUserId || !currentUserId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const client = await clerkClient();
-    const user = await client.users.updateUser(id, {
-      firstName,
-      lastName,
-      publicMetadata,
-    });
+    const currentUser = await client.users.getUser(currentUserId);
 
-    return NextResponse.json(user);
+    const isSelfUpdate = targetUserId === currentUserId;
+
+    if (!isSelfUpdate) {
+      if (
+        !hasPermission({
+          user: currentUser,
+          action: "update",
+          resource: "users",
+        })
+      ) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+    }
+
+    const body = await request.json();
+    const isClerkUser = "id" in body;
+
+    if (isClerkUser) {
+      // Update user
+      const { firstName, lastName, publicMetadata } = body;
+      const user = await client.users.updateUser(targetUserId, {
+        firstName,
+        lastName,
+        publicMetadata,
+      });
+      return NextResponse.json(user);
+    } else {
+      // Update metadata only
+      const publicMetadata = body;
+      const user = await client.users.replaceUserMetadata(targetUserId, {
+        publicMetadata,
+      });
+      return NextResponse.json(user);
+    }
   } catch (error: any) {
     return NextResponse.json(
       { error: error.message || "An error occurred while updating the user." },

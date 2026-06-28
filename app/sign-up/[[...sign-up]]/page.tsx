@@ -1,9 +1,10 @@
-import { SignUp } from "@clerk/nextjs";
+import SignUpPage from "@/components/client-pages/SignUpPage";
+import SignUpContextProvider from "@/contexts/sign-up-context";
 
 export default function Page() {
   return (
-    <div className="h-dvh w-full flex justify-center items-center">
-      <SignUp />
-    </div>
+    <SignUpContextProvider>
+      <SignUpPage />
+    </SignUpContextProvider>
   );
 }

@@ -14,19 +14,34 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
+import { Spinner } from "./ui/spinner";
 
 export default function SiteSelect({
   isDisabled = false,
   selectedSite,
   setSelectedSite,
+  side = "bottom",
 }: {
   isDisabled?: boolean;
   selectedSite: Site | null;
   setSelectedSite: React.Dispatch<React.SetStateAction<Site | null>>;
+  side?: "bottom" | "top" | "right" | "left" | undefined;
 }) {
   const { regions, sites } = useSites();
-  const { isLoaded, isSignedIn, user } = useUser();
-  if (!isLoaded || !isSignedIn || !regions || !sites || !user) return;
+  if (!regions || !sites)
+    return (
+      <Select disabled>
+        <SelectTrigger className="w-40">
+          <SelectValue
+            placeholder={
+              <>
+                <Spinner data-icon="inline-start" /> Loading sites...
+              </>
+            }
+          />
+        </SelectTrigger>
+      </Select>
+    );
   return (
     <Select
       value={selectedSite?.id}
@@ -38,7 +53,7 @@ export default function SiteSelect({
           {selectedSite?.nickname}
         </SelectValue>
       </SelectTrigger>
-      <SelectContent className="w-fit">
+      <SelectContent className="w-fit" side={side}>
         {regions.map((region, i) => (
           <SelectGroup key={i}>
             {region.name !== "Chicago" && (

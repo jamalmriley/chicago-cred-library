@@ -749,8 +749,8 @@ function UserForm({
                   userData && !isParticipant(userData) ? userData.id : null;
                 const publicMetadata: UserPublicMetadata = {
                   defaultSite: selectedSite as Site,
-                  role: selectedRole,
                   isTestUser: isTestData,
+                  role: selectedRole,
                 };
 
                 const user: ClerkUser = {

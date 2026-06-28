@@ -176,7 +176,7 @@ export default function AdminSidebar() {
                   <span className="flex flex-col">
                     <p>{user.fullName}</p>
                     <p className="text-xs text-muted-foreground">
-                      {user.emailAddresses[0].emailAddress}
+                      {user.publicMetadata.role}
                     </p>
                   </span>
                 </DropdownMenuItem>

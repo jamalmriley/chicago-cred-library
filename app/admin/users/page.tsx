@@ -318,7 +318,7 @@ function UserTable({
                 </TableCell>
                 <AbacTableCell
                   user={user}
-                  action="update"
+                  action="read"
                   resource="users"
                   className="flex justify-center items-center gap-1.5"
                 >
@@ -373,7 +373,7 @@ function UserTable({
                 </TableCell>
                 <AbacTableCell
                   user={user}
-                  action="update"
+                  action="read"
                   resource="users"
                   className="flex justify-center items-center gap-1.5"
                 >
