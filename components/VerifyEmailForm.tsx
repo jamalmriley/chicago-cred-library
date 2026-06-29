@@ -17,7 +17,7 @@ import { Spinner } from "./ui/spinner";
 import { Check } from "lucide-react";
 
 export default function VerifyEmailForm() {
-  const { session } = useClerk();
+  const { session, setActive } = useClerk();
   const router = useRouter();
   const { signUp } = useSignUp();
   const {
@@ -92,7 +92,11 @@ export default function VerifyEmailForm() {
         return;
       }
 
-      await session?.reload(); // Forces session refresh
+      // Explicitly activate the new session before redirecting
+      if (signUp.createdSessionId) {
+        await setActive({ session: signUp.createdSessionId });
+      }
+
       router.push("/admin");
     } catch {
       toast.error("We're unable to verify your email.");
