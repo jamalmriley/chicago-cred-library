@@ -22,15 +22,15 @@ export default function SignUpPage() {
   return (
     <div className="h-dvh w-full flex justify-center items-center">
       <Card
-        className={`flex flex-col gap-3 w-full ${pendingVerification ? "max-w-md" : "max-w-sm"}`}
+        className={`flex flex-col gap-3 w-full bg-white/20 backdrop-blur-md border border-white/20 custom-card-text ${pendingVerification ? "max-w-md" : "max-w-sm"}`}
       >
         <CardHeader>
-          <CardTitle className="text-4xl uppercase font-secondary">
+          <CardTitle className="text-4xl uppercase font-secondary custom-card-text">
             {!pendingVerification
               ? "Sign up"
               : `Check your email, ${firstName}!`}
           </CardTitle>
-          <CardDescription className="mb-5">
+          <CardDescription className="mb-5 custom-card-text">
             {!pendingVerification
               ? "Create an account in minutes."
               : `We just sent a code to ${emailAddress}.`}
@@ -40,7 +40,7 @@ export default function SignUpPage() {
           {!pendingVerification ? <SignUpForm /> : <VerifyEmailForm />}
         </CardContent>
         <CardFooter className="justify-center">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground custom-card-text">
             Already have an account?{" "}
             <Link
               href="/sign-in"

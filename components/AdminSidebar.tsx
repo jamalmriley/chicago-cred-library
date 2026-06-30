@@ -204,6 +204,7 @@ export default function AdminSidebar() {
                     </DropdownMenuItem>
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
+
                 <SignOutButton>
                   <DropdownMenuItem variant="destructive">
                     <LogOut />

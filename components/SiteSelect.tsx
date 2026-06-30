@@ -2,7 +2,6 @@
 
 import { useSites } from "@/hooks/use-sites";
 import { getSiteById, Site } from "@/types/cred";
-import { useUser } from "@clerk/nextjs";
 import { DropdownMenuSeparator } from "./ui/dropdown-menu";
 import { Item, ItemContent, ItemDescription, ItemTitle } from "./ui/item";
 import {
@@ -21,11 +20,13 @@ export default function SiteSelect({
   selectedSite,
   setSelectedSite,
   side = "bottom",
+  isCustom = false,
 }: {
   isDisabled?: boolean;
   selectedSite: Site | null;
   setSelectedSite: React.Dispatch<React.SetStateAction<Site | null>>;
   side?: "bottom" | "top" | "right" | "left" | undefined;
+  isCustom?: boolean;
 }) {
   const { regions, sites } = useSites();
   if (!regions || !sites)
@@ -48,7 +49,7 @@ export default function SiteSelect({
       onValueChange={(value) => setSelectedSite(getSiteById(value, sites))}
       disabled={isDisabled}
     >
-      <SelectTrigger className="w-40">
+      <SelectTrigger className={`w-40 ${isCustom ? "custom-card-input" : ""}`}>
         <SelectValue placeholder="Select a site">
           {selectedSite?.nickname}
         </SelectValue>

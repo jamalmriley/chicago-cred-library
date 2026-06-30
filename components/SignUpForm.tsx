@@ -50,7 +50,7 @@ export default function SignUpForm() {
     const allowedDomains = [
       "chicagocred.com",
       "emersoncollective.com",
-      "gmail.com",
+      // "gmail.com",
     ];
     const domain = email.split("@")[1]?.toLowerCase();
     return Boolean(domain) && allowedDomains.includes(domain);
@@ -121,6 +121,7 @@ export default function SignUpForm() {
             autoCapitalize="on"
             autoComplete="given-name"
             required
+            className="custom-card-input"
           />
         </Field>
         <Field>
@@ -137,6 +138,7 @@ export default function SignUpForm() {
             autoCapitalize="on"
             autoComplete="family-name"
             required
+            className="custom-card-input"
           />
         </Field>
       </div>
@@ -155,10 +157,11 @@ export default function SignUpForm() {
           type="email"
           autoCapitalize="off"
           autoComplete="email"
-          // pattern="^[A-Za-z0-9._%+-]+@(chicagocred\.com|emersoncollective\.com)$"
+          pattern="^[A-Za-z0-9._%+-]+@(chicagocred\.com|emersoncollective\.com)$"
           required
+          className="custom-card-input"
         />
-        <FieldDescription className="text-xs">
+        <FieldDescription className="text-xs custom-card-text">
           A <span className="font-bold">Chicago CRED</span> or{" "}
           <span className="font-bold">Emerson Collective</span> email is
           required.
@@ -179,8 +182,9 @@ export default function SignUpForm() {
           autoCapitalize="off"
           autoComplete="new-password"
           required
+          className="custom-card-input"
         />
-        <FieldDescription className="text-xs flex flex-col gap-1.5 text-foreground">
+        <FieldDescription className="text-xs flex flex-col gap-1.5 text-white">
           <span className="flex gap-1.5 items-center">
             {passwordChecks.length ? (
               <CircleCheckBig className="size-4 text-green-400" />
@@ -188,11 +192,7 @@ export default function SignUpForm() {
               <Circle className="size-4" />
             )}
             <span
-              className={
-                passwordChecks.length
-                  ? "line-through text-muted-foreground"
-                  : ""
-              }
+              className={passwordChecks.length ? "line-through opacity-50" : ""}
             >
               At least 8 characters
             </span>
@@ -205,9 +205,7 @@ export default function SignUpForm() {
             )}
             <span
               className={
-                passwordChecks.special
-                  ? "line-through text-muted-foreground"
-                  : ""
+                passwordChecks.special ? "line-through opacity-50" : ""
               }
             >
               Contains a special character
@@ -223,8 +221,9 @@ export default function SignUpForm() {
           selectedSite={defaultSite}
           setSelectedSite={setDefaultSite}
           side="right"
+          isCustom
         />
-        <FieldDescription className="text-xs">
+        <FieldDescription className="text-xs custom-card-text">
           Leave this blank if you don't work at a specific site.
         </FieldDescription>
       </Field>

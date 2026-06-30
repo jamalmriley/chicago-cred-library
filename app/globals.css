@@ -203,7 +203,20 @@
     @apply font-heading text-base leading-normal font-medium;
   }
 
+  .custom-card-text {
+    @apply text-white!;
+  }
+
+  .custom-card-input {
+    @apply placeholder:text-white/50! data-[placeholder]:text-white/50!;
+  }
+
   .setting-item {
     @apply border p-3 rounded-md;
   }
+}
+
+::view-transition-old(root), ::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
 }
