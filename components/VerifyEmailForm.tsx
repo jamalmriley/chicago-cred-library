@@ -7,19 +7,20 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
-import { useSignUpContext } from "@/contexts/sign-up-context";
-import { useClerk, useSignUp } from "@clerk/nextjs";
+import { useAuthContext } from "@/contexts/auth-context";
+import { useClerk, useSignIn, useSignUp } from "@clerk/nextjs";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
+import { Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Spinner } from "./ui/spinner";
-import { Check } from "lucide-react";
 
-export default function VerifyEmailForm() {
-  const { session, setActive } = useClerk();
-  const router = useRouter();
-  const { signUp } = useSignUp();
+export default function VerifyEmailForm({
+  authType,
+}: {
+  authType: "sign-in" | "sign-up";
+}) {
   const {
     code,
     setCode,
@@ -29,7 +30,11 @@ export default function VerifyEmailForm() {
     setSeconds,
     defaultSite,
     emailAddress,
-  } = useSignUpContext();
+  } = useAuthContext();
+  const { setActive } = useClerk();
+  const router = useRouter();
+  const { signIn } = useSignIn();
+  const { signUp } = useSignUp();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEmailVerified, setIsEmailVerified] = useState(false);
 
@@ -46,7 +51,43 @@ export default function VerifyEmailForm() {
     return () => clearInterval(interval);
   }, [setSeconds]);
 
-  async function handleVerifyEmail(e: React.FormEvent<HTMLFormElement>) {
+  async function handleVerifySignIn(e: React.FormEvent) {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError("");
+
+    if (!signIn) return;
+
+    try {
+      // Validate the custom input string against the specific email_code endpoint
+      const codeRes = await signIn.mfa.verifyEmailCode({ code });
+      if (codeRes.error) {
+        setError(codeRes.error.message);
+        return;
+      }
+
+      // Wrap up session finalization once verified
+      if (signIn.status === "complete") {
+        // Core 3 uses finalize() to transition sessions cleanly
+        await signIn.finalize();
+        setIsEmailVerified(true);
+
+        if (signIn.createdSessionId) {
+          await setActive({ session: signIn.createdSessionId });
+        }
+
+        router.push("/admin");
+      } else {
+        setError(`Error: ${signIn.status}`);
+      }
+    } catch (err: any) {
+      setError(err?.message || "Invalid verification code. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function handleVerifySignUp(e: React.FormEvent) {
     try {
       e.preventDefault();
       setError("");
@@ -105,6 +146,11 @@ export default function VerifyEmailForm() {
     }
   }
 
+  function handleSubmit(e: React.FormEvent) {
+    if (authType === "sign-up") handleVerifySignUp(e);
+    else handleVerifySignIn(e);
+  }
+
   async function resubmit() {
     const toastSuccess = () =>
       toast.success("Email sent!", {
@@ -112,15 +158,18 @@ export default function VerifyEmailForm() {
       });
     const toastFailure = () =>
       toast.error("Uh oh! Something went wrong.", {
-        description: "Token expired. Please refresh your browser",
+        description:
+          "Token expired. Please refresh your browser and try again.",
         action: {
           label: "Refresh",
           onClick: async () => location.reload(),
         },
       });
     try {
-      const result = await signUp.verifications.sendEmailCode();
-
+      const result =
+        authType === "sign-in"
+          ? await signIn.mfa.sendEmailCode()
+          : await signUp.verifications.sendEmailCode();
       if (result.error) {
         toastFailure();
         return;
@@ -134,7 +183,7 @@ export default function VerifyEmailForm() {
   }
 
   return (
-    <form onSubmit={handleVerifyEmail} className="flex flex-col gap-5 w-full">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-5 w-full">
       {/* OTP */}
       <div className="flex justify-center items-center">
         <InputOTP

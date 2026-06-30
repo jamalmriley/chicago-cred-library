@@ -1,6 +1,9 @@
 "use client";
 
-import SignUpForm from "@/components/SignUpForm";
+import { useAuthContext } from "@/contexts/auth-context";
+import { useUser } from "@clerk/nextjs";
+import Link from "next/link";
+import SignInForm from "../SignInForm";
 import {
   Card,
   CardContent,
@@ -8,22 +11,17 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import VerifyEmailForm from "@/components/VerifyEmailForm";
-import { useAuthContext } from "@/contexts/auth-context";
-import { useUser } from "@clerk/nextjs";
-import Link from "next/link";
+} from "../ui/card";
+import VerifyEmailForm from "../VerifyEmailForm";
 
-export default function SignUpPage() {
+export default function SignInPage() {
   const { firstName, emailAddress, pendingVerification } = useAuthContext();
   const { isLoaded } = useUser();
 
   if (!isLoaded) return;
   return (
     <div className="h-dvh w-full flex justify-center items-center">
-      <Card
-        className={`flex flex-col gap-3 bg-white/20 backdrop-blur-md border border-white/20 custom-card-text ${pendingVerification ? "w-md max-w-md" : "w-sm max-w-sm"}`}
-      >
+      <Card className="w-sm max-w-sm flex flex-col gap-3 bg-white/20 backdrop-blur-md border border-white/20 custom-card-text">
         <CardHeader>
           <CardTitle className="text-4xl uppercase font-secondary custom-card-text">
             {!pendingVerification
@@ -34,25 +32,25 @@ export default function SignUpPage() {
           </CardTitle>
           <CardDescription className="mb-5 custom-card-text">
             {!pendingVerification
-              ? "Create an account in minutes."
+              ? "Log into your CRED Library account."
               : `We just sent a code to ${emailAddress}.`}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {!pendingVerification ? (
-            <SignUpForm />
+            <SignInForm />
           ) : (
-            <VerifyEmailForm authType="sign-up" />
+            <VerifyEmailForm authType="sign-in" />
           )}
         </CardContent>
         <CardFooter className="justify-center">
           <p className="text-sm text-muted-foreground custom-card-text">
-            Already have an account?{" "}
+            Don't have an account?{" "}
             <Link
-              href="/sign-in"
+              href="/sign-up"
               className="font-medium text-primary hover:underline"
             >
-              Log in
+              Sign up
             </Link>
           </p>
         </CardFooter>

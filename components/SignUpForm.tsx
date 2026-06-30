@@ -4,19 +4,17 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
-import { useSignUpContext } from "@/contexts/sign-up-context";
+import { useAuthContext } from "@/contexts/auth-context";
 import { useSignUp, useUser } from "@clerk/nextjs";
-import { Field, FieldDescription, FieldLabel } from "./ui/field";
+import { Circle, CircleCheckBig } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Required from "./Required";
 import SiteSelect from "./SiteSelect";
-import { Circle, CircleCheckBig } from "lucide-react";
+import { Field, FieldDescription, FieldLabel } from "./ui/field";
 import { Spinner } from "./ui/spinner";
 
 export default function SignUpForm() {
-  const router = useRouter();
-  const { signUp } = useSignUp();
   const {
     firstName,
     setFirstName,
@@ -32,7 +30,9 @@ export default function SignUpForm() {
     error,
     setError,
     setSeconds,
-  } = useSignUpContext();
+  } = useAuthContext();
+  const router = useRouter();
+  const { signUp } = useSignUp();
   const { isSignedIn } = useUser();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const passwordChecks = {
@@ -56,9 +56,8 @@ export default function SignUpForm() {
     return Boolean(domain) && allowedDomains.includes(domain);
   }
 
-  async function handleSignUp(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-
     setIsSubmitting(true);
     setError("");
 
@@ -99,12 +98,12 @@ export default function SignUpForm() {
   // Handle signed-in users visiting this page, or sign-up already complete (e.g. after refresh)
   useEffect(() => {
     if (isSignedIn || signUp.status === "complete") {
-      router.push("/");
+      router.push("/admin");
     }
   }, [isSignedIn, signUp.status, router]);
 
   return (
-    <form onSubmit={handleSignUp} className="flex flex-col w-full gap-5">
+    <form onSubmit={handleSubmit} className="flex flex-col w-full gap-5">
       {/* First and Last Name */}
       <div className="flex gap-5">
         <Field>

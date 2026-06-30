@@ -3,7 +3,7 @@
 import { Site } from "@/types/cred";
 import { createContext, useContext, useState } from "react";
 
-type SignUpContext = {
+type AuthContext = {
   firstName: string;
   setFirstName: React.Dispatch<React.SetStateAction<string>>;
   lastName: string;
@@ -24,9 +24,9 @@ type SignUpContext = {
   setSeconds: React.Dispatch<React.SetStateAction<number>>;
 };
 
-export const SignUpContext = createContext<SignUpContext | null>(null);
+export const AuthContext = createContext<AuthContext | null>(null);
 
-export default function SignUpContextProvider({
+export default function AuthContextProvider({
   children,
 }: {
   children: React.ReactNode;
@@ -44,7 +44,7 @@ export default function SignUpContextProvider({
   const [seconds, setSeconds] = useState<number>(0);
 
   return (
-    <SignUpContext.Provider
+    <AuthContext.Provider
       value={{
         firstName,
         setFirstName,
@@ -67,15 +67,15 @@ export default function SignUpContextProvider({
       }}
     >
       {children}
-    </SignUpContext.Provider>
+    </AuthContext.Provider>
   );
 }
 
-export function useSignUpContext() {
-  const context = useContext(SignUpContext);
+export function useAuthContext() {
+  const context = useContext(AuthContext);
   if (!context) {
     throw new Error(
-      "useSignUpContext must be used within a SignUpContextProvider.",
+      "useAuthContext must be used within a AuthContextProvider.",
     );
   }
   return context;

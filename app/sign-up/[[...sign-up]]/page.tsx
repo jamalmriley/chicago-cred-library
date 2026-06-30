@@ -1,11 +1,11 @@
 import SignUpPage from "@/components/client-pages/SignUpPage";
-import SignUpContextProvider from "@/contexts/sign-up-context";
+import AuthContextProvider from "@/contexts/auth-context";
 import BackgroundImage from "@/public/images/ed-image-1.png";
 import Image from "next/image";
 
 export default function Page() {
   return (
-    <SignUpContextProvider>
+    <AuthContextProvider>
       <div className="relative h-screen w-full flex items-center justify-center overflow-hidden">
         {/* Background Image */}
         <Image
@@ -24,6 +24,6 @@ export default function Page() {
           <SignUpPage />
         </div>
       </div>
-    </SignUpContextProvider>
+    </AuthContextProvider>
   );
 }

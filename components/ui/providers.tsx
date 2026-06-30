@@ -6,7 +6,7 @@ import { SidebarProvider, SidebarTrigger } from "./sidebar";
 import { Toaster } from "./sonner";
 import { ThemeProvider } from "./theme-provider";
 import AppContextProvider from "@/contexts/app-context";
-import SignUpContextProvider from "@/contexts/sign-up-context";
+import SignUpContextProvider from "@/contexts/auth-context";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
