@@ -78,7 +78,7 @@ export default async function HomePage() {
               </Link>
             </Button>
           )}
-          <Button asChild className="molde-button bg-white text-black">
+          <Button variant="outline" asChild className="molde-button">
             <Link href="https://github.com/jamalmriley/project-library">
               <Code />
               View project
