@@ -9,11 +9,11 @@ import { getSiteById, Site } from "@/types/cred";
 import { Action } from "@/types/data";
 import { GoogleBooks, LibraryBook, ManualBook } from "@/types/library";
 import { useUser } from "@clerk/nextjs";
-import { Info, Pencil, Plus, Trash, X } from "lucide-react";
+import { Info, LibraryBig, Pencil, Plus, Trash, X } from "lucide-react";
 import { Dispatch, SetStateAction, useState } from "react";
 import { toast } from "sonner";
 import useSound from "use-sound";
-import { AdminBookLineItem } from "./BookLineItem";
+import { AdminCartBookLineItem, AdminScanBookLineItem } from "./BookLineItem";
 import { BookScannerWrapper } from "./BookScannerWrapper";
 import Required from "./Required";
 import SiteSelect from "./SiteSelect";
@@ -35,6 +35,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Spinner } from "./ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Textarea } from "./ui/textarea";
+import { Separator } from "./ui/separator";
 
 const actionInfo = {
   create: {
@@ -145,6 +146,7 @@ export default function AdminBookDialog({
   data?: LibraryBook;
 }) {
   const { user } = useUser();
+  const [isContinuous, setIsContinuous] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const tabs: ("Scan" | "Manual")[] = ["Scan", "Manual"];
 
@@ -154,7 +156,10 @@ export default function AdminBookDialog({
       <DialogTrigger asChild>
         {actionInfo[action].trigger(user, action, setIsOpen)}
       </DialogTrigger>
-      <DialogContent className="max-h-[75vh] flex flex-col overflow-y-scroll scrollbar-none">
+      <DialogContent
+        className={`${isContinuous ? "max-w-3xl! h-[80vh]" : "max-h-[80vh]"} flex flex-col overflow-y-scroll scrollbar-none`}
+        onInteractOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle>{actionInfo[action].title}</DialogTitle>
           <DialogDescription>
@@ -166,7 +171,13 @@ export default function AdminBookDialog({
           <Tabs defaultValue={tabs[0]} className="h-full overflow-y-hidden">
             <TabsList variant="line" className="mb-3">
               {tabs.map((tab) => (
-                <TabsTrigger key={tab} value={tab}>
+                <TabsTrigger
+                  key={tab}
+                  value={tab}
+                  onClick={() => {
+                    if (tab === "Manual") setIsContinuous(false);
+                  }}
+                >
                   {tab}
                 </TabsTrigger>
               ))}
@@ -181,6 +192,8 @@ export default function AdminBookDialog({
                 <AdminBookForm
                   action={action}
                   data={data}
+                  isContinuous={isContinuous}
+                  setIsContinuous={setIsContinuous}
                   setIsDrawerOpen={setIsOpen}
                   tab={tab}
                 />
@@ -191,6 +204,8 @@ export default function AdminBookDialog({
           <AdminBookForm
             action={action}
             data={data}
+            isContinuous={isContinuous}
+            setIsContinuous={setIsContinuous}
             setIsDrawerOpen={setIsOpen}
             tab="Manual"
           />
@@ -203,32 +218,38 @@ export default function AdminBookDialog({
 function AdminBookForm({
   action,
   data,
+  isContinuous,
+  setIsContinuous,
   setIsDrawerOpen,
   tab,
 }: {
   action: Action;
   data?: LibraryBook;
+  isContinuous: boolean;
+  setIsContinuous: React.Dispatch<React.SetStateAction<boolean>>;
   setIsDrawerOpen: React.Dispatch<React.SetStateAction<boolean>>;
   tab: "Scan" | "Manual";
 }) {
-  const { setLastUpdated } = useAdminContext();
+  const { cart, setCart, setLastUpdated } = useAdminContext();
   const { sites } = useSites();
   const { isLoaded, user } = useUser();
   const [isLoading, setIsLoading] = useState(false);
   const [book, setBook] = useState<GoogleBooks.Book | null>(null);
   const [playBeep] = useSound("/sounds/beep.m4a", { volume: 0.5 });
 
-  const handleScan = async (isbn: string) => {
-    playBeep();
-    const book = await fetchGoogleBook(isbn);
-    if (!book) return;
-    setBook(book);
-  };
-
   const handleLookup = async (isbn: string) => {
     const book = await fetchGoogleBook(isbn);
     if (!book) return;
-    setBook(book);
+    if (isContinuous) {
+      setCart((prev) => [...prev, book]);
+    } else {
+      setBook(book);
+    }
+  };
+
+  const handleScan = async (isbn: string) => {
+    playBeep();
+    await handleLookup(isbn);
   };
 
   const volumeInfo = data?.book_info.volumeInfo;
@@ -309,12 +330,14 @@ function AdminBookForm({
 
     const isBookFound: boolean = res.ok;
     const method = isBookFound ? "PATCH" : "POST"; // If the book is not found, it needs to be added, not updated.
-    const body: LibraryBook = {
-      ...book,
-      available_count: isBookFound ? available_count + 1 : 1,
-      total_count: isBookFound ? total_count + 1 : 1,
-      updated_at: new Date(),
-    };
+    const body: LibraryBook[] = [
+      {
+        ...book,
+        available_count: isBookFound ? available_count + 1 : 1,
+        total_count: isBookFound ? total_count + 1 : 1,
+        updated_at: new Date(),
+      },
+    ];
 
     await fetch(`/api/library${isBookFound ? `?id=${book.id}` : ""}`, {
       method,
@@ -387,39 +410,74 @@ function AdminBookForm({
 
   if (!isLoaded || !user || !sites) return; // TODO: Add a loading and error state.
   return (
-    <div className="flex flex-col gap-5">
+    <div className="h-full flex flex-col gap-5">
       {tab === "Scan" ? (
-        <BookScannerWrapper<GoogleBooks.Book>
-          book={book}
-          setBook={setBook}
-          onLookup={handleLookup}
-          onScan={handleScan}
-          renderBook={(book) => (
-            <AdminBookLineItem
-              book={book}
-              isDisabled={isButtonDisabled}
-              onAdd={(options) => {
-                const created_at = new Date();
-                const siteInfo = getSiteById(options?.site?.id ?? null, sites);
-                if (!siteInfo) return;
-
-                const libraryBook: LibraryBook = {
-                  id: `${siteInfo.id}_${getPreferredIsbn(book.volumeInfo.industryIdentifiers)}`,
-                  book_info: book,
-                  site: siteInfo,
-                  available_count: 1,
-                  total_count: 1,
-                  created_at,
-                  updated_at: created_at,
-                  checkout_history: null,
-                };
-
-                handleAddBook(libraryBook);
-              }}
-              onRemove={() => setBook(null)}
-            />
+        <div className="w-full h-full flex">
+          {isContinuous && (
+            <div className="w-80 h-full flex flex-col gap-3 overflow-y-scroll scrollbar-none">
+              {cart.length > 0 ? (
+                cart.map((book, i) => (
+                  <AdminCartBookLineItem book={book} key={i} index={i} />
+                ))
+              ) : (
+                <div className="w-full h-full flex flex-col flex-1 grow justify-center items-center border rounded-xl p-10 bg-muted text-muted-foreground">
+                  <LibraryBig className="size-20" />
+                  <p className="text-lg font-medium text-muted-foreground mb-5 select-none">
+                    No books added yet.
+                  </p>
+                </div>
+              )}
+            </div>
           )}
-        />
+          {isContinuous && (
+            <Separator orientation="vertical" decorative className="mx-5" />
+          )}
+          <div className={`${isContinuous ? "w-1/2" : "w-full"} h-full`}>
+            <BookScannerWrapper<GoogleBooks.Book>
+              book={book}
+              setBook={setBook}
+              cart={cart}
+              setCart={setCart}
+              isContinuous={isContinuous}
+              setIsContinuous={setIsContinuous}
+              location="admin-scan"
+              onLookup={handleLookup}
+              onScan={handleScan}
+              renderBook={(book) => (
+                <AdminScanBookLineItem
+                  book={book}
+                  isDisabled={isButtonDisabled}
+                  onAdd={(options) => {
+                    const created_at = new Date();
+                    const siteInfo = getSiteById(
+                      options?.site?.id ?? null,
+                      sites,
+                    );
+                    if (!siteInfo) return;
+
+                    const libraryBook: LibraryBook = {
+                      id: `${siteInfo.id}_${getPreferredIsbn(book.volumeInfo.industryIdentifiers)}`,
+                      book_info: book,
+                      site: siteInfo,
+                      available_count: 1,
+                      total_count: 1,
+                      created_at,
+                      updated_at: created_at,
+                      checkout_history: null,
+                    };
+
+                    handleAddBook(libraryBook);
+                  }}
+                  onRemove={() => setBook(null)}
+                />
+              )}
+              renderButton={isContinuous}
+              selectedSite={selectedSite}
+              setSelectedSite={setSelectedSite}
+              setLastUpdated={setLastUpdated}
+            />
+          </div>
+        </div>
       ) : (
         <FieldGroup>
           {action !== "delete" && (

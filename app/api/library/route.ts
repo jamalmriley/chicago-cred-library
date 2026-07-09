@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
 
   const { data, error } = await supabase()
     .from("library")
-    .insert([body])
+    .upsert(body) // The upsert() method combines an INSERT and an UPDATE.
     .select<"*", LibraryBook>();
 
   if (error) return NextResponse.json({ error }, { status: 500 });

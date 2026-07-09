@@ -119,7 +119,7 @@ export default function UserDialog({
           </span>
         </AbacButton>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>{actionInfo[action].title}</DialogTitle>
           <DialogDescription>
@@ -186,7 +186,7 @@ function UserForm({
 }) {
   const { setLastUpdated } = useAdminContext();
   const { isLoaded, user } = useUser();
-  const [isOpen, setIsOpen] = useState(false);
+  const [, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const [firstName, setFirstName] = useState(

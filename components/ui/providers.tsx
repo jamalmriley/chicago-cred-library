@@ -1,12 +1,12 @@
 import AdminContextProvider from "@/contexts/admin-context";
+import AppContextProvider from "@/contexts/app-context";
 import { ClerkProvider } from "@clerk/nextjs";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import AdminSidebar from "../AdminSidebar";
 import { SidebarProvider, SidebarTrigger } from "./sidebar";
 import { Toaster } from "./sonner";
 import { ThemeProvider } from "./theme-provider";
-import AppContextProvider from "@/contexts/app-context";
-import SignUpContextProvider from "@/contexts/auth-context";
+import { TooltipProvider } from "./tooltip";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -17,11 +17,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
         enableSystem
         disableTransitionOnChange
       >
-        <AppContextProvider>
-          <NuqsAdapter>
-            <main>{children}</main>
-          </NuqsAdapter>
-        </AppContextProvider>
+        <TooltipProvider>
+          <AppContextProvider>
+            <NuqsAdapter>
+              <main>{children}</main>
+            </NuqsAdapter>
+          </AppContextProvider>
+        </TooltipProvider>
         <Toaster />
       </ThemeProvider>
     </ClerkProvider>

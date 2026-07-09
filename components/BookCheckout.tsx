@@ -42,7 +42,7 @@ export default function BookCheckout({
       <div className="w-80 h-full flex flex-col gap-3 overflow-y-scroll scrollbar-none">
         {cart.length > 0 ? (
           cart.map((item, index) => (
-            <CheckoutBookLineItem key={index} book={item.book} />
+            <CheckoutBookLineItem key={index} book={item.book} index={index} />
           ))
         ) : (
           <div className="w-full h-full flex flex-col flex-1 grow justify-center items-center border rounded-xl p-10 bg-muted text-muted-foreground">

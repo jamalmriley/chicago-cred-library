@@ -1,7 +1,7 @@
 "use client";
 
 import { Participant } from "@/types/cred";
-import { LibraryBook } from "@/types/library";
+import { GoogleBooks, LibraryBook } from "@/types/library";
 import { User } from "@clerk/nextjs/server";
 import { createContext, useContext, useState } from "react";
 
@@ -15,6 +15,8 @@ type AdminContext = {
   setBooksError: React.Dispatch<React.SetStateAction<string | null>>;
   booksLoading: boolean;
   setBooksLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  cart: GoogleBooks.Book[];
+  setCart: React.Dispatch<React.SetStateAction<GoogleBooks.Book[]>>;
   // Participants
   participants: Participant[] | null;
   setParticipants: React.Dispatch<React.SetStateAction<Participant[] | null>>;
@@ -43,6 +45,8 @@ export default function AdminContextProvider({
   const [books, setBooks] = useState<LibraryBook[] | null>(null);
   const [booksError, setBooksError] = useState<string | null>(null);
   const [booksLoading, setBooksLoading] = useState<boolean>(true);
+  const [cart, setCart] = useState<GoogleBooks.Book[]>([]);
+
   // Participants
   const [participants, setParticipants] = useState<Participant[] | null>(null);
   const [participantsError, setParticipantsError] = useState<string | null>(
@@ -65,6 +69,8 @@ export default function AdminContextProvider({
         setBooksError,
         booksLoading,
         setBooksLoading,
+        cart,
+        setCart,
         participants,
         setParticipants,
         participantsError,

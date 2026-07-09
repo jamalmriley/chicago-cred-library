@@ -25,7 +25,7 @@ export default function SignInPage() {
         <CardHeader>
           <CardTitle className="text-4xl uppercase font-secondary custom-card-text">
             {!pendingVerification
-              ? "Sign up"
+              ? "Sign in"
               : firstName === ""
                 ? "Check your email!"
                 : `Check your email, ${firstName}!`}
