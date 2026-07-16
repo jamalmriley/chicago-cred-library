@@ -50,8 +50,6 @@ export async function POST(request: NextRequest) {
   if (webhookEvent.type === "user.created") {
     const { id, public_metadata } = webhookEvent.data;
 
-    const metadata = public_metadata as UserPublicMetadata;
-
     const { firstName, lastName, ...filteredMetadata } =
       public_metadata as UserPublicMetadata;
 
