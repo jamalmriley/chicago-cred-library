@@ -162,7 +162,7 @@ export default function BookScanner<T>({
     })
       .then(() => {
         toast.success(
-          `${cart.length} ${cart.length === 1 ? "book" : "books"} successfully added to the library.`,
+          `${cart.length} ${cart.length === 1 ? "book" : "books"} successfully added to ${selectedSite.id === "wc" ? "the " + selectedSite.nickname : selectedSite.nickname}'s library.`,
           {
             position: "bottom-right",
           },
@@ -399,9 +399,7 @@ export default function BookScanner<T>({
         <span className="w-full h-9 relative flex items-center mt-auto">
           <Button
             className="flex-1 rounded-r-none border-r-0 molde-button"
-            disabled={
-              isLoading || !selectedSite || (cart && cart.length === 0)
-            }
+            disabled={isLoading || !selectedSite || (cart && cart.length === 0)}
             onClick={() => handleUpsertBooks(cart)}
           >
             {selectedSite

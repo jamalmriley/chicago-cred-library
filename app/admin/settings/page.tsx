@@ -2,6 +2,7 @@
 
 import SiteSelect from "@/components/SiteSelect";
 import { AbacButton } from "@/components/ui/abac";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -31,7 +32,6 @@ import {
   FieldSet,
   FieldTitle,
 } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -72,13 +72,6 @@ export default function SettingsPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [max, step] = [20, 1];
-
-  // General settings
-  const [siteName, setSiteName] = useState(currSite?.name ?? "");
-  const [siteNickname, setSiteNickname] = useState(currSite?.nickname ?? "");
-  const [recipients, setRecipients] = useState<string[]>(
-    currSite?.settings?.notification_recipients ?? [],
-  );
 
   // Checkout settings
   const [bookCheckoutLimit, setBookCheckoutLimit] = useState(() => {
@@ -132,6 +125,11 @@ export default function SettingsPage() {
     PenaltyOption | undefined
   >(currSite?.settings?.overdue_penalty);
 
+  // Communication settings
+  const [recipients, setRecipients] = useState<string[]>(
+    currSite?.settings?.email_notification_recipients ?? [],
+  );
+
   const allRecipients: string[] =
     users?.map((user) => user.emailAddresses[0].emailAddress).sort() ?? [];
 
@@ -165,13 +163,6 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (!currSite) return;
-
-    console.log(currSite);
-
-    // General
-    setSiteName(currSite.name ?? "");
-    setSiteNickname(currSite.nickname ?? "");
-    setRecipients(currSite.settings?.notification_recipients ?? []);
 
     // Checkout
     setBookCheckoutLimit(() => {
@@ -216,6 +207,9 @@ export default function SettingsPage() {
       !Number.isFinite(currSite.settings?.return_extension_limit ?? 0),
     );
     setOverduePenalty(currSite.settings?.overdue_penalty);
+
+    // Communication
+    setRecipients(currSite.settings?.email_notification_recipients ?? []);
   }, [currSite, lastUpdated]);
 
   useEffect(() => {
@@ -258,11 +252,9 @@ export default function SettingsPage() {
                 if (!currSite) return;
                 const site: Site = {
                   ...currSite,
-                  name: siteName,
-                  nickname: siteNickname,
                   updated_at: today,
                   settings: {
-                    notification_recipients: recipients,
+                    email_notification_recipients: recipients,
                     book_checkout_limit: isBookCheckoutUnlimited
                       ? "Unlimited"
                       : bookCheckoutLimit,
@@ -296,89 +288,6 @@ export default function SettingsPage() {
       </p>
 
       <div className="flex gap-5">
-        {/* General Settings */}
-        <Card className="flex-1">
-          <CardHeader className="group">
-            <CardTitle>General Settings</CardTitle>
-            <CardDescription>Manage your site information.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <FieldSet>
-              <FieldGroup>
-                <Field>
-                  <FieldLabel htmlFor="site-name">Site name</FieldLabel>
-                  <Input
-                    id="site-name"
-                    placeholder="WS Hub 2"
-                    required
-                    type="text"
-                    value={siteName}
-                    onChange={(e) => setSiteName(e.target.value)}
-                    disabled={!isEditing || isLoading}
-                  />
-                  <FieldDescription>
-                    The full name of the site.
-                  </FieldDescription>
-                </Field>
-                <Field>
-                  <FieldLabel htmlFor="site-nickname">Site nickname</FieldLabel>
-                  <Input
-                    id="site-nickname"
-                    placeholder="2501"
-                    autoComplete="off"
-                    value={siteNickname}
-                    onChange={(e) => setSiteNickname(e.target.value)}
-                    disabled={!isEditing || isLoading}
-                  />
-                  <FieldDescription>
-                    A shorter name for the site.
-                  </FieldDescription>
-                </Field>
-                <Field>
-                  <FieldLabel htmlFor="site-nickname">
-                    Notification recipients
-                  </FieldLabel>
-                  <Combobox
-                    multiple
-                    autoHighlight
-                    items={allRecipients}
-                    value={recipients}
-                    onValueChange={setRecipients}
-                    disabled={!isEditing || isLoading}
-                  >
-                    <ComboboxChips ref={anchor} className="w-full">
-                      <ComboboxValue>
-                        {(values) => (
-                          <>
-                            {values.map((value: string) => (
-                              <ComboboxChip key={value}>{value}</ComboboxChip>
-                            ))}
-                            <ComboboxChipsInput />
-                          </>
-                        )}
-                      </ComboboxValue>
-                    </ComboboxChips>
-                    <ComboboxContent anchor={anchor}>
-                      <ComboboxEmpty>No users found.</ComboboxEmpty>
-                      <ComboboxList>
-                        {(item) => (
-                          <ComboboxItem key={item} value={item}>
-                            {item}
-                          </ComboboxItem>
-                        )}
-                      </ComboboxList>
-                    </ComboboxContent>
-                  </Combobox>
-                  <FieldDescription>
-                    Users who will receive notifications about participant
-                    reading activity.
-                  </FieldDescription>
-                </Field>
-              </FieldGroup>
-            </FieldSet>
-          </CardContent>
-        </Card>
-
         {/* Checkout Settings */}
         <Card className="flex-1">
           <CardHeader className="group">
@@ -695,6 +604,96 @@ export default function SettingsPage() {
                 </Select>
               </Field>
             </FieldGroup>
+          </CardContent>
+        </Card>
+
+        {/* Communication Settings */}
+        <Card className="flex-1">
+          <CardHeader className="group">
+            <CardTitle>Communication Settings</CardTitle>
+            <CardDescription>Manage notifications.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <FieldSet>
+              <FieldGroup>
+                <Button
+                  onClick={async () => {
+                    const res = await fetch("/api/goto/send", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        ownerPhoneNumber: "+13127571806",
+                        contactPhoneNumbers: ["+17736290679"],
+                        body: "This is a test message.",
+                      }),
+                    });
+
+                    if (res.status === 401) {
+                      const data = await res.json();
+                      if (data.requiresAuth) {
+                        window.location.replace("/api/goto"); // Re-trigger auth initialization.
+                        return;
+                      }
+                    }
+
+                    if (!res.ok) {
+                      toast.error("Something went wrong sending the message.", {
+                        position: "bottom-right",
+                      });
+                      return;
+                    }
+
+                    toast.success("Text message sent successfully!", {
+                      position: "bottom-right",
+                    });
+                  }}
+                >
+                  Send test message
+                </Button>
+
+                {/* Email notification recipients */}
+                <Field>
+                  <FieldLabel htmlFor="site-nickname">
+                    Email notification recipients
+                  </FieldLabel>
+                  <Combobox
+                    multiple
+                    autoHighlight
+                    items={allRecipients}
+                    value={recipients}
+                    onValueChange={setRecipients}
+                    disabled={!isEditing || isLoading}
+                  >
+                    <ComboboxChips ref={anchor} className="w-full">
+                      <ComboboxValue>
+                        {(values) => (
+                          <>
+                            {values.map((value: string) => (
+                              <ComboboxChip key={value}>{value}</ComboboxChip>
+                            ))}
+                            <ComboboxChipsInput />
+                          </>
+                        )}
+                      </ComboboxValue>
+                    </ComboboxChips>
+                    <ComboboxContent anchor={anchor}>
+                      <ComboboxEmpty>No users found.</ComboboxEmpty>
+                      <ComboboxList>
+                        {(item) => (
+                          <ComboboxItem key={item} value={item}>
+                            {item}
+                          </ComboboxItem>
+                        )}
+                      </ComboboxList>
+                    </ComboboxContent>
+                  </Combobox>
+                  <FieldDescription className="text-xs">
+                    Users who will receive email notifications about participant
+                    reading activity.
+                  </FieldDescription>
+                </Field>
+              </FieldGroup>
+            </FieldSet>
           </CardContent>
         </Card>
       </div>

@@ -156,7 +156,6 @@ export default function SignUpForm() {
           type="email"
           autoCapitalize="off"
           autoComplete="email"
-          pattern="^[A-Za-z0-9._%+-]+@(chicagocred\.com|emersoncollective\.com)$"
           required
           className="custom-card-input"
         />

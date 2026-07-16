@@ -12,6 +12,14 @@ export interface Site {
   settings: SiteSettings | null;
 }
 
+export interface GoToConnection {
+  sender_id: string; // Clerk user ID
+  access_token: string;
+  refresh_token: string;
+  token_expiry: string;
+  phone: string | null; // ← the sender's GoTo number in E.164 e.g. "+13125550100"
+}
+
 export const RETURN_DURATION_OPTS = [
   "1 week",
   "2 weeks",
@@ -30,7 +38,7 @@ export type PenaltyOption = (typeof OVERDUE_PENALTY_OPTS)[number];
 
 export interface SiteSettings {
   // General settings
-  notification_recipients: string[] | undefined;
+  email_notification_recipients: string[] | undefined;
   // Checkout settings
   book_checkout_limit: number | "Unlimited" | undefined;
   kiosk_checkout_limit: number | "Unlimited" | undefined;
