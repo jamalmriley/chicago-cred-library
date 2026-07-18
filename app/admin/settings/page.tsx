@@ -2,7 +2,6 @@
 
 import SiteSelect from "@/components/SiteSelect";
 import { AbacButton } from "@/components/ui/abac";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -616,41 +615,6 @@ export default function SettingsPage() {
           <CardContent>
             <FieldSet>
               <FieldGroup>
-                <Button
-                  onClick={async () => {
-                    const res = await fetch("/api/goto/send", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        ownerPhoneNumber: "+13127571806",
-                        contactPhoneNumbers: ["+17736290679"],
-                        body: "This is a test message.",
-                      }),
-                    });
-
-                    if (res.status === 401) {
-                      const data = await res.json();
-                      if (data.requiresAuth) {
-                        window.location.replace("/api/goto"); // Re-trigger auth initialization.
-                        return;
-                      }
-                    }
-
-                    if (!res.ok) {
-                      toast.error("Something went wrong sending the message.", {
-                        position: "bottom-right",
-                      });
-                      return;
-                    }
-
-                    toast.success("Text message sent successfully!", {
-                      position: "bottom-right",
-                    });
-                  }}
-                >
-                  Send test message
-                </Button>
-
                 {/* Email notification recipients */}
                 <Field>
                   <FieldLabel htmlFor="site-nickname">

@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { toast } from "sonner";
 
 export async function getValidGoToToken(): Promise<string> {
   const cookieStore = await cookies();
@@ -61,29 +62,38 @@ export async function getValidGoToToken(): Promise<string> {
   return newTokens.access_token;
 }
 
-export async function sendGoToSms(
+export async function sendGotoSms(
   ownerPhoneNumber: string,
   contactPhoneNumbers: string[],
-  body: string,
-) {
-  const accessToken = await getValidGoToToken();
-  if (!accessToken) return;
+  message: string,
+): Promise<boolean> {
+  try {
+    const res = await fetch("/api/goto/send", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ownerPhoneNumber,
+        contactPhoneNumbers,
+        body: message,
+      }),
+    });
 
-  const res = await fetch("https://api.goto.com/messaging/v1/messages", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      ownerPhoneNumber,
-      contactPhoneNumbers,
-      body,
-    }),
-  });
-
-  if (!res.ok) {
-    const errorData = await res.text();
-    throw new Error(`GoTo API Error: ${errorData}`);
+    if (!res.ok) {
+      const { requiresAuth } = await res.json();
+      if (requiresAuth) {
+        toast.error("Text message failed to send — GoTo is not connected.", {
+          position: "bottom-right",
+        });
+      } else {
+        toast.error("Text message failed to send.", {
+          position: "bottom-right",
+        });
+      }
+      return false;
+    }
+    return true;
+  } catch {
+    toast.error("Text message failed to send.", { position: "bottom-right" });
+    return false;
   }
 }

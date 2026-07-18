@@ -15,9 +15,11 @@ import { useAppContext } from "@/contexts/app-context";
 import { useKioskContext } from "@/contexts/kiosk-context";
 import { useSites } from "@/hooks/use-sites";
 import { updateBookAvailability } from "@/lib/books";
+import { sendGotoSms } from "@/lib/goto";
 import { handleConfetti } from "@/lib/utils";
 import { getSiteById, Participant } from "@/types/cred";
 import { CheckoutItem } from "@/types/library";
+import { format } from "date-fns";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
@@ -101,6 +103,12 @@ export default function ReturnPage() {
         // Increment available_count for each returned book
         await Promise.all(
           returns.map((item) => updateBookAvailability(item.book.id, 1, today)),
+        );
+        // TODO: Only fetch if a user has a phone number listed in Clerk.
+        await sendGotoSms(
+          "+13127571806",
+          ["+17736290679"],
+          `CRED Library: Your book return is complete. We hope you enjoyed your book${returns.length === 1 ? "" : "s"}, ${participant.first_name}!`,
         );
         setMaxCheckoutStepAllowed(3);
         api?.scrollNext();

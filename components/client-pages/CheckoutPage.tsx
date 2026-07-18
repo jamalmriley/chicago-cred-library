@@ -15,8 +15,10 @@ import { useAppContext } from "@/contexts/app-context";
 import { useKioskContext } from "@/contexts/kiosk-context";
 import { useSites } from "@/hooks/use-sites";
 import { updateBookAvailability } from "@/lib/books";
+import { sendGotoSms } from "@/lib/goto";
 import { handleConfetti } from "@/lib/utils";
 import { getSiteById, Participant } from "@/types/cred";
+import { format } from "date-fns";
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
@@ -87,6 +89,19 @@ export default function CheckoutPage() {
         await Promise.all(
           cart.map((item) => updateBookAvailability(item.book.id, -1, today)),
         );
+
+        const returnWindow = siteInfo?.settings?.return_window ?? "1 week";
+        // TODO: Only fetch if a user has a phone number listed in Clerk.
+        await sendGotoSms(
+          "+13127571806",
+          ["+17736290679"],
+          `CRED Library: Your book checkout is complete. We hope you enjoy your book${cart.length === 1 ? "" : "s"}, ${participant.first_name}! ${cart.length === 1 ? "It's" : "They're"} due back ${
+            returnWindow
+              ? `in ${returnWindow}, on ${format(dueDate, "eeee, MMMM d, yyyy")}`
+              : "soon"
+          }.`,
+        );
+
         setMaxCheckoutStepAllowed(3);
         api?.scrollNext();
         handleConfetti(resolvedTheme === "dark");

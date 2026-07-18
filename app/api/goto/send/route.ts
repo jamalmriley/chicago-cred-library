@@ -1,11 +1,32 @@
-import { sendGoToSms } from "@/lib/goto";
+import { getValidGoToToken } from "@/lib/goto";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
     const { ownerPhoneNumber, contactPhoneNumbers, body } =
       await request.json();
-    await sendGoToSms(ownerPhoneNumber, contactPhoneNumbers, body);
+
+    const accessToken = await getValidGoToToken();
+    if (!accessToken) return;
+
+    const res = await fetch("https://api.goto.com/messaging/v1/messages", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        ownerPhoneNumber,
+        contactPhoneNumbers,
+        body,
+      }),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.text();
+      return NextResponse.json({ success: false, error: errorData });
+    }
+
     return NextResponse.json({ success: true });
   } catch (error: any) {
     // Catch when tokens are absent or token rotation has broken/revoked
