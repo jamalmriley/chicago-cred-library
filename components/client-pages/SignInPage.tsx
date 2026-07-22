@@ -21,7 +21,7 @@ export default function SignInPage() {
   if (!isLoaded) return;
   return (
     <div className="h-dvh w-full flex justify-center items-center">
-      <Card className="w-sm max-w-sm flex flex-col gap-3 bg-white/20 backdrop-blur-md border border-white/20 custom-card-text">
+      <Card className="w-xs md:w-sm flex flex-col gap-3 bg-white/20 backdrop-blur-md border border-white/20 custom-card-text">
         <CardHeader>
           <CardTitle className="text-4xl uppercase font-secondary custom-card-text">
             {!pendingVerification

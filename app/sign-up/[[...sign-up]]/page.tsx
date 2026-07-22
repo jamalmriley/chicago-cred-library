@@ -20,7 +20,7 @@ export default function Page() {
         <div className="absolute inset-0 bg-[#0a0a0a]/75 -z-10" />
 
         {/* Foreground Content */}
-        <div className="z-10 p-10">
+        <div className="z-10">
           <SignUpPage />
         </div>
       </div>

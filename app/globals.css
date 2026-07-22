@@ -168,7 +168,7 @@
   }
 
   .h2 {
-    @apply text-2xl font-semibold my-5;
+    @apply text-xl md:text-2xl lg:text-3xl font-semibold my-5;
   }
 
   .molde-button {
@@ -216,7 +216,8 @@
   }
 }
 
-::view-transition-old(root), ::view-transition-new(root) {
-    animation: none;
-    mix-blend-mode: normal;
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
 }

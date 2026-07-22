@@ -202,7 +202,7 @@ export default function VerifyEmailForm({
               <InputOTPSlot
                 key={i}
                 index={i}
-                className="size-14 text-3xl font-bold"
+                className="size-10 md:size-14 text-xl md:text-3xl font-bold"
               />
             ))}
           </InputOTPGroup>

@@ -1,3 +1,4 @@
+import HomeMenuButton from "@/components/HomeMenuButton";
 import { Button } from "@/components/ui/button";
 import { Highlighter } from "@/components/ui/highlighter";
 import BackgroundImage from "@/public/images/ed-image-3.png";
@@ -35,22 +36,22 @@ export default async function HomePage() {
           className="h-24 w-auto aspect-auto mx-auto shrink-0" // Placed at the very bottom
         />
 
-        <h1 className="text-9xl text-center font-secondary uppercase">
+        <h1 className="text-5xl md:text-7xl lg:text-9xl text-center font-secondary uppercase">
           #<span className="text-primary">CRED</span>
           UCATION
         </h1>
         <h2 className="h2 text-center">Welcome to the CRED Library.</h2>
         <p>
           <Highlighter action="highlight" color="#ae4107">
-            Project L.I.B.R.A.R.Y.
+            The Chicago CRED L.I.B.R.A.R.Y.
           </Highlighter>{" "}
           (Literacy Interface for Boosting Reading Access and Resources
           Year-round) is an internal technical tool that was created to aid
           Chicago CRED's literacy initiative — a mission to{" "}
           <Highlighter action="box" color="#ae4107">
-            expand literacy access and resources
+            expand literacy
           </Highlighter>{" "}
-          for our participants{" "}
+          access and resources for our participants{" "}
           <Highlighter action="underline" color="#ae4107">
             and
           </Highlighter>{" "}
@@ -63,7 +64,10 @@ export default async function HomePage() {
           That's where this project comes in.
         </p>
         <br />
-        <div className="w-full flex justify-center gap-5">
+
+        <HomeMenuButton />
+
+        <div className="w-full hidden md:flex justify-center gap-5">
           <Button asChild className="molde-button">
             <Link href={isLoggedIn ? "/admin" : "/sign-in"}>
               <LogIn />

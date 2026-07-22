@@ -12,7 +12,7 @@ export function createPageTitle(
   description?: string,
 ): Metadata {
   return {
-    title: title ? `${title} | CRED Library` : "CRED Library",
+    title: title ? `${title} | Chicago CRED Library` : "Chicago CRED Library",
     description:
       description || "A literacy initiative powered by Chicago CRED.",
   };
