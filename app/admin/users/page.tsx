@@ -22,7 +22,9 @@ import { Participant, UserType } from "@/types/cred";
 import { useUser } from "@clerk/nextjs";
 import { User } from "@clerk/nextjs/server";
 import { formatRelative } from "date-fns";
-import { Eye, Pencil, RotateCcw, Trash, UserX } from "lucide-react";
+import { RotateCcw, UserX } from "lucide-react";
+
+export const dynamic = "force-dynamic";
 
 export default function UsersPage() {
   const { isLoaded, user } = useUser();

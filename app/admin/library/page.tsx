@@ -5,6 +5,8 @@ import BookSelect from "@/components/BookSelect";
 import { hasPermission } from "@/lib/auth";
 import { useUser } from "@clerk/nextjs";
 
+export const dynamic = "force-dynamic";
+
 export default function LibraryPage() {
   const { isLoaded, user } = useUser();
 

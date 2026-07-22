@@ -14,7 +14,7 @@ export async function POST() {
 
   try {
     const { data, error } = await resend.emails.send({
-      from: "Chicago CRED Library<hello@creducation.app>",
+      from: "Chicago CRED Library<notifications@creducation.app>",
       cc: ["Jamal Riley<jamal@chicagocred.com>"], // Vijay Ramkissoon<vijay@chicagocred.com>
       to: ["jamal.m.riley@gmail.com"],
       subject: "Your library receipt 📚",

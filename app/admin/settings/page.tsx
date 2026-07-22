@@ -58,8 +58,9 @@ import {
 import { useUser } from "@clerk/nextjs";
 import { Pencil, Save, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Resend } from "resend";
 import { toast } from "sonner";
+
+export const dynamic = "force-dynamic";
 
 export default function SettingsPage() {
   const { lastUpdated, setLastUpdated, today } = useAppContext();
