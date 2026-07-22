@@ -90,6 +90,8 @@ export default function CheckoutPage() {
           cart.map((item) => updateBookAvailability(item.book.id, -1, today)),
         );
 
+        await fetch("/api/send", { method: "POST" });
+
         const returnWindow = siteInfo?.settings?.return_window ?? "1 week";
         // TODO: Only fetch if a user has a phone number listed in Clerk.
         await sendGotoSms(

@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     // Catch when tokens are absent or token rotation has broken/revoked
     if (error.message === "GOTO_AUTH_REQUIRED") {
       return NextResponse.json(
-        { error: "Authentication required", requiresAuth: true },
+        { error: "GoTo authentication required.", requiresAuth: true },
         { status: 401 },
       );
     }

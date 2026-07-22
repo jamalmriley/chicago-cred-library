@@ -2,6 +2,7 @@
 
 import SiteSelect from "@/components/SiteSelect";
 import { AbacButton } from "@/components/ui/abac";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -57,6 +58,7 @@ import {
 import { useUser } from "@clerk/nextjs";
 import { Pencil, Save, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Resend } from "resend";
 import { toast } from "sonner";
 
 export default function SettingsPage() {
@@ -656,6 +658,18 @@ export default function SettingsPage() {
                     reading activity.
                   </FieldDescription>
                 </Field>
+
+                <Button
+                  onClick={async () => {
+                    await fetch("/api/send", {
+                      method: "POST",
+                      // headers: { "Content-Type": "application/json" },
+                      // body,
+                    });
+                  }}
+                >
+                  Send email
+                </Button>
               </FieldGroup>
             </FieldSet>
           </CardContent>
