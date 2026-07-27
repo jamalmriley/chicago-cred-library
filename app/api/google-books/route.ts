@@ -13,6 +13,13 @@ export async function GET(request: NextRequest) {
   );
   const data: GoogleBooks.SuccessResponse = await res.json();
 
+  console.log({
+    isbn,
+    status: res.status,
+    ok: res.ok,
+    data,
+  });
+
   if (!data.items)
     return NextResponse.json({ error: "Book not found." }, { status: 404 });
 
