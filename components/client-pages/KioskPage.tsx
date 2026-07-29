@@ -111,10 +111,10 @@ export default function KioskPage() {
 
         <h1 className="h1 text-center">
           Welcome to the <br />
-          CRED Library.
+          Chicago CRED Library.
         </h1>
         <h2 className="h2">What would you like to do today?</h2>
-        <div className="flex gap-10">
+        <div className="flex flex-col md:flex-row gap-3 md:gap-10">
           <Button
             asChild={Boolean(siteInfo)}
             className="molde-button"

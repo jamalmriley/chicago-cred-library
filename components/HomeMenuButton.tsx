@@ -3,21 +3,11 @@
 import { useUser } from "@clerk/nextjs";
 import { Code, LogIn, Menu, Plus } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
 import { Button } from "./ui/button";
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "./ui/drawer";
+import { Drawer, DrawerContent, DrawerTrigger } from "./ui/drawer";
 
 export default function HomeMenuButton() {
-  const { user, isLoaded } = useUser();
-  const [isOpen, setIsOpen] = useState(false);
+  const { user } = useUser();
 
   const isLoggedIn = Boolean(user?.id);
   return (
@@ -25,13 +15,13 @@ export default function HomeMenuButton() {
       <DrawerTrigger asChild>
         <Button
           size="icon"
-          onClick={() => setIsOpen((prev) => !prev)}
+          // onClick={() => setIsOpen((prev) => !prev)}
           className="z-50 md:hidden absolute top-5 right-5 focus:outline-none"
         >
           <Menu />
         </Button>
       </DrawerTrigger>
-      <DrawerContent className="flex flex-col p-2 gap-2 my-5">
+      <DrawerContent className="flex flex-col p-2 gap-2">
         <Button asChild className="molde-button">
           <Link href={isLoggedIn ? "/admin" : "/sign-in"}>
             <LogIn />
@@ -47,7 +37,7 @@ export default function HomeMenuButton() {
           </Button>
         )}
         <Button asChild variant="outline" className="molde-button">
-          <Link href="https://github.com/jamalmriley/project-library">
+          <Link href="https://github.com/jamalmriley/chicago-cred-library">
             <Code />
             View project
           </Link>

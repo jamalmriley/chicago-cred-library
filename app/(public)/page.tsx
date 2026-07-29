@@ -13,7 +13,13 @@ export default async function HomePage() {
   const isLoggedIn = Boolean(userId);
 
   return (
-    <div className="relative h-screen w-full flex items-center justify-center overflow-hidden">
+    <div
+      className="relative min-h-dvh w-full flex items-center justify-center overflow-hidden"
+      style={{
+        paddingTop: "env(safe-area-inset-top)",
+        paddingBottom: "env(safe-area-inset-bottom)",
+      }}
+    >
       {/* Background Image */}
       <Image
         src={BackgroundImage}
@@ -21,6 +27,12 @@ export default async function HomePage() {
         fill
         priority
         className="object-cover -z-20" // Placed at the very bottom
+        // style={{
+        //   top: "calc(env(safe-area-inset-top) * -1)",
+        //   bottom: "calc(env(safe-area-inset-bottom) * -1)",
+        //   height:
+        //     "calc(100% + env(safe-area-inset-top) + env(safe-area-inset-bottom)",
+        // }}
       />
 
       {/* Tint Overlay */}
