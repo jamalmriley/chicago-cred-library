@@ -81,7 +81,6 @@ export default function CheckoutPage() {
         checkout_history: checkout_history
           ? [...checkout_history, ...cart]
           : cart,
-        updated_at: today,
       }),
     })
       .then(async () => {

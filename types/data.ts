@@ -12,6 +12,13 @@ export type Month =
   | "November"
   | "December";
 
+export type Weekday =
+  | "Monday"
+  | "Tuesday"
+  | "Wednesday"
+  | "Thursday"
+  | "Friday";
+
 export interface ChartDatum {
   label: string;
   value: number;

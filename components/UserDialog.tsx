@@ -16,16 +16,44 @@ import {
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useAdminContext } from "@/contexts/admin-context";
+import { useAppContext } from "@/contexts/app-context";
+import { useSites } from "@/hooks/use-sites";
 import { canCreateUsers, hasPermission, Role, ROLE_OPTIONS } from "@/lib/auth";
-import { ClerkUser, Participant, Site, UserType } from "@/types/cred";
-import { Action } from "@/types/data";
+import {
+  ClerkUser,
+  getSiteById,
+  getSiteBySalesforceName,
+  Participant,
+  Site,
+  UserType,
+} from "@/types/cred";
+import { Action, Weekday } from "@/types/data";
 import { useUser } from "@clerk/nextjs";
 import { User } from "@clerk/nextjs/server";
-import { ChevronDown, Eye, Pencil, Plus, Trash } from "lucide-react";
+import {
+  ChevronDown,
+  Eye,
+  FileSpreadsheet,
+  Pencil,
+  Plus,
+  Trash,
+  XIcon,
+} from "lucide-react";
 import { useState } from "react";
+import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
+import * as XLSX from "xlsx";
 import Required from "./Required";
 import SiteSelect from "./SiteSelect";
+import {
+  Attachment,
+  AttachmentAction,
+  AttachmentActions,
+  AttachmentContent,
+  AttachmentDescription,
+  AttachmentMedia,
+  AttachmentTitle,
+} from "./ui/attachment";
 import { Button } from "./ui/button";
 import { Checkbox } from "./ui/checkbox";
 import {
@@ -36,7 +64,6 @@ import {
 import { Item, ItemContent, ItemDescription, ItemTitle } from "./ui/item";
 import { Spinner } from "./ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { Textarea } from "./ui/textarea";
 
 const actionInfo = {
   create: {
@@ -77,17 +104,12 @@ const actionInfo = {
   },
 };
 
-// Helper to detect if data belongs to a participant or user
-const isParticipant = (
-  data: Participant | User | undefined,
-): data is Participant => !!data && "first_name" in data;
-
 export default function UserDialog({
   action,
   data,
 }: {
   action: Action;
-  data?: Participant | User;
+  data?: User;
 }) {
   const { user } = useUser();
   const [isOpen, setIsOpen] = useState(false);
@@ -149,22 +171,21 @@ export default function UserDialog({
               ))}
             </TabsList>
 
-            {tabs.map((tab) => (
-              <TabsContent key={tab} value={tab}>
-                <UserForm
-                  action={action}
-                  userData={data}
-                  userType={tab}
-                  setIsDrawerOpen={setIsOpen}
-                />
-              </TabsContent>
-            ))}
+            <TabsContent value="Participant">
+              <UploadParticipants />
+            </TabsContent>
+            <TabsContent value="Staff">
+              <UserForm
+                action={action}
+                userData={data}
+                setIsDrawerOpen={setIsOpen}
+              />
+            </TabsContent>
           </Tabs>
         ) : (
           <UserForm
             action={action}
             userData={data}
-            userType={isParticipant(data) ? "Participant" : "Staff"}
             setIsDrawerOpen={setIsOpen}
           />
         )}
@@ -176,255 +197,44 @@ export default function UserDialog({
 function UserForm({
   action,
   userData,
-  userType,
   setIsDrawerOpen,
 }: {
   action: Action;
-  userData?: User | Participant;
-  userType: UserType;
+  userData?: User;
   setIsDrawerOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const { setLastUpdated } = useAdminContext();
+  const { sites } = useSites();
   const { isLoaded, user } = useUser();
   const [, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const [firstName, setFirstName] = useState(
-    userData
-      ? isParticipant(userData)
-        ? userData.first_name
-        : (userData.firstName ?? "")
-      : "",
-  );
-  const [lastName, setLastName] = useState(
-    userData
-      ? isParticipant(userData)
-        ? userData.last_name
-        : (userData.lastName ?? "")
-      : "",
-  );
+  const [firstName, setFirstName] = useState(userData?.firstName ?? "");
+  const [lastName, setLastName] = useState(userData?.lastName ?? "");
   const [email, setEmail] = useState(
-    userData
-      ? isParticipant(userData)
-        ? userData.email
-        : (userData.emailAddresses[0]?.emailAddress ?? "")
-      : "",
-  );
-  const [birthday, setBirthday] = useState(
-    userData && isParticipant(userData)
-      ? formatBirthday(userData.birthday)
-      : "",
+    userData?.emailAddresses[0]?.emailAddress ?? "",
   );
   const [selectedRole, setSelectedRole] = useState<Role | null>(
-    userData && !isParticipant(userData)
-      ? ((userData.publicMetadata.role as Role) ?? null)
-      : null,
+    (userData?.publicMetadata.role as Role) ?? null,
   );
   const [selectedSite, setSelectedSite] = useState<Site | null>(
-    userData
-      ? isParticipant(userData)
-        ? (userData.site as Site)
-        : ((userData.publicMetadata.defaultSite as Site) ?? null)
-      : null,
-  );
-  const [notes, setNotes] = useState(
-    userData && isParticipant(userData) ? (userData.notes ?? "") : "",
+    getSiteById(userData?.publicMetadata.defaultSiteId ?? "", sites) ?? null,
   );
   const [isTestData, setIsTestData] = useState(false);
 
   const isButtonDisabled: boolean =
-    firstName === "" || lastName === "" || email === "";
-  const isParticipantButtonDisabled: boolean =
-    isButtonDisabled || birthday === "" || !selectedSite;
-  const isStaffButtonDisabled: boolean = isButtonDisabled || !selectedRole;
-
-  function formatBirthday(input: string): string {
-    const findNthOccurrence = (
-      str: string,
-      char: string,
-      n: number,
-    ): number => {
-      let index = -1;
-      for (let i = 0; i < n; i++) {
-        index = str.indexOf(char, index + 1);
-        if (index === -1) break; // Not enough occurrences found
-      }
-      return index;
-    };
-
-    const daysPerMonth: Map<number, number> = new Map([
-      [1, 31],
-      [2, 29],
-      [3, 31],
-      [4, 30],
-      [5, 31],
-      [6, 30],
-      [7, 31],
-      [8, 31],
-      [9, 30],
-      [10, 31],
-      [11, 30],
-      [12, 31],
-    ]);
-
-    // Strip everything except digits and slashes
-    const cleaned = input.replace(/[^\d/]/g, "");
-
-    // Extract only digits
-    const digits = cleaned.replace(/\//g, "");
-
-    if (digits.length > 4) return birthday;
-
-    // Auto-prefix 0 if first digit is 2-9 (can't be a valid month start)
-    if (digits.length === 1 && parseInt(digits[0]) >= 2) {
-      return `0${digits[0]}/`;
-    }
-
-    // Auto-prefix 0 if first digit and a slash are typed (for January)
-    if (
-      cleaned.length === 2 &&
-      parseInt(cleaned[0]) !== 0 &&
-      cleaned[1] === "/"
-    ) {
-      return `0${digits[0]}/`;
-    }
-
-    // Don't allow double zeroes in the month
-    if (digits.length === 2 && parseInt(digits[0] + digits[1]) === 0) {
-      return "0";
-    }
-
-    // Don't allow the month to exceed 12
-    if (parseInt(digits.slice(0, 2)) > 12) {
-      return "";
-    }
-
-    // Only allow for one slash
-    if (cleaned.split("").filter((char) => char === "/").length > 1) {
-      return cleaned.substring(0, findNthOccurrence(cleaned, "/", 2));
-    }
-
-    // Don't allow double zeroes in the day
-    if (
-      digits.length === 4 &&
-      parseInt(digits[2]) === 0 &&
-      parseInt(digits[3]) === 0
-    ) {
-      return `${digits[0]}${digits[1]}/${digits[2]}`;
-    }
-
-    if (digits.length >= 3) {
-      const [month, day] = [digits.slice(0, 2), digits.slice(2)];
-
-      // Auto-prefix 0 if first digit of day is 4-9
-      if (day.length === 1 && parseInt(day[0]) >= 4) {
-        return `${month}/0${day[0]}`;
-      }
-
-      // Don't allow the day to exceed the number of days in a given month
-      if (digits.length === 4) {
-        const daysInMonth = daysPerMonth.get(parseInt(month)) ?? 31;
-        if (parseInt(day) > daysInMonth) return `${month}/${daysInMonth}`;
-      }
-
-      return `${month}/${day}`;
-    }
-
-    if (cleaned.includes("/")) {
-      const [month, day] = cleaned.split("/");
-      if (month.length <= 2 && day.length <= 2) return cleaned;
-      return birthday;
-    }
-
-    return digits;
-  }
+    firstName === "" || lastName === "" || email === "" || !selectedRole;
 
   function clearAllFields() {
     setFirstName("");
     setLastName("");
     setEmail("");
-    setBirthday("");
     setSelectedRole(null);
     setSelectedSite(null);
-    setNotes("");
     setIsTestData(false);
     setIsOpen(false);
     setIsDrawerOpen(false);
   }
-
-  const handleBirthdayChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatBirthday(e.target.value);
-    setBirthday(formatted);
-  };
-
-  // Participant functions
-  const handleAddParticipant = async (user: Participant) => {
-    await setIsLoading(true);
-
-    await fetch(`/api/participants`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(user),
-    })
-      .then(() => {
-        toast.success(`${user.first_name} was added successfully!`, {
-          position: "bottom-right",
-        });
-        clearAllFields();
-        setLastUpdated(new Date().toString());
-      })
-      .catch(() => {
-        toast.error(
-          `There was an issue adding ${user.first_name}. Please try again.`,
-          {
-            position: "bottom-right",
-          },
-        );
-      })
-      .finally(() => setIsLoading(false));
-  };
-  const handleUpdateParticipant = async (user: Participant) => {
-    setIsLoading(true);
-    await fetch(`/api/participants?id=${user.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(user),
-    })
-      .then(() => {
-        toast.success(`${user.first_name} was updated successfully!`, {
-          position: "bottom-right",
-        });
-        clearAllFields();
-        setLastUpdated(new Date().toString());
-      })
-      .catch(() => {
-        toast.error(
-          `There was an issue updating ${user.first_name}. Please try again.`,
-          { position: "bottom-right" },
-        );
-      })
-      .finally(() => setIsLoading(false));
-  };
-  const handleDeleteParticipant = async (user: Participant) => {
-    setIsLoading(true);
-    await fetch(`/api/participants?id=${user.id}`, { method: "DELETE" })
-      .then(() => {
-        toast.success(`${user.first_name} was removed successfully.`, {
-          position: "bottom-right",
-        });
-        clearAllFields();
-        setLastUpdated(new Date().toString());
-      })
-      .catch(() => {
-        toast.error(
-          `There was an issue removing ${user.first_name}. Please try again.`,
-          {
-            position: "bottom-right",
-          },
-        );
-      })
-      .finally(() => setIsLoading(false));
-  };
 
   // User functions
   const handleAddUser = async (user: ClerkUser) => {
@@ -559,92 +369,63 @@ function UserForm({
 
           {/* Birthday, Role, and Site */}
           <span className="flex gap-5">
-            {/* Birthday */}
-            {userType === "Participant" && (
-              <Field>
-                <FieldLabel htmlFor="birthday">
-                  Birthday
-                  <Required />
-                </FieldLabel>
-                <Input
-                  autoComplete="bday"
-                  id="birthday"
-                  placeholder="MM/DD"
-                  required
-                  type="text"
-                  value={birthday}
-                  onChange={handleBirthdayChange}
-                  maxLength={5} // MM/DD
-                  disabled={action === "read"}
-                />
-              </Field>
-            )}
-
             {/* Role */}
-            {userType === "Staff" && (
-              <Field>
-                <FieldLabel htmlFor="role">
-                  Role
-                  <Required />
-                </FieldLabel>
+            <Field>
+              <FieldLabel htmlFor="role">
+                Role
+                <Required />
+              </FieldLabel>
 
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild id="role">
-                    <Button
-                      variant="outline"
-                      className={`flex justify-between ${selectedRole ? "text-foreground" : "text-muted-foreground"}`}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild id="role">
+                  <Button
+                    variant="outline"
+                    className={`flex justify-between ${selectedRole ? "text-foreground" : "text-muted-foreground"}`}
+                    disabled={action === "read"}
+                  >
+                    {selectedRole
+                      ? ROLE_OPTIONS.filter(
+                          (role) => role.value === selectedRole,
+                        )[0].name
+                      : "Select a role"}
+                    <ChevronDown />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-fit">
+                  {ROLE_OPTIONS.map((role, i) => (
+                    <AbacDropdownMenuCheckboxItem
+                      key={i}
+                      className="flex flex-col justify-center items-start gap-0"
+                      checked={role.value === selectedRole}
+                      onCheckedChange={() => setSelectedRole(role.value)}
+                      user={user}
+                      resource="users"
+                      action="create"
+                      // Verify that the role can be created by the user
+                      data={{ user, targetRole: role.value as Role }}
                       disabled={action === "read"}
                     >
-                      {selectedRole
-                        ? ROLE_OPTIONS.filter(
-                            (role) => role.value === selectedRole,
-                          )[0].name
-                        : "Select a role"}
-                      <ChevronDown />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-fit">
-                    {ROLE_OPTIONS.map((role, i) => (
-                      <AbacDropdownMenuCheckboxItem
-                        key={i}
-                        className="flex flex-col justify-center items-start gap-0"
-                        checked={role.value === selectedRole}
-                        onCheckedChange={() => setSelectedRole(role.value)}
-                        user={user}
-                        resource="users"
-                        action="create"
-                        // Verify that the role can be created by the user
-                        data={{ user, targetRole: role.value as Role }}
-                        disabled={action === "read"}
-                      >
-                        <Item size="xs" className="p-0">
-                          <ItemContent>
-                            <ItemTitle className="whitespace-nowrap">
-                              {role.name}
-                            </ItemTitle>
-                            <ItemDescription>
-                              {role.description}
-                            </ItemDescription>
-                          </ItemContent>
-                        </Item>
-                      </AbacDropdownMenuCheckboxItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </Field>
-            )}
+                      <Item size="xs" className="p-0">
+                        <ItemContent>
+                          <ItemTitle className="whitespace-nowrap">
+                            {role.name}
+                          </ItemTitle>
+                          <ItemDescription>{role.description}</ItemDescription>
+                        </ItemContent>
+                      </Item>
+                    </AbacDropdownMenuCheckboxItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </Field>
 
             {/* Site */}
             <Field>
               <FieldLabel htmlFor="site">
-                {userType === "Participant" ? "Site" : "Default Site"}
-                {userType === "Participant" ? (
-                  <Required />
-                ) : (
-                  <span className="text-xs text-muted-foreground">
-                    (optional)
-                  </span>
-                )}
+                Default Site
+                <span className="text-xs text-muted-foreground">
+                  (optional)
+                </span>
               </FieldLabel>
               <SiteSelect
                 selectedSite={selectedSite}
@@ -653,27 +434,6 @@ function UserForm({
               />
             </Field>
           </span>
-
-          {/* Notes */}
-          {userType === "Participant" && (
-            <Field>
-              <FieldLabel htmlFor="notes">
-                Participant Notes{" "}
-                <span className="text-xs text-muted-foreground">
-                  (optional)
-                </span>
-              </FieldLabel>
-              <Textarea
-                id="notes"
-                placeholder={
-                  action === "read" ? "" : "(e.g., prefers non-fiction)"
-                }
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                disabled={action === "read"}
-              />
-            </Field>
-          )}
 
           {/* Test Data */}
           <AbacField
@@ -702,80 +462,232 @@ function UserForm({
             variant={action === "delete" ? "destructive" : "default"}
             className="w-full molde-button"
             disabled={
-              isLoading ||
-              (action === "delete"
-                ? false
-                : userType === "Participant"
-                  ? isParticipantButtonDisabled
-                  : isStaffButtonDisabled)
+              isLoading || (action === "delete" ? false : isButtonDisabled)
             }
             onClick={() => {
-              if (userType === "Participant") {
-                if (!selectedSite) return;
-                const created_at =
-                  userData && isParticipant(userData)
-                    ? userData.created_at
-                    : new Date();
-                const id =
-                  userData && isParticipant(userData)
-                    ? userData.id
-                    : `${isTestData ? "test_" : ""}${crypto.randomUUID()}`;
+              if (!selectedRole) return;
 
-                const participant: Participant = {
-                  id,
-                  created_at,
-                  first_name: firstName,
-                  last_name: lastName,
-                  birthday: birthday.replace("/", ""),
-                  email,
-                  site: selectedSite,
-                  notes,
-                  checkout_history:
-                    userData && isParticipant(userData)
-                      ? userData.checkout_history
-                      : null,
-                  updated_at: new Date(),
-                };
+              const id = userData?.id ?? null;
+              const publicMetadata: UserPublicMetadata = {
+                defaultSiteId: selectedSite?.id ?? null,
+                isTestUser: isTestData,
+                role: selectedRole,
+              };
+              const user: ClerkUser = {
+                id,
+                firstName,
+                lastName,
+                email,
+                publicMetadata,
+              };
 
-                action === "update"
-                  ? handleUpdateParticipant(participant)
-                  : action === "delete"
-                    ? handleDeleteParticipant(participant)
-                    : handleAddParticipant(participant);
-              } else if (userType === "Staff") {
-                if (!selectedRole) return;
-
-                const id =
-                  userData && !isParticipant(userData) ? userData.id : null;
-                const publicMetadata: UserPublicMetadata = {
-                  defaultSite: selectedSite as Site,
-                  isTestUser: isTestData,
-                  role: selectedRole,
-                };
-
-                const user: ClerkUser = {
-                  id,
-                  firstName,
-                  lastName,
-                  email,
-                  publicMetadata,
-                };
-
-                action === "update"
-                  ? handleUpdateUser(user)
-                  : action === "delete"
-                    ? handleDeleteUser(user)
-                    : handleAddUser(user);
-              }
+              action === "update"
+                ? handleUpdateUser(user)
+                : action === "delete"
+                  ? handleDeleteUser(user)
+                  : handleAddUser(user);
             }}
           >
             {isLoading
-              ? `${actionInfo[action].buttonText.loading} ${firstName || userType.toLowerCase()}...`
-              : `${actionInfo[action].buttonText.default} ${firstName || userType.toLowerCase()}`}
+              ? `${actionInfo[action].buttonText.loading} ${firstName || "user"}...`
+              : `${actionInfo[action].buttonText.default} ${firstName || "user"}`}
             {isLoading && <Spinner data-icon="inline-start" />}
           </Button>
         </Field>
       )}
+    </div>
+  );
+}
+
+function UploadParticipants() {
+  const { setLastUpdated } = useAppContext();
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop: (files) => {
+      const file = files[0];
+      setFile(file);
+
+      interface SalesforceParticipant {
+        "Contact ID": string;
+        "First Name": string;
+        "Last Name": string;
+        "Programming Schedule: Days": string;
+        "Programming Schedule: Time": string;
+        "Participant Status/ Program Phase": string;
+        "Programming Site": string;
+        Birthdate: string;
+        Email: string;
+        Mobile: string;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const data = event.target?.result as ArrayBuffer;
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const salesforceJson = (
+          XLSX.utils.sheet_to_json(worksheet) as any[]
+        ).filter(
+          (row) => "Email" in row && "Mobile" in row,
+        ) as SalesforceParticipant[];
+
+        const formatBirthdate = (input: string) => {
+          const dobArr = input.split("/");
+          const month = dobArr[0].length === 1 ? `0${dobArr[0]}` : dobArr[0];
+          const day = dobArr[1].length === 1 ? `0${dobArr[1]}` : dobArr[1];
+
+          return [month, day].join("");
+        };
+        const formatProgramDays = (input: string): Weekday[] => {
+          const result: Weekday[] = [];
+          const inputArr = input.split(" / ") as (
+            | "M"
+            | "T"
+            | "W"
+            | "Th"
+            | "F"
+          )[];
+          if (inputArr.includes("M")) result.push("Monday");
+          if (inputArr.includes("T")) result.push("Tuesday");
+          if (inputArr.includes("W")) result.push("Wednesday");
+          if (inputArr.includes("Th")) result.push("Thursday");
+          if (inputArr.includes("F")) result.push("Friday");
+
+          return result;
+        };
+        const formatGroup = (
+          input: string,
+        ): "Morning" | "Afternoon" | "All Day" => {
+          if (
+            input === "Morning" ||
+            input === "Afternoon" ||
+            input === "All Day"
+          ) {
+            return input;
+          } else {
+            return "All Day";
+          }
+        };
+
+        const participantJson = salesforceJson.map((sf_pp) => {
+          const siteSalesforceName =
+            sf_pp["Participant Status/ Program Phase"] ===
+            "Employment and Training"
+              ? sf_pp["Participant Status/ Program Phase"]
+              : sf_pp["Programming Site"];
+
+          const participant: Participant = {
+            id: sf_pp["Contact ID"],
+            first_name: sf_pp["First Name"],
+            last_name: sf_pp["Last Name"],
+            birthday: formatBirthdate(sf_pp.Birthdate),
+            email: sf_pp.Email,
+            phone: `+1${sf_pp.Mobile}`,
+            siteId:
+              getSiteBySalesforceName(siteSalesforceName, sites)?.id ?? "",
+            programDays: formatProgramDays(sf_pp["Programming Schedule: Days"]),
+            group: formatGroup(sf_pp["Programming Schedule: Time"]),
+          };
+          return participant;
+        });
+
+        setJsonData(participantJson);
+      };
+
+      reader.readAsArrayBuffer(file);
+    },
+    accept: {
+      // Modern Excel files
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [
+        ".xlsx",
+      ],
+      // "application/vnd.ms-excel": [".xls"], // Legacy Excel files
+      // "text/csv": [".csv"], // CSV files
+    },
+    multiple: false,
+  });
+  const { sites } = useSites();
+  const [file, setFile] = useState<File | null>(null);
+  const [jsonData, setJsonData] = useState<Participant[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleUpsertParticipants = async () => {
+    if (!jsonData || jsonData.length === 0) return; // Return early if no participants are available to be added.
+    await setIsLoading(true);
+
+    await fetch("/api/participants", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(jsonData),
+    })
+      .then(() => {
+        toast.success(
+          `${jsonData.length} ${jsonData.length === 1 ? "participant" : "participants"} successfully updated.`,
+          {
+            position: "bottom-right",
+          },
+        );
+        setJsonData([]);
+        setLastUpdated(new Date().toString());
+      })
+      .catch(() => {
+        toast.error(
+          "There was an issue updating participants. Please try again.",
+          {
+            position: "bottom-right",
+          },
+        );
+      })
+      .finally(() => setIsLoading(false));
+  };
+  return (
+    <div className="flex flex-col gap-5">
+      <div
+        {...getRootProps()}
+        className={`border-2 border-dashed rounded-lg p-10 cursor-pointer transition ${isDragActive ? "border-primary bg-primary/15" : ""}`}
+      >
+        <input {...getInputProps()} />
+        <span className="flex flex-col justify-center items-center">
+          <FileSpreadsheet className="size-10 mb-2.5" />
+          <p className="text-md font-semibold">
+            Drag & drop your file or <span className="underline">browse</span>
+          </p>
+          <p className="text-xs text-muted-foreground">Accepted type: .xlsx</p>
+        </span>
+      </div>
+      {file && (
+        <Attachment className="w-full">
+          <AttachmentMedia>
+            <FileSpreadsheet />
+          </AttachmentMedia>
+          <AttachmentContent>
+            <AttachmentTitle>{file.name}</AttachmentTitle>
+            <AttachmentDescription>
+              Excel file · {Number(file.size / 1000).toFixed(1)} KB
+            </AttachmentDescription>
+          </AttachmentContent>
+          <AttachmentActions>
+            <AttachmentAction
+              aria-label={`Remove ${file.name}`}
+              onClick={() => setFile(null)}
+            >
+              <XIcon />
+            </AttachmentAction>
+          </AttachmentActions>
+        </Attachment>
+      )}
+
+      <Button
+        type="submit"
+        className="w-full molde-button"
+        disabled={!jsonData || jsonData.length === 0}
+        onClick={handleUpsertParticipants}
+      >
+        {isLoading
+          ? `Adding ${jsonData.length} ${jsonData.length === 1 ? "participant" : "participants"}...`
+          : `Add ${jsonData.length === 0 ? "" : jsonData.length + " "}${jsonData.length === 1 ? "participant" : "participants"}`}
+        {isLoading && <Spinner data-icon="inline-start" />}
+      </Button>
     </div>
   );
 }

@@ -50,6 +50,7 @@ import { useUsers } from "@/hooks/use-users";
 import { hasPermission } from "@/lib/auth";
 import {
   DurationOption,
+  getSiteById,
   OVERDUE_PENALTY_OPTS,
   PenaltyOption,
   RETURN_DURATION_OPTS,
@@ -69,7 +70,7 @@ export default function SettingsPage() {
   const { isLoaded, user } = useUser();
   const { users } = useUsers();
   const [currSite, setCurrSite] = useState<Site | null>(
-    user?.publicMetadata.defaultSite ?? null,
+    getSiteById(user?.publicMetadata.defaultSiteId ?? "", sites) ?? null,
   );
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -215,8 +216,8 @@ export default function SettingsPage() {
   }, [currSite, lastUpdated]);
 
   useEffect(() => {
-    if (user?.publicMetadata.defaultSite) {
-      setCurrSite(user.publicMetadata.defaultSite as Site);
+    if (user?.publicMetadata.defaultSiteId) {
+      setCurrSite(getSiteById(user.publicMetadata.defaultSiteId, sites));
     }
   }, [user]);
 

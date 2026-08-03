@@ -28,7 +28,7 @@ export default function VerifyEmailForm({
     setError,
     seconds,
     setSeconds,
-    defaultSite,
+    defaultSiteId,
     emailAddress,
   } = useAuthContext();
   const { setActive } = useClerk();
@@ -113,7 +113,7 @@ export default function VerifyEmailForm({
 
       await signUp.finalize();
       const publicMetadata: UserPublicMetadata = {
-        defaultSite,
+        defaultSiteId,
         isTestUser: false,
         role: "staff",
       };
@@ -222,13 +222,13 @@ export default function VerifyEmailForm({
         className="molde-button"
         disabled={isSubmitting || isEmailVerified}
       >
-        {isSubmitting && <Spinner data-icon="inline-start" />}
-        {isEmailVerified && <Check />}
         {isEmailVerified
           ? "Email verified"
           : isSubmitting
             ? "Verifying email..."
             : "Verify email"}
+        {isSubmitting && <Spinner data-icon="inline-start" />}
+        {isEmailVerified && <Check />}
       </Button>
 
       {/* "Resend code" Button */}

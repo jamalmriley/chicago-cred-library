@@ -16,9 +16,10 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAdminContext } from "@/contexts/admin-context";
 import { useParticipants } from "@/hooks/use-participants";
+import { useSites } from "@/hooks/use-sites";
 import { useUsers } from "@/hooks/use-users";
 import { canCreateUsers, hasPermission, ROLE_OPTIONS } from "@/lib/auth";
-import { Participant, UserType } from "@/types/cred";
+import { getSiteById, Participant, UserType } from "@/types/cred";
 import { useUser } from "@clerk/nextjs";
 import { User } from "@clerk/nextjs/server";
 import { formatRelative } from "date-fns";
@@ -134,6 +135,7 @@ function ParticipantTable({
   participantsError: string | null;
   participantsLoading: boolean;
 }) {
+  const { sites } = useSites();
   const { user } = useUser();
   if (!user) return;
   return (
@@ -146,7 +148,7 @@ function ParticipantTable({
               <TableHead>Name</TableHead>
               <TableHead className="text-center">Site</TableHead>
               <TableHead>Email</TableHead>
-              <TableHead>Books</TableHead>
+              <TableHead>Books read</TableHead>
               <TableHead>Created at</TableHead>
               <AbacTableHead
                 user={user}
@@ -199,8 +201,7 @@ function ParticipantTable({
               <TableHead>Name</TableHead>
               <TableHead className="text-center">Site</TableHead>
               <TableHead>Email</TableHead>
-              <TableHead>Books</TableHead>
-              <TableHead>Created at</TableHead>
+              <TableHead>Books read</TableHead>
               <AbacTableHead
                 user={user}
                 action="update"
@@ -219,7 +220,9 @@ function ParticipantTable({
                 </TableCell>
                 <TableCell className="text-center">
                   {/* bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300 */}
-                  <Badge>{participant.site.nickname}</Badge>
+                  <Badge>
+                    {getSiteById(participant.siteId, sites)?.nickname ?? "None"}
+                  </Badge>
                 </TableCell>
                 <TableCell>{participant.email}</TableCell>
                 <TableCell className="text-xs text-muted-foreground">
@@ -227,18 +230,13 @@ function ParticipantTable({
                     ? `${participant.checkout_history.length} book${participant.checkout_history.length === 1 ? "" : "s"}`
                     : "No books read yet"}
                 </TableCell>
-                <TableCell className="text-xs text-muted-foreground">
-                  {formatRelative(participant.created_at, new Date())}
-                </TableCell>
                 <AbacTableCell
                   user={user}
-                  action="update"
+                  action="read"
                   resource="participants"
                   className="flex justify-center items-center gap-1.5"
                 >
-                  <UserDialog action="read" data={participant} />
-                  <UserDialog action="update" data={participant} />
-                  <UserDialog action="delete" data={participant} />
+                  View checkout history
                 </AbacTableCell>
               </TableRow>
             ))}
@@ -260,6 +258,7 @@ function UserTable({
   usersError: string | null;
   usersLoading: boolean;
 }) {
+  const { sites } = useSites();
   const { user } = useUser();
   const getRoleName = (value: string | undefined): string => {
     let result = "None";
@@ -366,8 +365,11 @@ function UserTable({
                   {userAccount.emailAddresses[0].emailAddress}
                 </TableCell>
                 <TableCell className="text-center text-xs text-muted-foreground">
-                  {userAccount.publicMetadata.defaultSite
-                    ? userAccount.publicMetadata.defaultSite.nickname
+                  {userAccount.publicMetadata.defaultSiteId
+                    ? getSiteById(
+                        userAccount.publicMetadata.defaultSiteId,
+                        sites,
+                      )?.nickname
                     : "None"}
                 </TableCell>
                 <TableCell className="text-center text-xs text-muted-foreground">

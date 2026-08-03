@@ -137,8 +137,8 @@ export default function SignInForm() {
         className="molde-button"
         disabled={isButtonDisabled || isSubmitting}
       >
-        {isSubmitting && <Spinner data-icon="inline-start" />}
         {isSubmitting ? "Signing in..." : "Sign in"}
+        {isSubmitting && <Spinner data-icon="inline-start" />}
       </Button>
     </form>
   );

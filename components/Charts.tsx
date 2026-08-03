@@ -1,5 +1,6 @@
+import { useSites } from "@/hooks/use-sites";
 import { cn } from "@/lib/utils";
-import { Participant } from "@/types/cred";
+import { getSiteById, Participant } from "@/types/cred";
 import { ChartData, Month } from "@/types/data";
 import { differenceInDays } from "date-fns";
 import dynamic from "next/dynamic";
@@ -356,6 +357,7 @@ export function TopReaders({
   error,
 }: ChartComponentProps) {
   const data = getTopReaders(participants);
+  const { sites } = useSites();
   return (
     <Card className="w-1/4 h-full">
       <CardHeader>
@@ -395,7 +397,9 @@ export function TopReaders({
                       {participant.first_name} {participant.last_name[0]}.
                     </TableCell>
                     <TableCell className="text-xs text-center">
-                      <Badge>{participant.site.nickname}</Badge>
+                      <Badge>
+                        {getSiteById(participant.siteId, sites)?.nickname}
+                      </Badge>
                     </TableCell>
                     <TableCell className="text-xs text-center">
                       {participant.checkout_history?.length}

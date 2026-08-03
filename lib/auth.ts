@@ -111,7 +111,7 @@ const ROLE_PERMISSIONS = {
   // Staff can update their own profile.
   staff: {
     books: { create: true, read: true, update: true, delete: false },
-    participants: { create: true, read: true, update: true, delete: false },
+    participants: { create: false, read: true, update: true, delete: false },
     users: {
       create: false,
       read: true,

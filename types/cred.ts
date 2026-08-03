@@ -1,3 +1,4 @@
+import { Weekday } from "./data";
 import { CheckoutItem } from "./library";
 
 export interface Site {
@@ -5,6 +6,7 @@ export interface Site {
   order: number;
   name: string;
   nickname: string;
+  salesforce_names: string[];
   region: string;
   neighborhood: string;
   created_at: Date;
@@ -66,10 +68,21 @@ export const groupSitesByRegion = (sites: Site[] | null): Region[] => {
   }));
 };
 
-export const getSiteById = (id: string | null, sites: Site[]) => {
-  if (!id) return null;
+export const getSiteById = (id: string | null, sites: Site[] | null) => {
+  if (!id || id === "" || !sites) return null;
   for (const site of sites) {
     if (site.id === id) return site;
+  }
+  return null;
+};
+
+export const getSiteBySalesforceName = (
+  name: string | null,
+  sites: Site[] | null,
+) => {
+  if (!name || name === "" || !sites) return null;
+  for (const site of sites) {
+    if (site.salesforce_names.includes(name)) return site;
   }
   return null;
 };
@@ -84,15 +97,15 @@ export interface ClerkUser {
 
 export interface Participant {
   id: string;
-  created_at: Date;
   first_name: string;
   last_name: string;
   birthday: string;
   email: string;
-  site: Site;
-  notes: string | null;
-  checkout_history: CheckoutItem[] | null;
-  updated_at: Date;
+  phone: string;
+  siteId: string;
+  programDays: Weekday[];
+  group: "Morning" | "Afternoon" | "All Day";
+  checkout_history?: CheckoutItem[] | null;
 }
 
 export type UserType = "Participant" | "Staff";

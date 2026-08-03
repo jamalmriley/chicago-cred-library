@@ -19,6 +19,9 @@ import KioskCard from "./KioskCard";
 import { AbacButton } from "./ui/abac";
 import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
+import { useAppContext } from "@/contexts/app-context";
+import { format } from "date-fns";
+import { Weekday } from "@/types/data";
 
 const filterParticipantsBySelectedLetter = (
   participants: Participant[],
@@ -30,6 +33,7 @@ const filterParticipantsBySelectedLetter = (
 };
 
 export default function ParticipantSelect() {
+  const { today } = useAppContext();
   const {
     participant,
     participants,
@@ -75,9 +79,19 @@ export default function ParticipantSelect() {
         return;
       }
 
+      const weekday = format(today, "EEEE") as Weekday;
+      const hour = today.getHours();
+      const group: "Morning" | "Afternoon" =
+        hour < 12 ? "Morning" : "Afternoon";
+        
       const data: Participant[] = await res.json();
+      const filteredData = data.filter(
+        (participant) =>
+          participant.programDays.includes(weekday) &&
+          (participant.group === "All Day" || participant.group === group),
+      );
       setParticipantsLoading(false);
-      setParticipants(data);
+      setParticipants(filteredData);
       setParticipantsError(null);
     };
 

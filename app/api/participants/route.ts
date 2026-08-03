@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
 
   const { data, error } = await supabase()
     .from("participants")
-    .insert([body])
+    .upsert(body) // The upsert() method combines an INSERT and an UPDATE.
     .select<"*", Participant>();
 
   if (error) return NextResponse.json({ error }, { status: 500 });
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
   const { data, error } = id
     ? await query.eq("id", id).single()
     : site
-      ? await query.eq("site->>id", site) // Queries the ID key inside the site JSONB column
+      ? await query.eq("siteId", site)
       : await query;
 
   if (error) return NextResponse.json({ error }, { status: 500 });

@@ -67,7 +67,7 @@ export default function ReturnPage() {
     }
 
     const data: Participant = await res.json();
-    const { checkout_history } = data;
+    const checkout_history = data.checkout_history ?? null;
 
     const updateCheckoutHistory = (
       checkoutHistory: CheckoutItem[] | null,

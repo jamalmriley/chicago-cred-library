@@ -1,6 +1,5 @@
 "use client";
 
-import { Site } from "@/types/cred";
 import { createContext, useContext, useState } from "react";
 
 type AuthContext = {
@@ -12,8 +11,8 @@ type AuthContext = {
   setEmailAddress: React.Dispatch<React.SetStateAction<string>>;
   password: string;
   setPassword: React.Dispatch<React.SetStateAction<string>>;
-  defaultSite: Site | null;
-  setDefaultSite: React.Dispatch<React.SetStateAction<Site | null>>;
+  defaultSiteId: string | null;
+  setDefaultSiteId: React.Dispatch<React.SetStateAction<string | null>>;
   pendingVerification: boolean;
   setPendingVerification: React.Dispatch<React.SetStateAction<boolean>>;
   code: string;
@@ -35,7 +34,7 @@ export default function AuthContextProvider({
   const [lastName, setLastName] = useState<string>("");
   const [emailAddress, setEmailAddress] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-  const [defaultSite, setDefaultSite] = useState<Site | null>(null);
+  const [defaultSiteId, setDefaultSiteId] = useState<string | null>(null);
 
   const [pendingVerification, setPendingVerification] =
     useState<boolean>(false);
@@ -54,8 +53,8 @@ export default function AuthContextProvider({
         setEmailAddress,
         password,
         setPassword,
-        defaultSite,
-        setDefaultSite,
+        defaultSiteId,
+        setDefaultSiteId,
         pendingVerification,
         setPendingVerification,
         code,

@@ -13,6 +13,8 @@ import Required from "./Required";
 import SiteSelect from "./SiteSelect";
 import { Field, FieldDescription, FieldLabel } from "./ui/field";
 import { Spinner } from "./ui/spinner";
+import { getSiteById, Site } from "@/types/cred";
+import { useSites } from "@/hooks/use-sites";
 
 export default function SignUpForm() {
   const {
@@ -24,8 +26,7 @@ export default function SignUpForm() {
     setEmailAddress,
     password,
     setPassword,
-    defaultSite,
-    setDefaultSite,
+    defaultSiteId,
     setPendingVerification,
     error,
     setError,
@@ -33,8 +34,12 @@ export default function SignUpForm() {
   } = useAuthContext();
   const router = useRouter();
   const { signUp } = useSignUp();
+  const { sites } = useSites();
   const { isSignedIn } = useUser();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedSite, setSelectedSite] = useState<Site | null>(
+    getSiteById(defaultSiteId, sites),
+  );
   const passwordChecks = {
     length: password.length >= 8,
     special: /[!@#$%^&*(),.?":{}|<>_]/.test(password),
@@ -216,8 +221,8 @@ export default function SignUpForm() {
       <Field>
         <FieldLabel htmlFor="site">Default Site</FieldLabel>
         <SiteSelect
-          selectedSite={defaultSite}
-          setSelectedSite={setDefaultSite}
+          selectedSite={selectedSite}
+          setSelectedSite={setSelectedSite}
           side="right"
           isCustom
         />
@@ -242,8 +247,8 @@ export default function SignUpForm() {
         className="molde-button"
         disabled={isButtonDisabled || isSubmitting}
       >
-        {isSubmitting && <Spinner data-icon="inline-start" />}
         {isSubmitting ? "Creating account..." : "Sign up"}
+        {isSubmitting && <Spinner data-icon="inline-start" />}
       </Button>
     </form>
   );

@@ -1,5 +1,4 @@
 import { Role } from "../lib/auth";
-import { Site } from "./cred";
 
 export {};
 
@@ -7,7 +6,7 @@ declare global {
   interface UserPublicMetadata {
     firstName?: string; // When users are invited via the admin dashboard
     lastName?: string; // When users are invited via the admin dashboard
-    defaultSite: Site | null;
+    defaultSiteId: string | null;
     isTestUser: boolean;
     role: Role;
   }
