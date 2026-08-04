@@ -89,19 +89,22 @@ export default function CheckoutPage() {
           cart.map((item) => updateBookAvailability(item.book.id, -1, today)),
         );
 
-        await fetch("/api/send", { method: "POST" });
+        await fetch("/api/send", {
+          method: "POST",
+          body: JSON.stringify({ cart, dueDate, participant }),
+        });
 
-        const returnWindow = siteInfo?.settings?.return_window ?? "1 week";
+        // const returnWindow = siteInfo?.settings?.return_window ?? "1 week";
         // TODO: Only fetch if a user has a phone number listed in Clerk.
-        await sendGotoSms(
-          "+13127571806",
-          ["+17736290679"],
-          `CRED Library: Your book checkout is complete. We hope you enjoy your book${cart.length === 1 ? "" : "s"}, ${participant.first_name}! ${cart.length === 1 ? "It's" : "They're"} due back ${
-            returnWindow
-              ? `in ${returnWindow}, on ${format(dueDate, "eeee, MMMM d, yyyy")}`
-              : "soon"
-          }.`,
-        );
+        // await sendGotoSms(
+        //   "+13127571806",
+        //   ["+17736290679"],
+        //   `CRED Library: Your book checkout is complete. We hope you enjoy your book${cart.length === 1 ? "" : "s"}, ${participant.first_name}! ${cart.length === 1 ? "It's" : "They're"} due back ${
+        //     returnWindow
+        //       ? `in ${returnWindow}, on ${format(dueDate, "eeee, MMMM d, yyyy")}`
+        //       : "soon"
+        //   }.`,
+        // );
 
         setMaxCheckoutStepAllowed(3);
         api?.scrollNext();
