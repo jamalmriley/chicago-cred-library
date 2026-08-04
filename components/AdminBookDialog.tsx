@@ -240,6 +240,54 @@ function AdminBookForm({
   const handleLookup = async (isbn: string) => {
     const book = await fetchGoogleBook(isbn);
     if (!book) return;
+
+    // Required keys for a valid book.
+    const requiredBookKeys = [
+      "volumeInfo",
+      "volumeInfo.title",
+      "volumeInfo.authors",
+      "volumeInfo.publishedDate",
+      "volumeInfo.description",
+      "volumeInfo.industryIdentifiers",
+      "volumeInfo.pageCount",
+      "volumeInfo.categories",
+      "volumeInfo.imageLinks.thumbnail",
+    ] as const;
+
+    // Helper function to read nested paths dynamically
+    function getNestedValue(obj: any, path: string): any {
+      return path.split(".").reduce((current, key) => {
+        return current !== null && current !== undefined
+          ? current[key]
+          : undefined;
+      }, obj);
+    }
+
+    // Book validation function
+    function validateBook(book: any): book is GoogleBooks.Book {
+      if (!book || typeof book !== "object") return false;
+
+      // Checks that every path in the array returns a valid, non-null value
+      return requiredBookKeys.every((path) => {
+        const value = getNestedValue(book, path);
+        return value !== undefined && value !== null;
+      });
+    }
+
+    const isValidBook = validateBook(book);
+    if (!isValidBook) {
+      // TODO: Update this check to see if the scanner is in continuous mode.
+      // If it is, don't add the book to the cart and show a toast message.
+      // If it isn't, change the mode from "Scan" to "Manual" and input the fields that are available.
+      toast.error(
+        "This book is missing some details and cannot be scanned with others. Add this book separately.",
+        {
+          position: "bottom-right",
+        },
+      );
+      return;
+    }
+
     if (isContinuous) {
       setCart((prev) => [...prev, book]);
     } else {

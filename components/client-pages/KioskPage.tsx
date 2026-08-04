@@ -25,6 +25,7 @@ import { useQueryState } from "nuqs";
 import Marquee3D from "../BookMarquee";
 import { useEffect, useState } from "react";
 import { LibraryBook } from "@/types/library";
+import { Highlighter } from "../ui/highlighter";
 
 export default function KioskPage() {
   const { regions, sites } = useSites();
@@ -113,7 +114,17 @@ export default function KioskPage() {
           Welcome to the <br />
           Chicago CRED Library.
         </h1>
-        <h2 className="h2">What would you like to do today?</h2>
+        <h2 className="h2">
+          What would{" "}
+          <Highlighter action="underline" color="#ae4107">
+            you
+          </Highlighter>{" "}
+          like to do{" "}
+          <Highlighter action="circle" color="#ae4107">
+            today
+          </Highlighter>
+          ?
+        </h2>
         <div className="flex flex-col md:flex-row gap-3 md:gap-10">
           <Button
             asChild={Boolean(siteInfo)}
