@@ -39,14 +39,8 @@ export async function POST(request: NextRequest) {
       cc: ["CRED Education Team<crededucation@chicagocred.com>"],
       to: "jamal@chicagocred.com", // TODO: After testing, change to participant.email
       subject: "Your library receipt 📚",
-      react: (
-        <CheckoutReceipt
-          cart={cart}
-          dueDate={dueDate}
-          participant={participant}
-        />
-      ),
-      replyTo: "Jamal Riley<jamal@chicagocred.com>",
+      react: <CheckoutReceipt cart={cart} participant={participant} />,
+      replyTo: "CRED Education Team<crededucation@chicagocred.com>",
     });
 
     if (error) {
