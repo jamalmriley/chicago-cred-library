@@ -5,7 +5,7 @@ import { ButtonGroup } from "@/components/ui/button-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAppContext } from "@/contexts/app-context";
 import { useKioskContext } from "@/contexts/kiosk-context";
-import { getPreferredIsbn } from "@/lib/utils";
+import { toBookDisplayInfo } from "@/lib/utils";
 import { getSiteById, Participant, Site } from "@/types/cred";
 import {
   CheckoutItem,
@@ -59,23 +59,6 @@ interface BookLineItemProps {
   onRemove?: () => void;
   onReturn?: (item: CheckoutItem, didReport: boolean) => void;
   onUndoReturn?: (bookId: string) => void;
-}
-
-function toBookDisplayInfo(
-  book: LibraryBook | GoogleBooks.Book,
-): BookDisplayInfo {
-  // LibraryBook has book_info, GoogleBooks.Book has volumeInfo directly
-  const volumeInfo =
-    "book_info" in book ? book.book_info.volumeInfo : book.volumeInfo;
-  const { title, authors, industryIdentifiers } = volumeInfo;
-
-  return {
-    id: book.id,
-    title,
-    authors,
-    thumbnail: volumeInfo.imageLinks?.thumbnail.replace("http://", "https://"),
-    isbn: getPreferredIsbn(industryIdentifiers),
-  };
 }
 
 function BookLineItem({
@@ -152,6 +135,7 @@ function BookLineItem({
               <BookMarked className="size-full p-3 text-muted-foreground" />
             </span>
           )}
+          {/* Title and Authors */}
           <div className="flex flex-col gap-1">
             <p
               className={`text-md font-semibold line-clamp-1 transition-all ease-in-out duration-200 ${!checked ? "text-muted-foreground" : ""}`}

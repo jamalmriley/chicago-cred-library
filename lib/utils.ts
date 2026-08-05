@@ -1,3 +1,5 @@
+import { BookDisplayInfo } from "@/components/BookLineItem";
+import { GoogleBooks, LibraryBook } from "@/types/library";
 import confetti from "canvas-confetti";
 import { clsx, type ClassValue } from "clsx";
 import { Metadata } from "next";
@@ -76,4 +78,21 @@ export function safeParseDate(date: string) {
   const standardizedInput = isYearOnly ? `${date.trim()}-01-01` : date;
 
   return new Date(standardizedInput);
+}
+
+export function toBookDisplayInfo(
+  book: LibraryBook | GoogleBooks.Book,
+): BookDisplayInfo {
+  // LibraryBook has book_info, GoogleBooks.Book has volumeInfo directly
+  const volumeInfo =
+    "book_info" in book ? book.book_info.volumeInfo : book.volumeInfo;
+  const { title, authors, industryIdentifiers } = volumeInfo;
+
+  return {
+    id: book.id,
+    title,
+    authors,
+    thumbnail: volumeInfo.imageLinks?.thumbnail.replace("http://", "https://"),
+    isbn: getPreferredIsbn(industryIdentifiers),
+  };
 }
