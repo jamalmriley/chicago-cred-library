@@ -37,7 +37,7 @@ export interface BookScannerProps<T> {
   setIsContinuous?: Dispatch<SetStateAction<boolean>>;
   location?: Location;
   onLookup: (isbn: string) => Promise<void>;
-  onScan: (isbn: string) => void;
+  onScan: (isbn: string) => Promise<void>;
   renderBook?: (book: T) => React.ReactNode;
   renderButton?: boolean;
   selectedSite?: Site | null;
@@ -203,13 +203,12 @@ export default function BookScanner<T>({
 
             cooldownRef.current = true;
             lastScannedRef.current = isbn;
-            onScan(isbn);
 
-            // Reset cooldown after 2 seconds
-            setTimeout(() => {
+            // Await the scan handler, then reset cooldown
+            onScan(isbn).finally(() => {
               cooldownRef.current = false;
               lastScannedRef.current = null;
-            }, 2000);
+            });
           }
           if (err && !(err instanceof NotFoundException)) {
             setError("Camera error: " + err.message);

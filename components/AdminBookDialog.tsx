@@ -251,7 +251,7 @@ function AdminBookForm({
       "volumeInfo.industryIdentifiers",
       "volumeInfo.pageCount",
       "volumeInfo.categories",
-      "volumeInfo.imageLinks.thumbnail",
+      // "volumeInfo.imageLinks.thumbnail",
     ] as const;
 
     // Helper function to read nested paths dynamically
