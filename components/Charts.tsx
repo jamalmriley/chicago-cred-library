@@ -145,7 +145,7 @@ export function CheckoutsByPurpose({
       <CardHeader className="card-header">
         <CardTitle>Checkouts by purpose</CardTitle>
         <CardDescription className="flex items-center gap-2 leading-none font-medium">
-          Who is reading our books.
+          Who's reading our books.
           {/* Up by 5.2% this month <TrendingUp className="size-4" /> */}
         </CardDescription>
       </CardHeader>
@@ -312,13 +312,18 @@ export function PageGauge({
   isLoading,
   error,
 }: ChartComponentProps) {
+  const pageGoal = 1000;
+  const pagesRead = getTotalPagesRead(participants);
   return (
     <Card className="w-full h-1/2 relative overflow-hidden">
       <CardContent className="flex justify-center items-center p-6">
         {isLoading || error ? (
           <SkeletonChart isLoading={isLoading} error={error} />
         ) : (
-          <LiquidGauge value={50} caption="500/1,000 pages read" />
+          <LiquidGauge
+            value={Math.min(100, Math.round((pagesRead / pageGoal) * 100))}
+            caption={`${pagesRead.toLocaleString()}/${pageGoal.toLocaleString()} pages read`}
+          />
         )}
       </CardContent>
     </Card>
@@ -630,6 +635,27 @@ function getTopReaders(
       return nameA.localeCompare(nameB);
     })
     .slice(0, 20);
+}
+
+function getTotalPagesRead(participants: Participant[] | null): number {
+  let result = 0;
+  if (!participants) return result;
+
+  const filteredCheckoutHistory = participants.map(
+    (participant) =>
+      participant.checkout_history?.filter(
+        (item) => item.return_date !== null,
+      ) ?? [],
+  );
+
+  result = filteredCheckoutHistory
+    .flat()
+    .reduce(
+      (total, item) => total + item.book.book_info.volumeInfo.pageCount,
+      0,
+    );
+
+  return result;
 }
 
 export function getReaderMetrics(participants: Participant[] | null) {
