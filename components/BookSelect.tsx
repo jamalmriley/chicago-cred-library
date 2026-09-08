@@ -77,6 +77,7 @@ export default function BookSelect() {
     setLastUpdated,
   } = useAdminContext();
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
+  const [copiesCount, setCopiesCount] = useState<number>(0);
   const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ#".split("");
 
   const refresh = () => setLastUpdated(new Date().toString());
@@ -97,6 +98,11 @@ export default function BookSelect() {
       const data: LibraryBook[] = await res.json();
       setBooksLoading(false);
       setBooks(data);
+      setCopiesCount(
+        data
+          .map((book) => book.total_count)
+          .reduce((accumulator, currentValue) => accumulator + currentValue, 0),
+      );
       setBooksError(null);
     };
 
@@ -147,7 +153,13 @@ export default function BookSelect() {
                   )}
                 <Separator decorative />
                 <span className="w-full flex gap-3 text-xs justify-center text-muted-foreground select-none">
-                  <span>{books.length} books</span>
+                  <span>
+                    {books.length} {books.length === 1 ? "title" : "titles"}
+                  </span>
+                  <span>|</span>
+                  <span>
+                    {copiesCount} {copiesCount === 1 ? "copy" : "copies"}
+                  </span>
                   <span>|</span>
                   <span>
                     {

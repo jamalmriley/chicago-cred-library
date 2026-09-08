@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Field, FieldLabel } from "@/components/ui/field";
 import {
   InputOTP,
   InputOTPGroup,
@@ -9,19 +9,19 @@ import {
 } from "@/components/ui/input-otp";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAppContext } from "@/contexts/app-context";
 import { useKioskContext } from "@/contexts/kiosk-context";
 import { Participant } from "@/types/cred";
+import { Weekday } from "@/types/data";
+import { useUser } from "@clerk/nextjs";
+import { format } from "date-fns";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
-import { CircleX, Plus } from "lucide-react";
+import { CircleX, Delete, Plus } from "lucide-react";
+import Link from "next/link";
 import { useQueryState } from "nuqs";
 import { useEffect, useState } from "react";
 import KioskCard from "./KioskCard";
 import { AbacButton } from "./ui/abac";
-import { useUser } from "@clerk/nextjs";
-import Link from "next/link";
-import { useAppContext } from "@/contexts/app-context";
-import { format } from "date-fns";
-import { Weekday } from "@/types/data";
 
 const filterParticipantsBySelectedLetter = (
   participants: Participant[],
@@ -66,6 +66,20 @@ export default function ParticipantSelect() {
     );
   };
 
+  const numpadKeys = [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "0",
+    <Delete />,
+  ];
+
   useEffect(() => {
     const fetchParticipants = async () => {
       await setParticipantsLoading(true);
@@ -83,7 +97,7 @@ export default function ParticipantSelect() {
       const hour = today.getHours();
       const group: "Morning" | "Afternoon" =
         hour < 12 ? "Morning" : "Afternoon";
-        
+
       const data: Participant[] = await res.json();
       const filteredData = data.filter(
         (participant) =>
@@ -258,7 +272,9 @@ export default function ParticipantSelect() {
             htmlFor="birthday"
             className={`font-bold ${!Boolean(participant) ? "text-muted-foreground" : "text-primary-foreground"}`}
           >
-            Please verify your birthday to continue.
+            {birthdayDesc !== ""
+              ? birthdayDesc
+              : "Please verify your birthday to continue."}
           </FieldLabel>
           <InputOTP
             id="birthday"
@@ -279,7 +295,27 @@ export default function ParticipantSelect() {
               <InputOTPSlot index={3} className="size-16 text-3xl font-bold" />
             </InputOTPGroup>
           </InputOTP>
-          <FieldDescription>{birthdayDesc}</FieldDescription>
+
+          <span className="w-full grid grid-cols-3 gap-3">
+            {numpadKeys.map((key) => (
+              <Button
+                variant="outline"
+                className={key === "0" ? "col-span-2" : "col-span-1"}
+                disabled={!Boolean(participant)}
+                onClick={() =>
+                  setBirthday((prev) =>
+                    typeof key === "string"
+                      ? prev + key
+                      : prev.length <= 1
+                        ? ""
+                        : prev.slice(0, -1),
+                  )
+                }
+              >
+                {key}
+              </Button>
+            ))}
+          </span>
         </Field>
       </div>
     </KioskCard>

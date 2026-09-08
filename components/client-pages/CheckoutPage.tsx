@@ -14,6 +14,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { useAppContext } from "@/contexts/app-context";
 import { useKioskContext } from "@/contexts/kiosk-context";
 import { useSites } from "@/hooks/use-sites";
+import { updateBookAvailability } from "@/lib/books";
 import { sendGotoSms } from "@/lib/goto";
 import { handleConfetti } from "@/lib/utils";
 import { getSiteById, Participant } from "@/types/cred";
@@ -84,9 +85,9 @@ export default function CheckoutPage() {
     })
       .then(async () => {
         // Decrement available_count for each checked out book
-        // await Promise.all(
-        //   cart.map((item) => updateBookAvailability(item.book.id, -1, today)),
-        // );
+        await Promise.all(
+          cart.map((item) => updateBookAvailability(item.book.id, -1, today)),
+        );
 
         await fetch("/api/send", {
           method: "POST",

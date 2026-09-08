@@ -36,9 +36,10 @@ export async function POST(request: NextRequest) {
   try {
     const { data, error } = await resend.emails.send({
       from: "Chicago CRED Library<notifications@creducation.app>",
-      cc: ["CRED Education Team<crededucation@chicagocred.com>"],
+      // cc: ["CRED Education Team<crededucation@chicagocred.com>"], // TODO: Link to comms settings
+      bcc: ["CRED Education Team<crededucation@chicagocred.com>"],
       to: "jamal@chicagocred.com", // TODO: After testing, change to participant.email
-      subject: "Your library receipt 📚",
+      subject: "Your library checkout receipt 📚",
       react: <CheckoutReceipt cart={cart} participant={participant} />,
       replyTo: "CRED Education Team<crededucation@chicagocred.com>",
     });

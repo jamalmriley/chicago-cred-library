@@ -112,7 +112,7 @@ export default function KioskPage() {
 
         <h1 className="h1 text-center">
           Welcome to the <br />
-          Chicago CRED Library.
+          Chicago CRED Library
         </h1>
         <h2 className="h2">
           What would{" "}
