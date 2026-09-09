@@ -17,9 +17,13 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
   const {
     cart,
-    dueDate,
     participant,
-  }: { cart: CheckoutItem[]; dueDate: string; participant: Participant } = body;
+    ccRecipients,
+  }: {
+    cart: CheckoutItem[];
+    participant: Participant;
+    ccRecipients: string[] | undefined;
+  } = body;
 
   if (!participant)
     return NextResponse.json(
@@ -36,9 +40,9 @@ export async function POST(request: NextRequest) {
   try {
     const { data, error } = await resend.emails.send({
       from: "Chicago CRED Library<notifications@creducation.app>",
-      // cc: ["CRED Education Team<crededucation@chicagocred.com>"], // TODO: Link to comms settings
+      cc: ccRecipients,
       bcc: ["CRED Education Team<crededucation@chicagocred.com>"],
-      to: "jamal@chicagocred.com", // TODO: After testing, change to participant.email
+      to: participant.email,
       subject: "Your library checkout receipt 📚",
       react: <CheckoutReceipt cart={cart} participant={participant} />,
       replyTo: "CRED Education Team<crededucation@chicagocred.com>",

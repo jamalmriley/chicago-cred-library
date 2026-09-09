@@ -3,6 +3,8 @@ import { NextRequest } from "next/server";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
+  const origin = searchParams.get("state") ?? "admin";
+  console.log("/callback Origin:", origin);
 
   // Handle user declining
   const error = searchParams.get("error");
@@ -66,7 +68,10 @@ export async function GET(request: NextRequest) {
     maxAge: 60 * 60 * 24 * 30, // Long-lived window for refresh access
   });
 
-  return Response.redirect(
-    `${process.env.NEXT_PUBLIC_APP_URL}/admin/settings?goto=connected`,
-  );
+  const redirectUrl =
+    origin === "kiosk"
+      ? `${process.env.NEXT_PUBLIC_APP_URL}/kiosk`
+      : `${process.env.NEXT_PUBLIC_APP_URL}/admin/settings?goto=connected`;
+
+  return Response.redirect(redirectUrl);
 }

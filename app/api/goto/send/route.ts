@@ -1,4 +1,4 @@
-import { getValidGoToToken } from "@/app/kiosk/layout";
+import { getValidGoToToken } from "@/app/actions/goto";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {

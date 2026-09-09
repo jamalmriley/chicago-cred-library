@@ -289,7 +289,7 @@ function AdminBookForm({
     }
 
     if (isContinuous) {
-      setCart((prev) => [...prev, book]);
+      setCart((prev) => [book, ...prev]);
     } else {
       setBook(book);
     }

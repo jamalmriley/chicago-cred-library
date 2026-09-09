@@ -14,7 +14,7 @@ function BookCard({ book }: { book: LibraryBook }) {
           alt={book.book_info.volumeInfo.title}
           width={200}
           height={200}
-          className="w-full h-auto aspect-auto shrink-0 rounded-lg border hover:scale-105 hover:shadow-lg transform transition-all ease-in-out duration-200" // Maintains thumbnail aspect ratio
+          className="w-full h-auto aspect-auto shrink-0 rounded-lg border"
         />
       ) : (
         <div className="w-full aspect-3/4 flex justify-center items-center rounded-lg border bg-muted text-muted-foreground font-bold text-3xl hover:scale-105 hover:shadow-lg transform transition-all ease-in-out duration-200">
@@ -67,7 +67,7 @@ export default function Marquee3D({
             .map((col, i) => (
               <Marquee
                 key={i}
-                pauseOnHover
+                pauseOnHover={false}
                 vertical
                 reverse={i % 2 === 0}
                 className={`[--duration:60s] flex-1`}

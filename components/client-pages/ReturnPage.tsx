@@ -19,7 +19,6 @@ import { sendGotoSms } from "@/lib/goto";
 import { handleConfetti } from "@/lib/utils";
 import { getSiteById, Participant } from "@/types/cred";
 import { CheckoutItem } from "@/types/library";
-import { format } from "date-fns";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
@@ -104,10 +103,35 @@ export default function ReturnPage() {
         await Promise.all(
           returns.map((item) => updateBookAvailability(item.book.id, 1, today)),
         );
-        // TODO: Only fetch if a user has a phone number listed in Clerk.
+
+        let fromPhoneNumber: string = "+17732348917";
+        switch (siteInfo?.id) {
+          case "ypc":
+            fromPhoneNumber = "+13123194642";
+            break;
+          case "wc":
+            fromPhoneNumber = "+13123194642";
+            break;
+          case "ws_hub_1":
+            fromPhoneNumber = "+13127571794";
+            break;
+          case "ws_hub_2":
+            fromPhoneNumber = "+13127571806";
+            break;
+          case "ws_hub_3":
+            fromPhoneNumber = "+13122700741";
+            break;
+          case undefined:
+            fromPhoneNumber = "+17732348917";
+            break;
+          default:
+            fromPhoneNumber = "+17732348917";
+            break;
+        }
+
         await sendGotoSms(
-          "+13127571806",
-          ["+17736290679"],
+          fromPhoneNumber,
+          ["+17736290679", participant.phone],
           `CRED Library: Your book return is complete. We hope you enjoyed your book${returns.length === 1 ? "" : "s"}, ${participant.first_name}!`,
         );
         setMaxCheckoutStepAllowed(3);

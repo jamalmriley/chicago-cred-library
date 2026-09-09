@@ -2,7 +2,6 @@
 
 import SiteSelect from "@/components/SiteSelect";
 import { AbacButton } from "@/components/ui/abac";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -660,18 +659,6 @@ export default function SettingsPage() {
                     reading activity.
                   </FieldDescription>
                 </Field>
-
-                <Button
-                  onClick={async () => {
-                    await fetch("/api/send", {
-                      method: "POST",
-                      // headers: { "Content-Type": "application/json" },
-                      // body,
-                    });
-                  }}
-                >
-                  Send email
-                </Button>
               </FieldGroup>
             </FieldSet>
           </CardContent>

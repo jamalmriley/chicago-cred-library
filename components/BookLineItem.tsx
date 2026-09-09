@@ -482,7 +482,7 @@ export function LookupBookLineItem({
               extension_count: 0,
               has_completed_book_report: false,
             };
-            setCart((prev) => [...prev, newCheckoutItem]);
+            setCart((prev) => [newCheckoutItem, ...prev]);
             setCurrBook(null);
             setMaxCheckoutStepAllowed(nextStep);
           } else {
