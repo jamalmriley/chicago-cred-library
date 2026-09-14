@@ -190,35 +190,84 @@ export default function BookScanner<T>({
 
     setError(null);
 
-    codeReader
-      .decodeFromVideoDevice(
-        undefined, // Uses default camera
-        videoRef.current,
-        (result, err) => {
-          if (result) {
-            const isbn = result.getText();
+    const constraints: MediaStreamConstraints = {
+      video: {
+        facingMode: "user", // Front-facing camerra
+        focusMode: "continuous", // Autofocus
+        advanced: [{ focusMode: "continuous" } as any], // Fallback for some browsers
+      } as MediaTrackConstraints,
+    };
 
-            // Ignore if same barcode or in cooldown
-            if (cooldownRef.current || isbn === lastScannedRef.current) return;
+    // Get the camera stream with constraints first
+    navigator.mediaDevices
+      .getUserMedia(constraints)
+      .then((stream) => {
+        if (!videoRef.current) return;
+        videoRef.current.srcObject = stream;
 
-            cooldownRef.current = true;
-            lastScannedRef.current = isbn;
+        // Then hand off to zxing for decoding
+        codeReader
+          .decodeFromStream(stream, videoRef.current, (result, err) => {
+            if (result) {
+              const isbn = result.getText();
+              if (cooldownRef.current || isbn === lastScannedRef.current)
+                return;
 
-            // Await the scan handler, then reset cooldown
-            onScan(isbn).finally(() => {
-              cooldownRef.current = false;
-              lastScannedRef.current = null;
-            });
-          }
-          if (err && !(err instanceof NotFoundException)) {
-            setError("Camera error: " + err.message);
+              cooldownRef.current = true;
+              lastScannedRef.current = isbn;
+
+              onScan(isbn).finally(() => {
+                cooldownRef.current = false;
+                lastScannedRef.current = null;
+              });
+            }
+            if (err && !(err instanceof NotFoundException)) {
+              setError("Camera error: " + err.message);
+              setIsScanning(false);
+            }
+          })
+          .catch((err) => {
+            setError("Could not access camera: " + err.message);
             setIsScanning(false);
-          }
-        },
-      )
-      .catch((err) => {
-        setError("Could not access camera: " + err.message);
-        setIsScanning(false);
+          });
+      })
+      .catch(() => {
+        // Fallback: if exact rear camera fails (e.g. desktop), try without exact
+        const fallbackConstraints: MediaStreamConstraints = {
+          video: { facingMode: "environment" },
+        };
+
+        navigator.mediaDevices
+          .getUserMedia(fallbackConstraints)
+          .then((stream) => {
+            if (!videoRef.current) return;
+            videoRef.current.srcObject = stream;
+            codeReader.decodeFromStream(
+              stream,
+              videoRef.current,
+              (result, err) => {
+                if (result) {
+                  const isbn = result.getText();
+                  if (cooldownRef.current || isbn === lastScannedRef.current)
+                    return;
+                  cooldownRef.current = true;
+                  lastScannedRef.current = isbn;
+                  onScan(isbn).finally(() => {
+                    cooldownRef.current = false;
+                    lastScannedRef.current = null;
+                  });
+                }
+                if (err && !(err instanceof NotFoundException)) {
+                  setError("Camera error: " + err.message);
+                  setIsScanning(false);
+                }
+              },
+            );
+          })
+          .catch((err) => {
+            setError("Could not access camera: " + err.message);
+            setIsScanning(false);
+          });
       });
 
     return () => {
