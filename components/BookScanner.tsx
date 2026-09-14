@@ -190,9 +190,12 @@ export default function BookScanner<T>({
 
     setError(null);
 
+    // Detect mobile to use front-facing camera.
+    const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+
     const constraints: MediaStreamConstraints = {
       video: {
-        facingMode: "user", // Front-facing camerra
+        facingMode: isMobile ? { exact: "environment" } : "user", // Rear camera on mobile, front on desktop
         focusMode: "continuous", // Autofocus
         advanced: [{ focusMode: "continuous" } as any], // Fallback for some browsers
       } as MediaTrackConstraints,
