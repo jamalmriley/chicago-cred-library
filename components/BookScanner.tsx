@@ -73,6 +73,9 @@ export default function BookScanner<T>({
   const [isManualSearchLoading, setIsManualSearchLoading] = useState(false);
   const [manualIsbn, setManualIsbn] = useState("");
 
+  // Detect mobile to use front-facing camera.
+  const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+
   const handleUpsertBooks = async (cart: GoogleBooks.Book[] | undefined) => {
     if (
       !cart ||
@@ -190,9 +193,6 @@ export default function BookScanner<T>({
 
     setError(null);
 
-    // Detect mobile to use front-facing camera.
-    const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-
     const constraints: MediaStreamConstraints = {
       video: {
         facingMode: isMobile ? { exact: "environment" } : "user", // Rear camera on mobile, front on desktop
@@ -292,7 +292,7 @@ export default function BookScanner<T>({
         {isScanning ? (
           <video
             ref={videoRef}
-            className="size-full object-cover scale-x-[-1]"
+            className={`size-full object-cover ${!isMobile ? "scale-x-[-1]" : ""}`}
           />
         ) : (
           <div className="size-full flex flex-col justify-center items-center">
