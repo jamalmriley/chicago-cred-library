@@ -24,7 +24,7 @@ export default function Checkouts() {
   const [participantsLoading, setParticipantsLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string>("");
 
-  const refresh = () => setLastUpdated(new Date().toString());
+  // const refresh = () => setLastUpdated(new Date().toString());
 
   useEffect(() => {
     const fetchCheckouts = async () => {
@@ -242,7 +242,7 @@ function CheckoutsTable({
         <div className="w-full h-fit flex flex-col flex-1 grow justify-center items-center p-10 border rounded-xl border-muted bg-muted/50 text-muted-foreground">
           <SearchX className="size-20" />
           <p className="text-lg font-medium mb-5 select-none">
-            {participantsError}
+            {participantsError || "No checkout history found"}
           </p>
         </div>
       )}
