@@ -2,6 +2,8 @@
 
 import AdminBookDialog from "@/components/AdminBookDialog";
 import BookSelect from "@/components/BookSelect";
+import Checkouts from "@/components/Checkouts";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { hasPermission } from "@/lib/auth";
 import { useUser } from "@clerk/nextjs";
 
@@ -26,7 +28,18 @@ export default function LibraryPage() {
         our library.
       </p>
 
-      <BookSelect />
+      <Tabs defaultValue="books">
+        <TabsList variant="line">
+          <TabsTrigger value="books">Books</TabsTrigger>
+          <TabsTrigger value="checkouts">Checkouts</TabsTrigger>
+        </TabsList>
+        <TabsContent value="books" className="py-5">
+          <BookSelect />
+        </TabsContent>
+        <TabsContent value="checkouts" className="py-5">
+          <Checkouts />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

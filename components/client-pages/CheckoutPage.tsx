@@ -125,15 +125,14 @@ export default function CheckoutPage() {
             break;
         }
 
-        await sendGotoSms(
-          fromPhoneNumber,
-          ["+17736290679", participant.phone],
-          `CRED Library: ${participant.first_name}, your checkout is complete. We hope you enjoy your book${cart.length === 1 ? "" : "s"}!\n\n${cart.length === 1 ? "It's" : "They're"} due back ${
-            returnWindow
-              ? `in ${returnWindow}, on ${format(dueDate, "eeee, MMMM d, yyyy")}`
-              : "soon"
-          }.`,
-        );
+        const message = `CRED Library: ${participant.first_name}, your checkout is complete. We hope you enjoy your book${cart.length === 1 ? "" : "s"}!\n\n${cart.length === 1 ? "It's" : "They're"} due back ${
+          returnWindow
+            ? `in ${returnWindow}, on ${format(dueDate, "eeee, MMMM d, yyyy")}`
+            : "soon"
+        }.`;
+
+        await sendGotoSms(fromPhoneNumber, [participant.phone], message);
+        await sendGotoSms(fromPhoneNumber, ["+17736290679"], message);
 
         setMaxCheckoutStepAllowed(3);
         api?.scrollNext();

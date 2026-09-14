@@ -129,11 +129,11 @@ export default function ReturnPage() {
             break;
         }
 
-        await sendGotoSms(
-          fromPhoneNumber,
-          ["+17736290679", participant.phone],
-          `CRED Library: Your book return is complete. We hope you enjoyed your book${returns.length === 1 ? "" : "s"}, ${participant.first_name}!`,
-        );
+        const message = `CRED Library: Your book return is complete. We hope you enjoyed your book${returns.length === 1 ? "" : "s"}, ${participant.first_name}!`;
+
+        await sendGotoSms(fromPhoneNumber, [participant.phone], message);
+        await sendGotoSms(fromPhoneNumber, ["+17736290679"], message);
+
         setMaxCheckoutStepAllowed(3);
         api?.scrollNext();
         handleConfetti(resolvedTheme === "dark");
