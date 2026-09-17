@@ -11,6 +11,7 @@ export interface Site {
   neighborhood: string;
   created_at: Date;
   updated_at: Date;
+  from_phone_number: string;
   settings: SiteSettings | null;
 }
 
@@ -38,6 +39,8 @@ export const OVERDUE_PENALTY_OPTS = [
 ] as const;
 export type PenaltyOption = (typeof OVERDUE_PENALTY_OPTS)[number];
 
+export type ReminderMap = Record<string, ("email" | "text")[]>;
+
 export interface SiteSettings {
   // General settings
   email_notification_recipients: string[] | undefined;
@@ -50,6 +53,7 @@ export interface SiteSettings {
   return_extension: DurationOption | undefined;
   return_extension_limit: number | "Unlimited" | undefined;
   overdue_penalty: PenaltyOption | undefined;
+  reminders: ReminderMap | undefined;
 }
 
 export interface Region {

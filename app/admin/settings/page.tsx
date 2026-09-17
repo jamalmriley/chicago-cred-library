@@ -32,6 +32,12 @@ import {
   FieldTitle,
 } from "@/components/ui/field";
 import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  InputGroupText,
+} from "@/components/ui/input-group";
+import {
   Select,
   SelectContent,
   SelectGroup,
@@ -43,6 +49,14 @@ import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
 import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useAppContext } from "@/contexts/app-context";
 import { useSites } from "@/hooks/use-sites";
 import { useUsers } from "@/hooks/use-users";
@@ -52,6 +66,7 @@ import {
   getSiteById,
   OVERDUE_PENALTY_OPTS,
   PenaltyOption,
+  ReminderMap,
   RETURN_DURATION_OPTS,
   Site,
 } from "@/types/cred";
@@ -63,7 +78,7 @@ import { toast } from "sonner";
 export const dynamic = "force-dynamic";
 
 export default function SettingsPage() {
-  const { lastUpdated, setLastUpdated, today } = useAppContext();
+  const { today } = useAppContext();
   const anchor = useComboboxAnchor();
   const { sites } = useSites();
   const { isLoaded, user } = useUser();
@@ -132,6 +147,18 @@ export default function SettingsPage() {
     currSite?.settings?.email_notification_recipients ?? [],
   );
 
+  const [reminders, setReminders] = useState<ReminderMap | undefined>(
+    currSite?.settings?.reminders,
+  );
+  const [customReminder, setCustomReminder] = useState<string>(
+    Object.keys(currSite?.settings?.reminders ?? {}).find(
+      (key) => key !== "0" && key !== "1",
+    ) ?? "",
+  );
+  const isCustomReminderInvalid =
+    customReminder !== "" &&
+    (Number(customReminder) < 2 || Number(customReminder) > 7);
+
   const allRecipients: string[] =
     users?.map((user) => user.emailAddresses[0].emailAddress).sort() ?? [];
 
@@ -149,7 +176,7 @@ export default function SettingsPage() {
             position: "bottom-right",
           },
         );
-        setLastUpdated(new Date().toString());
+        // setLastUpdated(new Date().toString());
       })
       .catch(() => {
         toast.error(
@@ -212,7 +239,13 @@ export default function SettingsPage() {
 
     // Communication
     setRecipients(currSite.settings?.email_notification_recipients ?? []);
-  }, [currSite, lastUpdated]);
+    setReminders(currSite.settings?.reminders);
+    setCustomReminder(
+      Object.keys(currSite.settings?.reminders ?? {}).find(
+        (key) => key !== "0" && key !== "1",
+      ) ?? "",
+    );
+  }, [currSite]);
 
   useEffect(() => {
     if (user?.publicMetadata.defaultSiteId) {
@@ -270,11 +303,12 @@ export default function SettingsPage() {
                       ? "Unlimited"
                       : returnExtensionLimit,
                     overdue_penalty: overduePenalty,
+                    reminders,
                   },
                 };
                 handleUpdateSite(site);
               }}
-              disabled={!currSite || isLoading}
+              disabled={!currSite || isLoading || isCustomReminderInvalid}
             >
               <Save /> {isLoading ? "Saving..." : "Save"}
               {isLoading && <Spinner data-icon="inline-start" />}
@@ -657,6 +691,246 @@ export default function SettingsPage() {
                   <FieldDescription className="text-xs">
                     Users who will receive email notifications about participant
                     reading activity.
+                  </FieldDescription>
+                </Field>
+
+                <Field>
+                  <FieldLabel>Reminders</FieldLabel>
+                  <FieldDescription className="text-xs">
+                    Choose when participants are reminded about checked out
+                    books. Reminders are sent at 9 AM.
+                  </FieldDescription>
+
+                  <Table className="text-sm">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-32" />
+                        <TableHead className="text-center">Email</TableHead>
+                        <TableHead className="text-center">Text</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell className="font-medium">Day of</TableCell>
+                        <TableCell align="center">
+                          <Checkbox
+                            checked={reminders?.["0"]?.includes("email")}
+                            onCheckedChange={(checked) => {
+                              setReminders((prev) => {
+                                const current = prev?.["0"] ?? [];
+
+                                const set: Set<"email" | "text"> = new Set(
+                                  checked
+                                    ? [...current, "email"]
+                                    : current.filter(
+                                        (type) => type !== "email",
+                                      ),
+                                );
+
+                                return { ...prev, ["0"]: [...set] };
+                              });
+                            }}
+                            disabled={!isEditing || isLoading}
+                          />
+                        </TableCell>
+                        <TableCell align="center">
+                          <Checkbox
+                            checked={reminders?.["0"]?.includes("text")}
+                            onCheckedChange={(checked) => {
+                              setReminders((prev) => {
+                                const current = prev?.["0"] ?? [];
+
+                                const set: Set<"email" | "text"> = new Set(
+                                  checked
+                                    ? [...current, "text"]
+                                    : current.filter((type) => type !== "text"),
+                                );
+
+                                return { ...prev, ["0"]: [...set] };
+                              });
+                            }}
+                            disabled={!isEditing || isLoading}
+                          />
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium">
+                          Day before
+                        </TableCell>
+                        <TableCell align="center">
+                          <Checkbox
+                            checked={reminders?.["1"]?.includes("email")}
+                            onCheckedChange={(checked) => {
+                              setReminders((prev) => {
+                                const current = prev?.["1"] ?? [];
+
+                                const set: Set<"email" | "text"> = new Set(
+                                  checked
+                                    ? [...current, "email"]
+                                    : current.filter(
+                                        (type) => type !== "email",
+                                      ),
+                                );
+
+                                return { ...prev, ["1"]: [...set] };
+                              });
+                            }}
+                            disabled={!isEditing || isLoading}
+                          />
+                        </TableCell>
+                        <TableCell align="center">
+                          <Checkbox
+                            checked={reminders?.["1"]?.includes("text")}
+                            onCheckedChange={(checked) => {
+                              setReminders((prev) => {
+                                const current = prev?.["1"] ?? [];
+
+                                const set: Set<"email" | "text"> = new Set(
+                                  checked
+                                    ? [...current, "text"]
+                                    : current.filter((type) => type !== "text"),
+                                );
+
+                                return { ...prev, ["1"]: [...set] };
+                              });
+                            }}
+                            disabled={!isEditing || isLoading}
+                          />
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium">
+                          <InputGroup className="w-32">
+                            <InputGroupInput
+                              placeholder="3"
+                              className="text-center"
+                              value={customReminder}
+                              onChange={(e) => {
+                                const { value } = e.target;
+                                if (/^\d*$/.test(value)) {
+                                  setCustomReminder(value);
+                                }
+                              }}
+                              disabled={!isEditing || isLoading}
+                              aria-invalid={isCustomReminderInvalid}
+                            />
+                            <InputGroupAddon align="inline-end">
+                              <InputGroupText>days before</InputGroupText>
+                            </InputGroupAddon>
+                          </InputGroup>
+                        </TableCell>
+                        <TableCell align="center">
+                          <Checkbox
+                            checked={
+                              customReminder !== "" &&
+                              !["0", "1"].includes(customReminder) &&
+                              reminders?.[customReminder]?.includes("email")
+                            }
+                            onCheckedChange={(checked) => {
+                              if (isCustomReminderInvalid) return;
+
+                              setReminders((prev) => {
+                                const current = prev?.[customReminder] ?? [];
+
+                                const set = new Set<"email" | "text">(
+                                  checked
+                                    ? [...current, "email"]
+                                    : current.filter(
+                                        (type) => type !== "email",
+                                      ),
+                                );
+
+                                const filtered = Object.fromEntries(
+                                  Object.entries(prev ?? {}).filter(
+                                    ([key]) =>
+                                      key === "0" ||
+                                      key === "1" ||
+                                      key === customReminder,
+                                  ),
+                                );
+
+                                return Object.fromEntries(
+                                  Object.entries({
+                                    ...filtered,
+                                    [customReminder]: [...set],
+                                  }).filter(([, value]) => value.length > 0),
+                                );
+                              });
+
+                              if (
+                                !checked &&
+                                !reminders?.[customReminder]?.includes("text")
+                              ) {
+                                setCustomReminder("");
+                              }
+                            }}
+                            disabled={
+                              isCustomReminderInvalid ||
+                              customReminder === "" ||
+                              !isEditing ||
+                              isLoading
+                            }
+                          />
+                        </TableCell>
+                        <TableCell align="center">
+                          <Checkbox
+                            checked={
+                              customReminder !== "" &&
+                              !["0", "1"].includes(customReminder) &&
+                              reminders?.[customReminder]?.includes("text")
+                            }
+                            onCheckedChange={(checked) => {
+                              if (isCustomReminderInvalid) return;
+
+                              setReminders((prev) => {
+                                const current = prev?.[customReminder] ?? [];
+
+                                const set = new Set<"email" | "text">(
+                                  checked
+                                    ? [...current, "text"]
+                                    : current.filter((type) => type !== "text"),
+                                );
+
+                                const filtered = Object.fromEntries(
+                                  Object.entries(prev ?? {}).filter(
+                                    ([key]) =>
+                                      key === "0" ||
+                                      key === "1" ||
+                                      key === customReminder,
+                                  ),
+                                );
+
+                                return Object.fromEntries(
+                                  Object.entries({
+                                    ...filtered,
+                                    [customReminder]: [...set],
+                                  }).filter(([, value]) => value.length > 0),
+                                );
+                              });
+
+                              if (
+                                !checked &&
+                                !reminders?.[customReminder]?.includes("email")
+                              ) {
+                                setCustomReminder("");
+                              }
+                            }}
+                            disabled={
+                              isCustomReminderInvalid ||
+                              customReminder === "" ||
+                              !isEditing ||
+                              isLoading
+                            }
+                          />
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+
+                  <FieldDescription className="text-xs text-destructive">
+                    {isCustomReminderInvalid
+                      ? "Please enter a number between 2 and 7."
+                      : ""}
                   </FieldDescription>
                 </Field>
               </FieldGroup>

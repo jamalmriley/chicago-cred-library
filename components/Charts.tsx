@@ -123,7 +123,7 @@ export function CheckoutsByPurpose({
   const chartConfig = {
     checkouts: { label: "Checkouts" },
     self: {
-      label: "Myself",
+      label: "Self",
       color: "var(--chart-1)",
     },
     children: {

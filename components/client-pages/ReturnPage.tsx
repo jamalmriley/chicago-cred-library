@@ -104,33 +104,19 @@ export default function ReturnPage() {
           returns.map((item) => updateBookAvailability(item.book.id, 1, today)),
         );
 
-        let fromPhoneNumber: string = "+17732348917";
-        switch (siteInfo?.id) {
-          case "ypc":
-            fromPhoneNumber = "+13123194642";
-            break;
-          case "wc":
-            fromPhoneNumber = "+13123194642";
-            break;
-          case "ws_hub_1":
-            fromPhoneNumber = "+13127571794";
-            break;
-          case "ws_hub_2":
-            fromPhoneNumber = "+13127571806";
-            break;
-          case "ws_hub_3":
-            fromPhoneNumber = "+13122700741";
-            break;
-          case undefined:
-            fromPhoneNumber = "+17732348917";
-            break;
-          default:
-            fromPhoneNumber = "+17732348917";
-            break;
-        }
+        await fetch("/api/send", {
+          method: "POST",
+          body: JSON.stringify({
+            books: returns,
+            emailType: "return",
+            participant,
+            ccRecipients: siteInfo?.settings?.email_notification_recipients,
+          }),
+        });
 
         const message = `CRED Library: Your book return is complete. We hope you enjoyed your book${returns.length === 1 ? "" : "s"}, ${participant.first_name}!`;
 
+        const fromPhoneNumber = siteInfo?.from_phone_number ?? "+17732348917";
         await sendGotoSms(fromPhoneNumber, [participant.phone], message);
         await sendGotoSms(fromPhoneNumber, ["+17736290679"], message);
 

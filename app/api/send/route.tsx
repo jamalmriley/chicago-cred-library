@@ -1,4 +1,4 @@
-import { CheckoutReceipt } from "@/components/EmailTemplates";
+import { CheckoutEmail, ReturnEmail } from "@/components/EmailTemplates";
 import { Participant } from "@/types/cred";
 import { CheckoutItem } from "@/types/library";
 import { NextRequest, NextResponse } from "next/server";
@@ -16,11 +16,13 @@ export async function POST(request: NextRequest) {
 
   const body = await request.json();
   const {
-    cart,
+    books,
+    emailType,
     participant,
     ccRecipients,
   }: {
-    cart: CheckoutItem[];
+    books: CheckoutItem[];
+    emailType: string;
     participant: Participant;
     ccRecipients: string[] | undefined;
   } = body;
@@ -31,28 +33,46 @@ export async function POST(request: NextRequest) {
       { status: 400 },
     );
 
-  if (!cart || !Array.isArray(cart) || cart.length === 0)
+  if (!books || !Array.isArray(books) || books.length === 0)
     return NextResponse.json(
-      { error: "Missing or invalid cart." },
+      { error: "Missing or invalid books." },
       { status: 400 },
     );
 
   try {
-    const { data, error } = await resend.emails.send({
-      from: "Chicago CRED Library<notifications@creducation.app>",
-      cc: ccRecipients,
-      bcc: ["CRED Education Team<crededucation@chicagocred.com>"],
-      to: participant.email,
-      subject: "Your library checkout receipt 📚",
-      react: <CheckoutReceipt cart={cart} participant={participant} />,
-      replyTo: "CRED Education Team<crededucation@chicagocred.com>",
-    });
+    if (emailType === "checkout") {
+      const { data, error } = await resend.emails.send({
+        from: "Chicago CRED Library<notifications@creducation.app>",
+        cc: ccRecipients,
+        bcc: ["CRED Education Team<crededucation@chicagocred.com>"],
+        to: participant.email,
+        subject: "Your library checkout receipt 📚",
+        react: <CheckoutEmail books={books} participant={participant} />,
+        replyTo: "CRED Education Team<crededucation@chicagocred.com>",
+      });
 
-    if (error) {
-      return NextResponse.json({ error }, { status: 500 });
+      if (error) {
+        return NextResponse.json({ error }, { status: 500 });
+      }
+
+      return NextResponse.json(data);
+    } else if (emailType === "return") {
+      const { data, error } = await resend.emails.send({
+        from: "Chicago CRED Library<notifications@creducation.app>",
+        cc: ccRecipients,
+        bcc: ["CRED Education Team<crededucation@chicagocred.com>"],
+        to: participant.email,
+        subject: "Your library return receipt 📚",
+        react: <ReturnEmail books={books} participant={participant} />,
+        replyTo: "CRED Education Team<crededucation@chicagocred.com>",
+      });
+
+      if (error) {
+        return NextResponse.json({ error }, { status: 500 });
+      }
+
+      return NextResponse.json(data);
     }
-
-    return NextResponse.json(data);
   } catch (error) {
     console.error("Error sending email:", error);
     return NextResponse.json({ error }, { status: 500 });

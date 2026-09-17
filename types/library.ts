@@ -93,7 +93,7 @@ export type ManualBook = Omit<Partial<GoogleBooks.Book>, "volumeInfo"> & {
 };
 
 export type BookInfo = GoogleBooks.Book | ManualBook;
-export type CheckoutPurpose = "Self" | "Children" | "Family" | undefined;
+export type CheckoutPurpose = "Self" | "Child(ren)" | "Family" | undefined;
 
 export interface LibraryBook {
   id: string;

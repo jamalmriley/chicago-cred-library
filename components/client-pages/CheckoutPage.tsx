@@ -92,7 +92,8 @@ export default function CheckoutPage() {
         await fetch("/api/send", {
           method: "POST",
           body: JSON.stringify({
-            cart,
+            books: cart,
+            emailType: "checkout",
             participant,
             ccRecipients: siteInfo?.settings?.email_notification_recipients,
           }),
@@ -100,37 +101,13 @@ export default function CheckoutPage() {
 
         const returnWindow = siteInfo?.settings?.return_window ?? "1 week";
 
-        let fromPhoneNumber: string = "+17732348917";
-        switch (siteInfo?.id) {
-          case "ypc":
-            fromPhoneNumber = "+13123194642";
-            break;
-          case "wc":
-            fromPhoneNumber = "+13123194642";
-            break;
-          case "ws_hub_1":
-            fromPhoneNumber = "+13127571794";
-            break;
-          case "ws_hub_2":
-            fromPhoneNumber = "+13127571806";
-            break;
-          case "ws_hub_3":
-            fromPhoneNumber = "+13122700741";
-            break;
-          case undefined:
-            fromPhoneNumber = "+17732348917";
-            break;
-          default:
-            fromPhoneNumber = "+17732348917";
-            break;
-        }
-
         const message = `CRED Library: ${participant.first_name}, your checkout is complete. We hope you enjoy your book${cart.length === 1 ? "" : "s"}!\n\n${cart.length === 1 ? "It's" : "They're"} due back ${
           returnWindow
             ? `in ${returnWindow}, on ${format(dueDate, "eeee, MMMM d, yyyy")}`
             : "soon"
         }.`;
 
+        const fromPhoneNumber = siteInfo?.from_phone_number ?? "+17732348917";
         await sendGotoSms(fromPhoneNumber, [participant.phone], message);
         await sendGotoSms(fromPhoneNumber, ["+17736290679"], message);
 

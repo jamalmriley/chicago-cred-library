@@ -87,17 +87,17 @@ function BookLineItem({
     {
       label: "Me",
       description: "I will read this book myself.",
-      value: "self",
+      value: "Self",
     },
     {
       label: "My kid(s)",
       description: "My kid(s) will read this book.",
-      value: "child(ren)",
+      value: "Child(ren)",
     },
     {
       label: "Me and my kid(s)",
       description: "My kid(s) and I will read this book together.",
-      value: "family",
+      value: "Family",
     },
   ];
 
