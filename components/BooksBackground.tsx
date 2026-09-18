@@ -25,7 +25,7 @@ function BookCard({ book }: { book: LibraryBook }) {
   );
 }
 
-export default function Marquee3D({
+export default function BooksBackground({
   books,
   className,
 }: {
@@ -57,10 +57,10 @@ export default function Marquee3D({
       <div className="flex h-full w-full flex-row items-center justify-center gap-4 [perspective:300px]">
         <div
           className="flex flex-row items-center gap-4"
-          style={{
-            transform:
-              "translateX(-200px) translateY(0px) translateZ(-100px) rotateX(20deg) rotateY(-10deg) rotateZ(20deg)",
-          }}
+          // style={{
+          //   transform:
+          //     "translateX(-200px) translateY(0px) translateZ(-100px) rotateX(20deg) rotateY(-10deg) rotateZ(20deg)",
+          // }}
         >
           {splitBooksEvenly(8)
             .filter((col) => col !== null)
@@ -83,10 +83,10 @@ export default function Marquee3D({
       </div>
 
       {/* Gradients */}
-      <div className="from-background/85 pointer-events-none absolute inset-x-0 top-0 h-1/4 bg-linear-to-b" />
-      <div className="from-background/85 pointer-events-none absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t" />
-      <div className="from-background/85 pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r" />
-      <div className="from-background/85 pointer-events-none absolute inset-y-0 right-0 w-1/4 bg-gradient-to-l" />
+      <div className="from-background/75 pointer-events-none absolute inset-x-0 top-0 h-1/4 bg-linear-to-b" />
+      <div className="from-background/75 pointer-events-none absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t" />
+      <div className="from-background/75 pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r" />
+      <div className="from-background/75 pointer-events-none absolute inset-y-0 right-0 w-1/4 bg-gradient-to-l" />
     </div>
   );
 }

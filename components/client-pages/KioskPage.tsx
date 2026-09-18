@@ -19,12 +19,12 @@ import {
 } from "@/components/ui/item";
 import { useSites } from "@/hooks/use-sites";
 import { getSiteById } from "@/types/cred";
+import { LibraryBook } from "@/types/library";
 import { Building, ChevronDown, LibraryBig, ScanBarcode } from "lucide-react";
 import Link from "next/link";
 import { useQueryState } from "nuqs";
-import Marquee3D from "../BookMarquee";
 import { useEffect, useState } from "react";
-import { LibraryBook } from "@/types/library";
+import BooksBackground from "../BooksBackground";
 import { Highlighter } from "../ui/highlighter";
 
 export default function KioskPage() {
@@ -59,7 +59,7 @@ export default function KioskPage() {
     <div className="relative min-h-dvh flex flex-col justify-center items-center gap-5 overflow-hidden">
       {/* Background marquee */}
       <div className="absolute inset-0 opacity-20">
-        <Marquee3D books={books} />
+        <BooksBackground books={books} />
       </div>
 
       {/* Foreground content */}
