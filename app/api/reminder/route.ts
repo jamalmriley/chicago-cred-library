@@ -39,8 +39,7 @@ export async function GET() {
     )) {
       const unreturnedBooks = participant.checkout_history.filter((item) => {
         if (!item || !item.due_date) return false;
-
-        const dueDate = new Date(String(item.due_date));
+        const dueDate = new Date(item.due_date);
         const daysUntilDue = Math.ceil(
           (dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24), // ms * sec * min * hour
         );
@@ -48,6 +47,8 @@ export async function GET() {
 
         return !item.is_returned && isTimeToRemind;
       });
+
+      if (unreturnedBooks.length === 0) continue;
 
       const canSendEmail = reminderTypes.includes("email");
       const canSendText = reminderTypes.includes("text");
