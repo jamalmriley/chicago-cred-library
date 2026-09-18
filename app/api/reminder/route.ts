@@ -37,17 +37,17 @@ export async function GET() {
     for (const [daysUntilReminder, reminderTypes] of Object.entries(
       reminders,
     )) {
-      const unreturnedBooks = participant.checkout_history.filter((item) => {
-        if (!item || !item.due_date) return false;
+      const unreturnedBooks = participant.checkout_history
+        .filter((item) => item && item.due_date)
+        .filter((item) => {
+          const dueDate = new Date(String(item.due_date));
+          const daysUntilDue = Math.ceil(
+            (dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24), // ms * sec * min * hour
+          );
+          const isTimeToRemind = daysUntilDue === Number(daysUntilReminder);
 
-        const dueDate = new Date(String(item.due_date));
-        const daysUntilDue = Math.ceil(
-          (dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24), // ms * sec * min * hour
-        );
-        const isTimeToRemind = daysUntilDue === Number(daysUntilReminder);
-
-        return !item.is_returned && isTimeToRemind;
-      });
+          return !item.is_returned && isTimeToRemind;
+        });
 
       const canSendEmail = reminderTypes.includes("email");
       const canSendText = reminderTypes.includes("text");
