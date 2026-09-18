@@ -142,7 +142,8 @@ export function ReminderEmail({ books, participant }: EmailTemplateProps) {
           </Text>
           <Text style={{ fontSize: "15px", color: "#222" }}>
             As a reminder, your {books.length === 1 ? "book is" : "books are"}{" "}
-            due {formatRelative(books[0].due_date, new Date())}.
+            due soon.
+            {/* due {formatRelative(books[0].due_date, new Date())}. */}
           </Text>
           <Hr style={{ borderColor: "#ebebeb", margin: "20px 0" }} />
 
