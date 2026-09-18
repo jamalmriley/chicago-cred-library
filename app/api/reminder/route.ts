@@ -8,7 +8,7 @@ import { Resend } from "resend";
 const apiKey = process.env.RESEND_API_KEY;
 const resend = new Resend(apiKey);
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   if (!apiKey)
     return NextResponse.json(
       { error: "Missing Resend API Key." },
