@@ -1,8 +1,10 @@
+export const dynamic = "force-dynamic";
+
 import { ReminderEmail } from "@/components/EmailTemplates";
 import { sendGotoSms } from "@/lib/goto";
 import { supabase } from "@/lib/supabase";
 import { Participant, Site } from "@/types/cred";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
 const apiKey = process.env.RESEND_API_KEY;
