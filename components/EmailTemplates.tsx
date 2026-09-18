@@ -203,10 +203,9 @@ export function ReminderEmail({ books, participant }: EmailTemplateProps) {
           <Hr style={{ borderColor: "#ebebeb", margin: "20px 0" }} />
           <Text style={{ fontSize: "14px", color: "#222" }}>
             {books.length === 1 ? "This book is" : "These books are"} due{" "}
-            <strong>{format(books[0].due_date, "eeee, MMMM d, yyyy")}</strong>.
-            Please return them directly to your tutor or the library book return
-            are. If you have any questions, please reply to this email or reach
-            out to your tutor.
+            <strong>soon</strong>. Please return them directly to your tutor or
+            the library book return are. If you have any questions, please reply
+            to this email or reach out to your tutor.
           </Text>
           <Text style={{ fontSize: "14px", color: "#222" }}>
             Sincerely,
