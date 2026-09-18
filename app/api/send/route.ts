@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
         bcc: ["CRED Education Team<crededucation@chicagocred.com>"],
         to: participant.email,
         subject: "Your library checkout receipt 📚",
-        react: <CheckoutEmail books={books} participant={participant} />,
+        react: CheckoutEmail({ books, participant }),
         replyTo: "CRED Education Team<crededucation@chicagocred.com>",
       });
 
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
         bcc: ["CRED Education Team<crededucation@chicagocred.com>"],
         to: participant.email,
         subject: "Your library return receipt 📚",
-        react: <ReturnEmail books={books} participant={participant} />,
+        react: ReturnEmail({ books, participant }),
         replyTo: "CRED Education Team<crededucation@chicagocred.com>",
       });
 

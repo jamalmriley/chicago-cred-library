@@ -58,12 +58,7 @@ export async function GET(request: NextRequest) {
             bcc: ["CRED Education Team<crededucation@chicagocred.com>"],
             to: participant.email,
             subject: `Reminder: ${reminderSubject} 📚`,
-            react: (
-              <ReminderEmail
-                books={unreturnedBooks}
-                participant={participant}
-              />
-            ),
+            react: ReminderEmail({ books: unreturnedBooks, participant }),
             replyTo: "CRED Education Team<crededucation@chicagocred.com>",
           });
 
