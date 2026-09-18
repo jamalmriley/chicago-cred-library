@@ -38,6 +38,8 @@ export async function GET() {
       reminders,
     )) {
       const unreturnedBooks = participant.checkout_history.filter((item) => {
+        if (!item || !item.due_date) return false;
+
         const dueDate = new Date(item.due_date);
         const daysUntilDue = Math.ceil(
           (dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24), // ms * sec * min * hour
