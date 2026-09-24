@@ -257,10 +257,9 @@ export default function SettingsPage() {
   return (
     <div>
       {/* Header */}
-      <div className="w-full flex justify-between items-baseline">
+      <div className="w-full flex flex-col md:flex-row justify-between items-baseline">
         <h1 className="h1">Settings</h1>
-        <div className="flex items-center gap-3">
-          <span className="font-medium">Site:</span>
+        <div className="flex items-center gap-3 mb-5 md:mb-0">
           <SiteSelect selectedSite={currSite} setSelectedSite={setCurrSite} />
           {hasPermission({ user, action: "update", resource: "settings" }) && (
             <Separator orientation="vertical" decorative />
@@ -323,7 +322,7 @@ export default function SettingsPage() {
         library settings.
       </p>
 
-      <div className="flex gap-5">
+      <div className="flex flex-col md:flex-row gap-5">
         {/* Checkout Settings */}
         <Card className="flex-1">
           <CardHeader className="group">

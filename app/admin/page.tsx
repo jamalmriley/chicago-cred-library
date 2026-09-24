@@ -19,15 +19,15 @@ export default function AdminPage() {
 
   return (
     // 92px is the height of the sidebar trigger.
-    <div className="w-full h-[calc(100dvh-92px)] flex flex-col">
+    <div className="w-full h-full md:h-[calc(100dvh-92px)] flex flex-col">
       <h1 className="h1">Dashboard</h1>
       <p className="mb-5 text-sm text-muted-foreground">
         View reading activity and metrics.
       </p>
       {/* Cards */}
-      <div className="size-full flex gap-5 min-h-0">
-        <div className="w-3/4 h-full flex flex-col gap-5">
-          <div className="w-full h-1/2 flex gap-5 min-h-0">
+      <div className="size-full flex flex-col md:flex-row gap-5 min-h-0">
+        <div className="w-full md:w-3/4 md:h-full flex flex-col gap-5">
+          <div className="w-full md:h-1/2 flex flex-col md:flex-row gap-5 min-h-0">
             <CheckoutsOverTime
               participants={participants}
               isLoading={participantsLoading}
@@ -39,8 +39,8 @@ export default function AdminPage() {
               error={participantsError}
             />
           </div>
-          <div className="w-full h-1/2 flex gap-5 min-h-0">
-            <div className="w-2/3 h-full flex gap-5">
+          <div className="w-full md:h-1/2 flex flex-col md:flex-row gap-5 min-h-0">
+            <div className="w-full md:w-2/3 md:h-full flex flex-col md:flex-row gap-5">
               <MostReadGenres
                 participants={participants}
                 isLoading={participantsLoading}
@@ -48,14 +48,14 @@ export default function AdminPage() {
               />
 
               {/* KPI Cards */}
-              <div className="w-full h-full flex flex-col gap-5  min-h-0">
+              <div className="w-full md:h-full flex flex-col gap-5 md:min-h-0">
                 <PageGauge
                   participants={participants}
                   isLoading={participantsLoading}
                   error={participantsError}
                 />
 
-                <div className="w-full h-1/2 flex gap-5 min-h-0">
+                <div className="w-full md:h-1/2 flex gap-5 md:min-h-0">
                   <KpiCard
                     value={activeReaders}
                     labelSingular="reader"

@@ -65,7 +65,7 @@ export function CheckoutsOverTime({
     },
   } satisfies ChartConfig;
   return (
-    <Card className="w-2/3 card">
+    <Card className="w-full md:w-2/3 card">
       <CardHeader className="card-header">
         <CardTitle>Checkouts over time</CardTitle>
         <CardDescription className="flex items-center gap-2 leading-none font-medium">
@@ -141,7 +141,7 @@ export function CheckoutsByPurpose({
   }, [chartData]);
 
   return (
-    <Card className="w-1/3 card">
+    <Card className="w-full md:w-1/3 card">
       <CardHeader className="card-header">
         <CardTitle>Checkouts by purpose</CardTitle>
         <CardDescription className="flex items-center gap-2 leading-none font-medium">
@@ -189,7 +189,7 @@ export function CheckoutsByPurpose({
                             y={(viewBox.cy || 0) + 24}
                             className="fill-muted-foreground"
                           >
-                            Checkouts
+                            {totalCheckouts === 1 ? "Checkout" : "Checkouts"}
                           </tspan>
                         </text>
                       );
@@ -266,7 +266,7 @@ export function ReadingPaceDistribution({
   } satisfies ChartConfig;
 
   return (
-    <Card className="w-1/3 card">
+    <Card className="w-full md:w-1/3 card">
       <CardHeader className="card-header">
         <CardTitle>Reading pace distribution</CardTitle>
         <CardDescription className="flex items-center gap-2 leading-none font-medium">
@@ -364,7 +364,7 @@ export function TopReaders({
   const data = getTopReaders(participants);
   const { sites } = useSites();
   return (
-    <Card className="w-1/4 h-full">
+    <Card className="w-full md:w-1/4 h-full">
       <CardHeader>
         <CardTitle>Top readers</CardTitle>
         <CardDescription className="flex items-center gap-2 leading-none font-medium">

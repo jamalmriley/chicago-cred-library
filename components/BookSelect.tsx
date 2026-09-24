@@ -112,7 +112,7 @@ export default function BookSelect() {
   return (
     <div className="size-full flex flex-col gap-5">
       {/* Buttons */}
-      <span className="w-full flex gap-2 justify-center">
+      <span className="w-full flex flex-wrap gap-2 justify-center">
         {alphabet.map((letter) => (
           <Button
             key={letter}
