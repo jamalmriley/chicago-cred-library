@@ -9,6 +9,7 @@ import { getSiteById, Site } from "@/types/cred";
 import { Action } from "@/types/data";
 import { GoogleBooks, LibraryBook, ManualBook } from "@/types/library";
 import { useUser } from "@clerk/nextjs";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import { Info, LibraryBig, Pencil, Plus, Trash, X } from "lucide-react";
 import { Dispatch, SetStateAction, useState } from "react";
 import { toast } from "sonner";
@@ -32,10 +33,10 @@ import {
 import { Field, FieldGroup, FieldLabel } from "./ui/field";
 import { Input } from "./ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Separator } from "./ui/separator";
 import { Spinner } from "./ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Textarea } from "./ui/textarea";
-import { Separator } from "./ui/separator";
 
 const actionInfo = {
   create: {
@@ -322,12 +323,12 @@ function AdminBookForm({
     volumeInfo?.categories.join(", ") ?? "",
   );
   const [pageCount, setPageCount] = useState(
-    String(volumeInfo?.pageCount) ?? "",
+    String(volumeInfo?.pageCount ?? "") ?? "",
   );
 
   const [isTestData, setIsTestData] = useState(false);
 
-  const isButtonDisabled: boolean =
+  const isSubmitButtonDisabled: boolean =
     !selectedSite ||
     title === "" ||
     authors.filter((author) => author !== "").length === 0 ||
@@ -337,6 +338,12 @@ function AdminBookForm({
     description === "" ||
     category === "" ||
     pageCount === "";
+
+  const isGeminiButtonDisabled: boolean =
+    title === "" &&
+    isbn.length !== 10 &&
+    isbn.length !== 12 &&
+    isbn.length !== 13;
 
   const clearAllFields = () => {
     setSelectedSite(null);
@@ -456,6 +463,72 @@ function AdminBookForm({
       .finally(() => setIsLoading(false));
   };
 
+  const handleCompleteWithGemini = async () => {
+    await setIsLoading(true);
+
+    try {
+      const res = await fetch("/api/gemini", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          authors,
+          publishedDate,
+          isbn,
+          description,
+          category,
+          pageCount,
+        }),
+      });
+
+      const { data, error } = (await res.json()) as {
+        data: ManualBook;
+        error: string;
+      };
+      if (data) {
+        await console.log(data);
+        if (title === "" && data.volumeInfo.title) {
+          setTitle(data.volumeInfo.title);
+        }
+        if (
+          authors.filter((author) => author !== "").length === 0 &&
+          data.volumeInfo.authors
+        ) {
+          setAuthors(data.volumeInfo.authors);
+          setAuthorCount(data.volumeInfo.authors.length);
+        }
+        if (!publishedDate && data.volumeInfo.publishedDate) {
+          setPublishedDate(safeParseDate(data.volumeInfo.publishedDate));
+        }
+        if (isbn === "" && data.volumeInfo.industryIdentifiers) {
+          setIsbn(getPreferredIsbn(data.volumeInfo.industryIdentifiers));
+        }
+        if (description === "" && data.volumeInfo.description) {
+          setDescription(data.volumeInfo.description);
+        }
+        if (category === "" && data.volumeInfo.categories) {
+          setCategory(data.volumeInfo.categories.join(", "));
+        }
+        if (pageCount === "" && data.volumeInfo.pageCount) {
+          setPageCount(String(data.volumeInfo.pageCount));
+        }
+        toast.success("Book information completed with Gemini.", {
+          position: "bottom-right",
+        });
+      } else {
+        toast.error(error || "Something went wrong.", {
+          position: "bottom-right",
+        });
+      }
+    } catch (err) {
+      toast.error("Failed to connect to the server.", {
+        position: "bottom-right",
+      });
+    } finally {
+      await setIsLoading(false);
+    }
+  };
+
   if (!isLoaded || !user || !sites) return; // TODO: Add a loading and error state.
   return (
     <div className="h-full flex flex-col gap-5">
@@ -494,7 +567,7 @@ function AdminBookForm({
               renderBook={(book) => (
                 <AdminScanBookLineItem
                   book={book}
-                  isDisabled={isButtonDisabled}
+                  isDisabled={isSubmitButtonDisabled}
                   onAdd={(options) => {
                     const created_at = new Date();
                     const siteInfo = getSiteById(
@@ -732,64 +805,82 @@ function AdminBookForm({
               </AbacField>
             </>
           )}
-          {/* Submit Button */}
+          {/* Buttons */}
           {action !== "read" && (
-            <Button
-              type="submit"
-              variant={action === "delete" ? "destructive" : "default"}
-              className="w-full molde-button"
-              disabled={isLoading || isButtonDisabled}
-              onClick={() => {
-                if (!selectedSite || !publishedDate) return;
+            <span className="flex justify-between">
+              <Button
+                variant="outline"
+                className="w-[47.5%] h-9 flex molde-button"
+                disabled={isLoading || isGeminiButtonDisabled}
+                onClick={handleCompleteWithGemini}
+              >
+                Finish with
+                <DotLottieReact
+                  src="/images/gemini.lottie"
+                  loop
+                  autoplay
+                  className={`w-auto h-7 mb-1 ${isGeminiButtonDisabled ? "grayscale" : ""}`}
+                />
+              </Button>
+              <Button
+                type="submit"
+                variant={action === "delete" ? "destructive" : "default"}
+                className="w-[47.5%] molde-button"
+                disabled={isLoading || isSubmitButtonDisabled}
+                onClick={() => {
+                  if (!selectedSite || !publishedDate) return;
 
-                const book_info: ManualBook = {
-                  ...(data?.book_info ?? {}), // This preserves existing GoogleBooks.Book data, if any.
-                  volumeInfo: {
-                    ...(data?.book_info.volumeInfo ?? {}), // This preserves existing fields for updating books.
-                    title,
-                    authors,
-                    publishedDate: publishedDate.toDateString(),
-                    description,
-                    industryIdentifiers: [
-                      {
-                        type: isbn.length === 10 ? "ISBN_10" : "ISBN_13",
-                        identifier: isbn,
-                      },
-                    ],
-                    pageCount: parseInt(pageCount),
-                    categories: [...category.split(",").map((el) => el.trim())],
-                  },
-                };
+                  const book_info: ManualBook = {
+                    ...(data?.book_info ?? {}), // This preserves existing GoogleBooks.Book data, if any.
+                    volumeInfo: {
+                      ...(data?.book_info.volumeInfo ?? {}), // This preserves existing fields for updating books.
+                      title,
+                      authors,
+                      publishedDate: publishedDate.toDateString(),
+                      description,
+                      industryIdentifiers: [
+                        {
+                          type: isbn.length === 10 ? "ISBN_10" : "ISBN_13",
+                          identifier: isbn,
+                        },
+                      ],
+                      pageCount: parseInt(pageCount),
+                      categories: [
+                        ...category.split(",").map((el) => el.trim()),
+                      ],
+                    },
+                  };
 
-                const id =
-                  data?.id ??
-                  `${isTestData ? "test_" : selectedSite.id + "_"}${isbn}`;
+                  const id =
+                    data?.id ??
+                    `${isTestData ? "test_" : selectedSite.id + "_"}${isbn}`;
 
-                const today = new Date();
-                const book: LibraryBook = {
-                  id,
-                  book_info,
-                  site: selectedSite,
-                  available_count: data?.available_count ?? 1,
-                  total_count: data?.total_count ?? 1,
-                  created_at: data?.created_at ?? today,
-                  updated_at: today,
-                  checkout_history: data?.checkout_history ?? null,
-                };
+                  const today = new Date();
+                  const book: LibraryBook = {
+                    id,
+                    book_info,
+                    site: selectedSite,
+                    available_count: data?.available_count ?? 1,
+                    total_count: data?.total_count ?? 1,
+                    created_at: data?.created_at ?? today,
+                    updated_at: today,
+                    checkout_history: data?.checkout_history ?? null,
+                  };
 
-                action === "create"
-                  ? handleAddBook(book)
-                  : action === "update"
-                    ? handleUpdateBook(book)
-                    : handleDeleteBook(book);
-              }}
-            >
-              {isLoading
-                ? actionInfo[action].buttonText.loading
-                : actionInfo[action].buttonText.default}{" "}
-              book
-              {isLoading && <Spinner data-icon="inline-start" />}
-            </Button>
+                  action === "create"
+                    ? handleAddBook(book)
+                    : action === "update"
+                      ? handleUpdateBook(book)
+                      : handleDeleteBook(book);
+                }}
+              >
+                {isLoading
+                  ? actionInfo[action].buttonText.loading
+                  : actionInfo[action].buttonText.default}{" "}
+                book
+                {isLoading && <Spinner data-icon="inline-start" />}
+              </Button>
+            </span>
           )}
         </FieldGroup>
       )}
