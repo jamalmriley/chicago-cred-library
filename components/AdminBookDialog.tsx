@@ -234,7 +234,8 @@ function AdminBookForm({
   const { cart, setCart, setLastUpdated } = useAdminContext();
   const { sites } = useSites();
   const { isLoaded, user } = useUser();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isGeminiLoading, setIsGeminiLoading] = useState(false);
+  const [isActionLoading, setIsActionLoading] = useState(false);
   const [book, setBook] = useState<GoogleBooks.Book | null>(null);
   const [playBeep] = useSound("/sounds/beep.m4a", { volume: 0.5 });
 
@@ -375,7 +376,7 @@ function AdminBookForm({
   };
 
   const handleAddBook = async (book: LibraryBook) => {
-    await setIsLoading(true);
+    await setIsActionLoading(true);
 
     const res = await fetch(`/api/library?id=${book.id}`); // Attempt to search the book to see if it's already in the library.
     const title = book.book_info.volumeInfo.title;
@@ -414,11 +415,11 @@ function AdminBookForm({
           },
         );
       })
-      .finally(() => setIsLoading(false));
+      .finally(() => setIsActionLoading(false));
   };
 
   const handleUpdateBook = async (book: LibraryBook) => {
-    setIsLoading(true);
+    setIsActionLoading(true);
     const { title } = book.book_info.volumeInfo;
 
     await fetch(`/api/library?id=${book.id}`, {
@@ -439,11 +440,11 @@ function AdminBookForm({
           { position: "bottom-right" },
         );
       })
-      .finally(() => setIsLoading(false));
+      .finally(() => setIsActionLoading(false));
   };
 
   const handleDeleteBook = async (book: LibraryBook) => {
-    setIsLoading(true);
+    setIsActionLoading(true);
     const title = book.book_info.volumeInfo.title;
 
     await fetch(`/api/library?id=${book.id}`, { method: "DELETE" })
@@ -460,11 +461,11 @@ function AdminBookForm({
           { position: "bottom-right" },
         );
       })
-      .finally(() => setIsLoading(false));
+      .finally(() => setIsActionLoading(false));
   };
 
   const handleCompleteWithGemini = async () => {
-    await setIsLoading(true);
+    await setIsGeminiLoading(true);
 
     try {
       const res = await fetch("/api/gemini", {
@@ -483,9 +484,16 @@ function AdminBookForm({
 
       const { data, error } = (await res.json()) as {
         data: ManualBook;
-        error: string;
+        error: any;
       };
-      if (data) {
+
+      if (!res.ok || error) {
+        const errObj = JSON.parse(error.message);
+        const { message } = errObj.error || "Something went wrong.";
+        toast.error(message, {
+          position: "bottom-right",
+        });
+      } else if (data) {
         await console.log(data);
         if (title === "" && data.volumeInfo.title) {
           setTitle(data.volumeInfo.title);
@@ -515,17 +523,14 @@ function AdminBookForm({
         toast.success("Book information completed with Gemini.", {
           position: "bottom-right",
         });
-      } else {
-        toast.error(error || "Something went wrong.", {
-          position: "bottom-right",
-        });
       }
-    } catch (err) {
-      toast.error("Failed to connect to the server.", {
+    } catch (err: any) {
+      console.error(err);
+      toast.error(JSON.stringify(err) || "Something went wrong.", {
         position: "bottom-right",
       });
     } finally {
-      await setIsLoading(false);
+      await setIsGeminiLoading(false);
     }
   };
 
@@ -811,22 +816,33 @@ function AdminBookForm({
               <Button
                 variant="outline"
                 className="w-[47.5%] h-9 flex molde-button"
-                disabled={isLoading || isGeminiButtonDisabled}
+                disabled={
+                  isGeminiLoading || isActionLoading || isGeminiButtonDisabled
+                }
                 onClick={handleCompleteWithGemini}
               >
-                Finish with
-                <DotLottieReact
-                  src="/images/gemini.lottie"
-                  loop
-                  autoplay
-                  className={`w-auto h-7 mb-1 ${isGeminiButtonDisabled ? "grayscale" : ""}`}
-                />
+                {isGeminiLoading ? (
+                  "Finishing"
+                ) : (
+                  <>
+                    Finish with{" "}
+                    <DotLottieReact
+                      src="/images/gemini.lottie"
+                      loop
+                      autoplay
+                      className={`w-auto h-7 mb-1 ${isGeminiButtonDisabled ? "grayscale" : ""}`}
+                    />
+                  </>
+                )}
+                {isGeminiLoading && <Spinner />}
               </Button>
               <Button
                 type="submit"
                 variant={action === "delete" ? "destructive" : "default"}
                 className="w-[47.5%] molde-button"
-                disabled={isLoading || isSubmitButtonDisabled}
+                disabled={
+                  isGeminiLoading || isActionLoading || isSubmitButtonDisabled
+                }
                 onClick={() => {
                   if (!selectedSite || !publishedDate) return;
 
@@ -874,11 +890,11 @@ function AdminBookForm({
                       : handleDeleteBook(book);
                 }}
               >
-                {isLoading
+                {isActionLoading
                   ? actionInfo[action].buttonText.loading
                   : actionInfo[action].buttonText.default}{" "}
                 book
-                {isLoading && <Spinner data-icon="inline-start" />}
+                {isActionLoading && <Spinner />}
               </Button>
             </span>
           )}
