@@ -36,7 +36,7 @@ export namespace GoogleBooks {
     };
     imageLinks: {
       smallThumbnail: string;
-      thumbnail: string; // Required
+      thumbnail: string;
     };
     language: string;
     previewLink: string;
